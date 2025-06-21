@@ -78,6 +78,7 @@ class LandListing(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     images: Optional[List[str]] = []
+    videos: Optional[List[str]] = []
 
 class BrokerRegistration(BaseModel):
     name: str
