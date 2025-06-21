@@ -299,9 +299,12 @@ function OTPLogin({ setToken, setCurrentView }) {
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="+91 9876543210"
+              placeholder="+91 7021758061"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
             />
+            <p className="text-xs text-gray-500 mt-2">
+              📱 Demo Mode: Use any valid Indian number format
+            </p>
             <button
               onClick={sendOTP}
               disabled={loading || !phone}
@@ -323,6 +326,9 @@ function OTPLogin({ setToken, setCurrentView }) {
               maxLength="6"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
             />
+            <p className="text-xs text-gray-500 mt-2">
+              🔒 Demo Mode: Use OTP <strong>123456</strong> for testing
+            </p>
             <button
               onClick={verifyOTP}
               disabled={loading || !otp}
