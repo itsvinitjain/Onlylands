@@ -344,28 +344,99 @@ async def verify_payment(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Payment verification failed: {str(e)}")
 
-# Land Listing Routes
+# File Upload Routes
+@app.post("/api/upload-media")
+async def upload_media(files: List[UploadFile] = File(...)):
+    try:
+        uploaded_files = []
+        
+        for file in files:
+            # Read file content
+            content = await file.read()
+            
+            # Convert to base64 for demo purposes (in production, use cloud storage)
+            file_base64 = base64.b64encode(content).decode('utf-8')
+            file_type = file.content_type
+            
+            # Create file data object
+            file_data = {
+                "filename": file.filename,
+                "content_type": file_type,
+                "size": len(content),
+                "data": file_base64,
+                "upload_id": str(uuid.uuid4()),
+                "uploaded_at": datetime.utcnow()
+            }
+            
+            uploaded_files.append({
+                "upload_id": file_data["upload_id"],
+                "filename": file_data["filename"],
+                "content_type": file_type,
+                "size": len(content)
+            })
+        
+        return {"uploaded_files": uploaded_files, "status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
+# Land Listing Routes (Updated)
 @app.post("/api/listings")
-async def create_listing(listing: LandListing):
+async def create_listing(
+    title: str = Form(...),
+    location: str = Form(...),
+    area: str = Form(...),
+    price: str = Form(...),
+    description: str = Form(...),
+    latitude: Optional[float] = Form(None),
+    longitude: Optional[float] = Form(None),
+    images: List[UploadFile] = File(default=[]),
+    videos: List[UploadFile] = File(default=[])
+):
     try:
         listing_id = str(uuid.uuid4())
+        
+        # Process uploaded images
+        image_data = []
+        for image in images:
+            if image.filename:
+                content = await image.read()
+                image_base64 = base64.b64encode(content).decode('utf-8')
+                image_data.append({
+                    "filename": image.filename,
+                    "content_type": image.content_type,
+                    "data": image_base64
+                })
+        
+        # Process uploaded videos
+        video_data = []
+        for video in videos:
+            if video.filename:
+                content = await video.read()
+                video_base64 = base64.b64encode(content).decode('utf-8')
+                video_data.append({
+                    "filename": video.filename,
+                    "content_type": video.content_type,
+                    "data": video_base64
+                })
+        
         listing_data = {
             "listing_id": listing_id,
-            "title": listing.title,
-            "location": listing.location,
-            "area": listing.area,
-            "price": listing.price,
-            "description": listing.description,
-            "latitude": listing.latitude,
-            "longitude": listing.longitude,
-            "images": listing.images,
+            "title": title,
+            "location": location,
+            "area": area,
+            "price": price,
+            "description": description,
+            "latitude": latitude,
+            "longitude": longitude,
+            "images": image_data,
+            "videos": video_data,
             "status": "pending_payment",
             "payment_status": "pending",
             "created_at": datetime.utcnow(),
             "broadcast_sent": False
         }
         listings_collection.insert_one(listing_data)
-        return {"listing_id": listing_id, "status": "created"}
+        return {"listing_id": listing_id, "status": "created", "images_count": len(image_data), "videos_count": len(video_data)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
