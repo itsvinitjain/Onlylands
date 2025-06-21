@@ -366,19 +366,82 @@ function PostLandForm({ user }) {
     latitude: '',
     longitude: ''
   });
+  const [images, setImages] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [videoPreviews, setVideoPreviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [listingCreated, setListingCreated] = useState(null);
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    setImages(files);
+    
+    // Create previews
+    const previews = files.map(file => ({
+      file,
+      url: URL.createObjectURL(file),
+      name: file.name
+    }));
+    setImagePreviews(previews);
+  };
+
+  const handleVideoChange = (e) => {
+    const files = Array.from(e.target.files);
+    setVideos(files);
+    
+    // Create previews
+    const previews = files.map(file => ({
+      file,
+      url: URL.createObjectURL(file),
+      name: file.name
+    }));
+    setVideoPreviews(previews);
+  };
+
+  const removeImage = (index) => {
+    const newImages = images.filter((_, i) => i !== index);
+    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    setImages(newImages);
+    setImagePreviews(newPreviews);
+  };
+
+  const removeVideo = (index) => {
+    const newVideos = videos.filter((_, i) => i !== index);
+    const newPreviews = videoPreviews.filter((_, i) => i !== index);
+    setVideos(newVideos);
+    setVideoPreviews(newPreviews);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Create listing
-      const response = await axios.post('/api/listings', {
-        ...formData,
-        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-        longitude: formData.longitude ? parseFloat(formData.longitude) : null
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+      
+      // Add form fields
+      Object.keys(formData).forEach(key => {
+        if (formData[key]) {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+      
+      // Add images
+      images.forEach(image => {
+        formDataToSend.append('images', image);
+      });
+      
+      // Add videos
+      videos.forEach(video => {
+        formDataToSend.append('videos', video);
+      });
+
+      const response = await axios.post('/api/listings', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       });
 
       setListingCreated(response.data.listing_id);
@@ -395,39 +458,41 @@ function PostLandForm({ user }) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
+      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Post Your Land</h2>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Title
-            </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData({...formData, title: e.target.value})}
-              placeholder="e.g., 5 Acre Agricultural Land in Alibag"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              required
-            />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Title
+              </label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({...formData, title: e.target.value})}
+                placeholder="e.g., 5 Acre Agricultural Land in Alibag"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Location
+              </label>
+              <input
+                type="text"
+                value={formData.location}
+                onChange={(e) => setFormData({...formData, location: e.target.value})}
+                placeholder="e.g., Alibag, Raigad, Maharashtra"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                required
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Location
-            </label>
-            <input
-              type="text"
-              value={formData.location}
-              onChange={(e) => setFormData({...formData, location: e.target.value})}
-              placeholder="e.g., Alibag, Raigad, Maharashtra"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 Area
@@ -457,7 +522,7 @@ function PostLandForm({ user }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 Latitude (Optional)
@@ -499,6 +564,102 @@ function PostLandForm({ user }) {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
               required
             />
+          </div>
+
+          {/* Photo Upload Section */}
+          <div>
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              📷 Upload Photos (Max 5)
+            </label>
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Supported formats: JPG, PNG, WebP. Max 5 photos.
+            </p>
+            
+            {/* Image Previews */}
+            {imagePreviews.length > 0 && (
+              <div className="mt-4">
+                <p className="text-sm font-semibold text-gray-700 mb-2">Photo Previews:</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={preview.url}
+                        alt={preview.name}
+                        className="w-full h-32 object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                      >
+                        ×
+                      </button>
+                      <p className="text-xs text-gray-600 mt-1 truncate">{preview.name}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Video Upload Section */}
+          <div>
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              🎥 Upload Videos (Max 2)
+            </label>
+            <input
+              type="file"
+              multiple
+              accept="video/*"
+              onChange={handleVideoChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Supported formats: MP4, WebM, MOV. Max 2 videos, 50MB each.
+            </p>
+            
+            {/* Video Previews */}
+            {videoPreviews.length > 0 && (
+              <div className="mt-4">
+                <p className="text-sm font-semibold text-gray-700 mb-2">Video Previews:</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {videoPreviews.map((preview, index) => (
+                    <div key={index} className="relative">
+                      <video
+                        src={preview.url}
+                        controls
+                        className="w-full h-40 object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeVideo(index)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                      >
+                        ×
+                      </button>
+                      <p className="text-xs text-gray-600 mt-1 truncate">{preview.name}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <h3 className="font-semibold text-blue-800 mb-2">📋 Listing Summary</h3>
+            <div className="text-sm text-blue-700">
+              <p>• Photos: {images.length} selected</p>
+              <p>• Videos: {videos.length} selected</p>
+              <p>• Premium listing with WhatsApp broadcast</p>
+              <p>• Instant activation after demo payment</p>
+            </div>
           </div>
 
           <button
