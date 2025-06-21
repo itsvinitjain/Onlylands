@@ -602,23 +602,109 @@ async def health_check():
         "timestamp": datetime.utcnow().isoformat()
     }
 
-# Stats endpoint
-@app.get("/api/stats")
-async def get_stats():
+# Admin Panel Routes
+@app.get("/api/admin/dashboard")
+async def admin_dashboard():
     try:
+        # Get comprehensive statistics
+        total_users = users_collection.count_documents({})
+        total_sellers = users_collection.count_documents({"user_type": "seller"})
+        total_brokers = users_collection.count_documents({"user_type": "broker"})
+        
         total_listings = listings_collection.count_documents({})
         active_listings = listings_collection.count_documents({"status": "active"})
-        total_brokers = brokers_collection.count_documents({})
-        active_brokers = brokers_collection.count_documents({"active": True})
-        total_payments = payments_collection.count_documents({"status": "paid"})
+        pending_listings = listings_collection.count_documents({"status": "pending_payment"})
+        
+        total_payments = payments_collection.count_documents({})
+        successful_payments = payments_collection.count_documents({"status": "paid"})
+        
+        total_notifications = notifications_collection.count_documents({})
+        
+        # Recent activity
+        recent_listings = list(listings_collection.find({}, {"_id": 0}).sort("created_at", -1).limit(5))
+        recent_users = list(users_collection.find({}, {"_id": 0}).sort("created_at", -1).limit(5))
+        recent_payments = list(payments_collection.find({}, {"_id": 0}).sort("created_at", -1).limit(5))
         
         return {
-            "total_listings": total_listings,
-            "active_listings": active_listings,
-            "total_brokers": total_brokers,
-            "active_brokers": active_brokers,
-            "total_payments": total_payments
+            "statistics": {
+                "users": {
+                    "total": total_users,
+                    "sellers": total_sellers,
+                    "brokers": total_brokers
+                },
+                "listings": {
+                    "total": total_listings,
+                    "active": active_listings,
+                    "pending": pending_listings
+                },
+                "payments": {
+                    "total": total_payments,
+                    "successful": successful_payments
+                },
+                "notifications": total_notifications
+            },
+            "recent_activity": {
+                "listings": recent_listings,
+                "users": recent_users,
+                "payments": recent_payments
+            }
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/admin/users")
+async def get_all_users(skip: int = 0, limit: int = 50):
+    try:
+        users = list(users_collection.find({}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit))
+        total = users_collection.count_documents({})
+        return {"users": users, "total": total, "skip": skip, "limit": limit}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/admin/listings")
+async def get_all_listings_admin(skip: int = 0, limit: int = 50):
+    try:
+        # Don't include base64 image data for performance
+        listings = list(listings_collection.find({}, {
+            "_id": 0,
+            "images.data": 0,  # Exclude image data
+            "videos.data": 0   # Exclude video data
+        }).sort("created_at", -1).skip(skip).limit(limit))
+        
+        # Add image/video counts
+        for listing in listings:
+            listing["image_count"] = len(listing.get("images", []))
+            listing["video_count"] = len(listing.get("videos", []))
+        
+        total = listings_collection.count_documents({})
+        return {"listings": listings, "total": total, "skip": skip, "limit": limit}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/admin/brokers")
+async def get_all_brokers_admin(skip: int = 0, limit: int = 50):
+    try:
+        brokers = list(brokers_collection.find({}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit))
+        total = brokers_collection.count_documents({})
+        return {"brokers": brokers, "total": total, "skip": skip, "limit": limit}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/admin/payments")
+async def get_all_payments_admin(skip: int = 0, limit: int = 50):
+    try:
+        payments = list(payments_collection.find({}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit))
+        total = payments_collection.count_documents({})
+        return {"payments": payments, "total": total, "skip": skip, "limit": limit}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/admin/notifications")
+async def get_all_notifications_admin(skip: int = 0, limit: int = 50):
+    try:
+        notifications = list(notifications_collection.find({}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit))
+        total = notifications_collection.count_documents({})
+        return {"notifications": notifications, "total": total, "skip": skip, "limit": limit}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
