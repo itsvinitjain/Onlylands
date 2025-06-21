@@ -516,6 +516,15 @@ def main():
     health_check_success = tester.test_health_check()
     stats_success = tester.test_stats()
     
+    # Test admin panel endpoints
+    print("\n🔍 Testing Admin Panel Endpoints...")
+    admin_dashboard_success = tester.test_admin_dashboard()
+    admin_users_success = tester.test_admin_users()
+    admin_listings_success = tester.test_admin_listings()
+    admin_brokers_success = tester.test_admin_brokers()
+    admin_payments_success = tester.test_admin_payments()
+    admin_notifications_success = tester.test_admin_notifications()
+    
     # Test OTP authentication with demo mode
     phone_number = "+917021758061"  # Test phone number from requirements
     otp_code = "123456"  # Demo OTP code
@@ -528,10 +537,36 @@ def main():
     # Test OTP verification with demo code
     otp_verify_success = tester.test_verify_otp(phone_number, otp_code)
     
-    # Test listing creation and retrieval after authentication
+    # Test media upload and listing creation with media after authentication
     if tester.token:
         print("\n🔍 Testing with authenticated user...")
-        listing_create_success = tester.test_create_listing()
+        
+        # Test media upload
+        print("\n🔍 Testing Media Upload...")
+        test_image_path = '/tmp/test_upload_image.png'
+        test_video_path = '/tmp/test_upload_video.mp4'
+        
+        # Create test files
+        with open(test_image_path, 'wb') as f:
+            f.write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))
+        
+        with open(test_video_path, 'wb') as f:
+            f.write(b'TEST VIDEO CONTENT')
+        
+        image_upload_success, _ = tester.test_upload_media(test_image_path, 'image/png')
+        video_upload_success, _ = tester.test_upload_media(test_video_path, 'video/mp4')
+        
+        # Clean up test files
+        try:
+            os.remove(test_image_path)
+            os.remove(test_video_path)
+        except:
+            pass
+        
+        # Test listing creation with media
+        listing_create_success, _ = tester.test_create_listing_with_media()
+        
+        # Test regular listing retrieval
         listing_get_success = tester.test_get_listings()
         
         # Test payment order creation and verification
@@ -558,6 +593,8 @@ def main():
             broadcast_success = False
     else:
         print("\n⚠️ Authentication failed - skipping authenticated tests")
+        image_upload_success = False
+        video_upload_success = False
         listing_create_success = False
         listing_get_success = tester.test_get_listings()
         payment_order_success = False
@@ -579,7 +616,10 @@ def main():
         health_check_success, 
         otp_send_success, 
         otp_verify_success,
+        admin_dashboard_success,
         listing_create_success,
+        image_upload_success,
+        video_upload_success,
         payment_order_success,
         payment_verify_success
     ]
