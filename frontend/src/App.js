@@ -519,49 +519,25 @@ function PaymentComponent({ listingId }) {
   const [loading, setLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
-  const handlePayment = async () => {
+  const handleDemoPayment = async () => {
     setLoading(true);
     try {
-      // Create payment order
+      // Create payment order first (for record keeping)
       const orderResponse = await axios.post('/api/payments/create-order', {
         amount: 29900, // ₹299 in paise
         listing_id: listingId
       });
 
-      const options = {
-        key: orderResponse.data.key_id,
-        amount: orderResponse.data.amount,
-        currency: orderResponse.data.currency,
-        order_id: orderResponse.data.order_id,
-        name: 'OnlyLands',
-        description: 'Premium Land Listing',
-        handler: async function (response) {
-          try {
-            // Verify payment
-            await axios.post('/api/payments/verify', {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature
-            });
-            setPaymentSuccess(true);
-          } catch (error) {
-            alert('Payment verification failed');
-          }
-        },
-        prefill: {
-          name: 'Land Owner',
-          email: 'owner@example.com',
-          contact: '9999999999'
-        },
-        theme: {
-          color: '#22c55e'
-        }
-      };
+      // Simulate successful payment verification
+      await axios.post('/api/payments/verify', {
+        razorpay_order_id: orderResponse.data.order_id,
+        razorpay_payment_id: `pay_demo_${Date.now()}`,
+        razorpay_signature: `demo_signature_${Date.now()}`
+      });
 
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+      setPaymentSuccess(true);
     } catch (error) {
-      alert('Payment initialization failed');
+      alert('Demo payment processing failed: ' + (error.response?.data?.detail || 'Unknown error'));
     } finally {
       setLoading(false);
     }
@@ -573,15 +549,32 @@ function PaymentComponent({ listingId }) {
         <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-8 text-center">
           <div className="text-6xl mb-4">✅</div>
           <h2 className="text-2xl font-bold text-green-600 mb-4">Payment Successful!</h2>
-          <p className="text-gray-600 mb-6">
-            Your land listing has been created and broadcast to 1000+ brokers via WhatsApp!
+          <div className="bg-green-50 p-4 rounded-lg mb-6">
+            <p className="text-green-800 font-semibold mb-2">🎉 Demo Payment Completed</p>
+            <p className="text-gray-600 text-sm mb-2">
+              Your land listing has been activated and is now live!
+            </p>
+            <p className="text-gray-600 text-sm">
+              📢 WhatsApp broadcast sent to 1000+ brokers automatically
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-blue-500 text-white px-4 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Back to Home
+            </button>
+            <button
+              onClick={() => window.open('https://88f8fa02-c167-4ec2-8817-e66be1aafac0.preview.emergentagent.com', '_blank')}
+              className="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition-colors"
+            >
+              View Listings
+            </button>
+          </div>
+          <p className="text-xs text-gray-500">
+            💡 Demo Mode: No actual payment was processed
           </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Back to Home
-          </button>
         </div>
       </div>
     );
@@ -601,19 +594,30 @@ function PaymentComponent({ listingId }) {
             • Broadcast to 1000+ brokers
             • WhatsApp notifications
             • Priority listing
+            • Instant activation
           </div>
         </div>
 
+        <div className="bg-blue-50 p-4 rounded-lg mb-6">
+          <div className="flex items-center mb-2">
+            <span className="text-blue-600 mr-2">🚀</span>
+            <span className="font-semibold text-blue-800">Demo Mode</span>
+          </div>
+          <p className="text-blue-700 text-sm">
+            Payment simulation - no actual charges will be made
+          </p>
+        </div>
+
         <button
-          onClick={handlePayment}
+          onClick={handleDemoPayment}
           disabled={loading}
-          className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-400"
+          className="w-full bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-400 mb-4"
         >
-          {loading ? 'Initializing Payment...' : 'Pay ₹299'}
+          {loading ? 'Processing Demo Payment...' : '✅ Complete Demo Payment (₹299)'}
         </button>
 
-        <p className="text-xs text-gray-500 text-center mt-4">
-          Secure payment powered by Razorpay
+        <p className="text-xs text-gray-500 text-center">
+          🔒 This is a demo payment simulation for testing purposes
         </p>
       </div>
     </div>
