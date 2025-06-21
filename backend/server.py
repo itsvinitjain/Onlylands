@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request, Body, Depends, status
+from fastapi import FastAPI, HTTPException, Request, Body, Depends, status, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pymongo import MongoClient
@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from typing import Optional, List
 import jwt
 import logging
+import base64
 
 # Load environment variables
 load_dotenv()
