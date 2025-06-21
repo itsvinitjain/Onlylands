@@ -314,6 +314,7 @@ def main():
     
     # Test basic endpoints
     health_check_success = tester.test_health_check()
+    stats_success = tester.test_stats()
     
     # Test OTP authentication with demo mode
     phone_number = "+917021758061"  # Test phone number from requirements
@@ -333,17 +334,40 @@ def main():
         listing_create_success = tester.test_create_listing()
         listing_get_success = tester.test_get_listings()
         
-        # Test payment order creation
+        # Test payment order creation and verification
         if tester.listing_id:
-            payment_success = tester.test_create_payment_order()
+            payment_order_success = tester.test_create_payment_order()
+            
+            if payment_order_success and tester.razorpay_order_id:
+                payment_verify_success = tester.test_verify_payment()
+                
+                # Test WhatsApp broadcast after payment
+                if payment_verify_success:
+                    broadcast_success = tester.test_whatsapp_broadcast()
+                else:
+                    print("\n⚠️ Payment verification failed - skipping broadcast test")
+                    broadcast_success = False
+            else:
+                print("\n⚠️ Payment order creation failed - skipping verification")
+                payment_verify_success = False
+                broadcast_success = False
         else:
-            print("\n⚠️ Skipping payment test - no listing ID available")
-            payment_success = False
+            print("\n⚠️ Skipping payment tests - no listing ID available")
+            payment_order_success = False
+            payment_verify_success = False
+            broadcast_success = False
     else:
         print("\n⚠️ Authentication failed - skipping authenticated tests")
         listing_create_success = False
         listing_get_success = tester.test_get_listings()
-        payment_success = False
+        payment_order_success = False
+        payment_verify_success = False
+        broadcast_success = False
+    
+    # Check stats again to verify they've been updated
+    if payment_verify_success:
+        print("\n🔍 Checking if platform stats were updated after payment...")
+        updated_stats_success = tester.test_stats()
     
     # Print results
     print("\n" + "=" * 50)
@@ -351,7 +375,14 @@ def main():
     print("=" * 50)
     
     # Return success if all critical tests passed
-    critical_tests = [health_check_success, otp_send_success, otp_verify_success]
+    critical_tests = [
+        health_check_success, 
+        otp_send_success, 
+        otp_verify_success,
+        listing_create_success,
+        payment_order_success,
+        payment_verify_success
+    ]
     return 0 if all(critical_tests) else 1
 
 if __name__ == "__main__":
