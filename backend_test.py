@@ -2,6 +2,8 @@ import requests
 import sys
 import uuid
 import time
+import base64
+import os
 from datetime import datetime
 
 class OnlyLandsAPITester:
