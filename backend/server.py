@@ -708,6 +708,22 @@ async def get_all_notifications_admin(skip: int = 0, limit: int = 50):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+# Stats endpoint
+@app.get("/api/stats")
+async def get_stats():
+    try:
+        total_listings = listings_collection.count_documents({})
+        active_listings = listings_collection.count_documents({"status": "active"})
+        total_brokers = brokers_collection.count_documents({})
+        active_brokers = brokers_collection.count_documents({"active": True})
+        total_payments = payments_collection.count_documents({"status": "paid"})
+        
+        return {
+            "total_listings": total_listings,
+            "active_listings": active_listings,
+            "total_brokers": total_brokers,
+            "active_brokers": active_brokers,
+            "total_payments": total_payments
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
