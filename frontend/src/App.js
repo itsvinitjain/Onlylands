@@ -85,6 +85,11 @@ function HomePage({ setCurrentView, user, logout }) {
           <div>
             <h1 className="text-4xl font-bold text-green-800">🏞️ OnlyLands</h1>
             <p className="text-gray-600 mt-2">Agricultural & Residential Land Marketplace</p>
+            <div className="mt-2">
+              <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                🚀 Demo Mode - Use OTP: 123456
+              </span>
+            </div>
           </div>
           <nav className="flex space-x-4">
             {user ? (
