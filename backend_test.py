@@ -283,6 +283,28 @@ class OnlyLandsAPITester:
             
         return success
 
+    def test_whatsapp_broadcast(self):
+        """Test WhatsApp broadcasting"""
+        if not self.listing_id:
+            print("❌ Cannot test broadcast - no listing ID available")
+            return False
+            
+        success, response = self.run_test(
+            "WhatsApp Broadcast",
+            "POST",
+            f"api/broadcast/{self.listing_id}",
+            200
+        )
+        
+        if success:
+            print(f"Total Brokers: {response.get('total_brokers', 0)}")
+            print(f"Success Count: {response.get('success_count', 0)}")
+            print(f"Failed Count: {response.get('failed_count', 0)}")
+            if response.get('error'):
+                print(f"Error: {response.get('error')}")
+                return False
+        return success
+        
     def test_admin_dashboard(self):
         """Test the admin dashboard endpoint"""
         success, response = self.run_test(
