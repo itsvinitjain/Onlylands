@@ -283,27 +283,225 @@ class OnlyLandsAPITester:
             
         return success
 
-    def test_whatsapp_broadcast(self):
-        """Test WhatsApp broadcasting"""
-        if not self.listing_id:
-            print("❌ Cannot test broadcast - no listing ID available")
-            return False
-            
+    def test_admin_dashboard(self):
+        """Test the admin dashboard endpoint"""
         success, response = self.run_test(
-            "WhatsApp Broadcast",
-            "POST",
-            f"api/broadcast/{self.listing_id}",
+            "Admin Dashboard",
+            "GET",
+            "api/admin/dashboard",
             200
         )
         
         if success:
-            print(f"Total Brokers: {response.get('total_brokers', 0)}")
-            print(f"Success Count: {response.get('success_count', 0)}")
-            print(f"Failed Count: {response.get('failed_count', 0)}")
-            if response.get('error'):
-                print(f"Error: {response.get('error')}")
-                return False
+            print(f"User Statistics: {response.get('statistics', {}).get('users', {})}")
+            print(f"Listing Statistics: {response.get('statistics', {}).get('listings', {})}")
+            print(f"Recent Activity: {len(response.get('recent_activity', {}).get('listings', []))} listings, {len(response.get('recent_activity', {}).get('users', []))} users")
         return success
+    
+    def test_admin_users(self):
+        """Test the admin users endpoint"""
+        success, response = self.run_test(
+            "Admin Users",
+            "GET",
+            "api/admin/users",
+            200
+        )
+        
+        if success:
+            users = response.get('users', [])
+            print(f"Total Users: {response.get('total')}")
+            print(f"Users Retrieved: {len(users)}")
+        return success
+    
+    def test_admin_listings(self):
+        """Test the admin listings endpoint"""
+        success, response = self.run_test(
+            "Admin Listings",
+            "GET",
+            "api/admin/listings",
+            200
+        )
+        
+        if success:
+            listings = response.get('listings', [])
+            print(f"Total Listings: {response.get('total')}")
+            print(f"Listings Retrieved: {len(listings)}")
+            if listings:
+                print(f"First Listing Image Count: {listings[0].get('image_count')}")
+                print(f"First Listing Video Count: {listings[0].get('video_count')}")
+        return success
+    
+    def test_admin_brokers(self):
+        """Test the admin brokers endpoint"""
+        success, response = self.run_test(
+            "Admin Brokers",
+            "GET",
+            "api/admin/brokers",
+            200
+        )
+        
+        if success:
+            brokers = response.get('brokers', [])
+            print(f"Total Brokers: {response.get('total')}")
+            print(f"Brokers Retrieved: {len(brokers)}")
+        return success
+    
+    def test_admin_payments(self):
+        """Test the admin payments endpoint"""
+        success, response = self.run_test(
+            "Admin Payments",
+            "GET",
+            "api/admin/payments",
+            200
+        )
+        
+        if success:
+            payments = response.get('payments', [])
+            print(f"Total Payments: {response.get('total')}")
+            print(f"Payments Retrieved: {len(payments)}")
+        return success
+    
+    def test_admin_notifications(self):
+        """Test the admin notifications endpoint"""
+        success, response = self.run_test(
+            "Admin Notifications",
+            "GET",
+            "api/admin/notifications",
+            200
+        )
+        
+        if success:
+            notifications = response.get('notifications', [])
+            print(f"Total Notifications: {response.get('total')}")
+            print(f"Notifications Retrieved: {len(notifications)}")
+        return success
+    
+    def test_upload_media(self, file_path, content_type):
+        """Test uploading media files"""
+        # Create a test file if it doesn't exist
+        if not os.path.exists(file_path):
+            if 'image' in content_type:
+                # Create a simple test image (1x1 pixel)
+                with open(file_path, 'wb') as f:
+                    f.write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))
+            elif 'video' in content_type:
+                # Create a simple test video file
+                with open(file_path, 'wb') as f:
+                    f.write(b'TEST VIDEO CONTENT')
+        
+        # Prepare multipart form data
+        files = [('files', (os.path.basename(file_path), open(file_path, 'rb'), content_type))]
+        
+        url = f"{self.base_url}/api/upload-media"
+        headers = {}
+        if self.token:
+            headers['Authorization'] = f'Bearer {self.token}'
+        
+        self.tests_run += 1
+        print(f"\n🔍 Testing Upload Media...")
+        
+        try:
+            response = requests.post(url, files=files, headers=headers)
+            
+            success = response.status_code == 200
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                result = response.json()
+                print(f"Uploaded Files: {len(result.get('uploaded_files', []))}")
+                return success, result
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    print(f"Response: {response.json()}")
+                except:
+                    print(f"Response: {response.text}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        finally:
+            # Close the file
+            for _, file_tuple in files:
+                file_tuple[1].close()
+    
+    def test_create_listing_with_media(self):
+        """Test creating a land listing with photos and videos"""
+        # Create test files
+        test_image_path = '/tmp/test_image.png'
+        test_video_path = '/tmp/test_video.mp4'
+        
+        # Create a simple test image (1x1 pixel)
+        with open(test_image_path, 'wb') as f:
+            f.write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))
+        
+        # Create a simple test video file
+        with open(test_video_path, 'wb') as f:
+            f.write(b'TEST VIDEO CONTENT')
+        
+        # Prepare form data
+        form_data = {
+            'title': f"Test Land with Media {uuid.uuid4().hex[:8]}",
+            'location': "Test Location, Maharashtra",
+            'area': "5 Acres",
+            'price': "50 Lakhs",
+            'description': "This is a test land listing with photos and videos.",
+            'latitude': 18.6414,
+            'longitude': 72.9897
+        }
+        
+        # Prepare files
+        files = [
+            ('images', ('image1.png', open(test_image_path, 'rb'), 'image/png')),
+            ('images', ('image2.png', open(test_image_path, 'rb'), 'image/png')),
+            ('videos', ('video1.mp4', open(test_video_path, 'rb'), 'video/mp4'))
+        ]
+        
+        url = f"{self.base_url}/api/listings"
+        headers = {}
+        if self.token:
+            headers['Authorization'] = f'Bearer {self.token}'
+        
+        self.tests_run += 1
+        print(f"\n🔍 Testing Create Land Listing with Media...")
+        
+        try:
+            response = requests.post(url, data=form_data, files=files, headers=headers)
+            
+            success = response.status_code == 200
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                result = response.json()
+                self.listing_id = result.get('listing_id')
+                print(f"Listing ID: {self.listing_id}")
+                print(f"Status: {result.get('status')}")
+                print(f"Images Count: {result.get('images_count')}")
+                print(f"Videos Count: {result.get('videos_count')}")
+                return success, result
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    print(f"Response: {response.json()}")
+                except:
+                    print(f"Response: {response.text}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        finally:
+            # Close the files
+            for _, file_tuple in files:
+                file_tuple[1].close()
+            
+            # Clean up test files
+            try:
+                os.remove(test_image_path)
+                os.remove(test_video_path)
+            except:
+                pass
 
 def main():
     # Get the backend URL from environment variable
