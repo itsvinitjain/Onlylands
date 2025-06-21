@@ -225,6 +225,61 @@ class OnlyLandsAPITester:
             print(f"Currency: {response.get('currency')}")
             print(f"Key ID: {response.get('key_id')}")
         return success
+        
+    def test_verify_payment(self):
+        """Test payment verification with demo data"""
+        if not self.razorpay_order_id or not self.listing_id:
+            print("❌ Cannot test payment verification - no order ID or listing ID available")
+            return False
+            
+        # Create demo payment verification data
+        payment_data = {
+            "razorpay_order_id": self.razorpay_order_id,
+            "razorpay_payment_id": f"pay_demo_{int(time.time())}",
+            "razorpay_signature": f"demo_signature_{int(time.time())}"
+        }
+        
+        success, response = self.run_test(
+            "Verify Payment (Demo Mode)",
+            "POST",
+            "api/payments/verify",
+            200,
+            data=payment_data
+        )
+        
+        if success:
+            print(f"Status: {response.get('status')}")
+            print(f"Message: {response.get('message')}")
+            
+            # Check if listing status was updated
+            time.sleep(1)  # Wait a bit for the database to update
+            listing_success, listing_response = self.run_test(
+                "Check Listing Status After Payment",
+                "GET",
+                "api/listings",
+                200
+            )
+            
+            if listing_success:
+                listings = listing_response.get('listings', [])
+                found = False
+                for listing in listings:
+                    if listing.get('listing_id') == self.listing_id:
+                        found = True
+                        print(f"Listing Status: {listing.get('status')}")
+                        print(f"Payment Status: {listing.get('payment_status')}")
+                        print(f"Broadcast Sent: {listing.get('broadcast_sent')}")
+                        if listing.get('status') == 'active' and listing.get('payment_status') == 'paid':
+                            print("✅ Listing was successfully activated after payment")
+                        else:
+                            print("❌ Listing was not properly activated after payment")
+                            return False
+                
+                if not found:
+                    print("❌ Listing not found after payment verification")
+                    return False
+            
+        return success
 
     def test_whatsapp_broadcast(self):
         """Test WhatsApp broadcasting"""
