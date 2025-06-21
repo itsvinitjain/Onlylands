@@ -506,8 +506,12 @@ function PostLandForm({ user }) {
             disabled={loading}
             className="w-full bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-400"
           >
-            {loading ? 'Creating Listing...' : 'Create Listing (₹299)'}
+            {loading ? 'Creating Listing...' : '🚀 Create Listing (Demo Payment: ₹299)'}
           </button>
+
+          <p className="text-xs text-gray-500 text-center mt-2">
+            💡 Demo Mode: Payment will be simulated for testing
+          </p>
         </form>
       </div>
     </div>
