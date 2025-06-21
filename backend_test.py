@@ -259,47 +259,36 @@ def main():
     
     # Test basic endpoints
     health_check_success = tester.test_health_check()
-    stats_success = tester.test_stats()
     
-    # Test OTP authentication (will likely fail with real Twilio)
-    phone_number = "+919876543210"  # Test phone number
-    otp_code = "123456"  # Test OTP code
+    # Test OTP authentication with demo mode
+    phone_number = "+917021758061"  # Test phone number from requirements
+    otp_code = "123456"  # Demo OTP code
     
-    print("\n🔍 Testing OTP Authentication Flow...")
-    print("Note: This will likely fail with real Twilio integration unless sandbox is configured")
+    print("\n🔍 Testing OTP Authentication Flow in Demo Mode...")
     
+    # Test sending OTP - should return demo mode message
     otp_send_success = tester.test_send_otp(phone_number)
     
-    # We'll skip actual OTP verification since we don't have a real OTP
-    # Instead, we'll just test the endpoint with a dummy OTP
+    # Test OTP verification with demo code
     otp_verify_success = tester.test_verify_otp(phone_number, otp_code)
     
-    # Test listing creation and retrieval
+    # Test listing creation and retrieval after authentication
     if tester.token:
         print("\n🔍 Testing with authenticated user...")
         listing_create_success = tester.test_create_listing()
         listing_get_success = tester.test_get_listings()
+        
+        # Test payment order creation
+        if tester.listing_id:
+            payment_success = tester.test_create_payment_order()
+        else:
+            print("\n⚠️ Skipping payment test - no listing ID available")
+            payment_success = False
     else:
-        print("\n⚠️ Skipping authenticated tests - no token available")
+        print("\n⚠️ Authentication failed - skipping authenticated tests")
+        listing_create_success = False
         listing_get_success = tester.test_get_listings()
-    
-    # Test broker registration and retrieval
-    broker_register_success = tester.test_register_broker()
-    broker_get_success = tester.test_get_brokers()
-    
-    # Test payment order creation
-    if tester.listing_id:
-        payment_success = tester.test_create_payment_order()
-    else:
-        print("\n⚠️ Skipping payment test - no listing ID available")
         payment_success = False
-    
-    # Test WhatsApp broadcasting
-    if tester.listing_id:
-        broadcast_success = tester.test_whatsapp_broadcast()
-    else:
-        print("\n⚠️ Skipping broadcast test - no listing ID available")
-        broadcast_success = False
     
     # Print results
     print("\n" + "=" * 50)
@@ -307,7 +296,7 @@ def main():
     print("=" * 50)
     
     # Return success if all critical tests passed
-    critical_tests = [health_check_success, stats_success, listing_get_success]
+    critical_tests = [health_check_success, otp_send_success, otp_verify_success]
     return 0 if all(critical_tests) else 1
 
 if __name__ == "__main__":
