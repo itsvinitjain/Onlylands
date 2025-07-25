@@ -1466,6 +1466,7 @@ def main():
     print("\n" + "=" * 80)
     print("📊 COMPREHENSIVE TWILIO OTP SYSTEM TEST RESULTS")
     print("=" * 80)
+    print(f"📱 CRITICAL: Verified Phone Number OTP Flow: {'✅ PASSED' if verified_phone_success else '❌ FAILED'}")
     print(f"🚨 CRITICAL: Genuine Twilio OTP System: {'✅ PASSED' if genuine_twilio_success else '❌ FAILED'}")
     print(f"👤 User Creation & JWT Functionality: {'✅ PASSED' if user_creation_success else '❌ FAILED'}")
     print(f"🔍 API Health Check: {'✅ PASSED' if health_check_success else '❌ FAILED'}")
@@ -1476,8 +1477,9 @@ def main():
     print("\n📋 SUMMARY OF FINDINGS:")
     print("=" * 50)
     
-    if genuine_twilio_success and user_creation_success:
+    if verified_phone_success and genuine_twilio_success and user_creation_success:
         print("🎉 SUCCESS: The genuine Twilio OTP system is fully functional!")
+        print("✅ Real SMS sent successfully to verified phone +917021758061")
         print("✅ Real Twilio integration working (no demo mode)")
         print("✅ Demo OTP '123456' correctly rejected")
         print("✅ Error handling working properly")
@@ -1486,15 +1488,19 @@ def main():
         print("✅ User type switching functionality implemented")
         print("✅ Trial account limitations properly handled")
         print("✅ No demo mode fallback detected")
+        print("✅ Production-ready genuine OTP system confirmed")
         
         print("\n⚠️ IMPORTANT NOTES:")
-        print("• Twilio account is in trial mode - only verified phone numbers can receive SMS")
-        print("• To enable SMS for any phone number, upgrade Twilio account or verify test numbers")
-        print("• All core functionality is working and ready for production use")
+        print("• Verified phone number +917021758061 successfully tested")
+        print("• Real SMS delivery working with Twilio verification service")
+        print("• System ready for production use with verified phone numbers")
+        print("• Demo OTP '123456' properly rejected by genuine Twilio system")
         
         return 0
     else:
         print("❌ FAILURE: Issues found in the Twilio OTP system!")
+        if not verified_phone_success:
+            print("❌ Verified phone number OTP flow issues")
         if not genuine_twilio_success:
             print("❌ Genuine Twilio OTP system issues")
         if not user_creation_success:
