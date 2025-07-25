@@ -60,8 +60,6 @@ function App() {
         return <BrokerDashboard user={user} />;
       case 'listings':
         return <ListingsView />;
-      case 'admin':
-        return <{/* Admin removed */}Panel />;
       default:
         return <HomePage setCurrentView={setCurrentView} user={user} logout={logout} />;
     }
