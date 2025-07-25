@@ -61,7 +61,7 @@ function App() {
       case 'listings':
         return <ListingsView />;
       case 'admin':
-        return <AdminPanel />;
+        return <{/* Admin removed */}Panel />;
       default:
         return <HomePage setCurrentView={setCurrentView} user={user} logout={logout} />;
     }
