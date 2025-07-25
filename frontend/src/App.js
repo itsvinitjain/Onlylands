@@ -476,7 +476,7 @@ function PostLandForm({ user }) {
   };
 
   if (listingCreated) {
-    return <PaymentComponent listingId={listingCreated} />;
+    return <PaymentComponent listingId={listingCreated} user={user} />;
   }
 
   return (
