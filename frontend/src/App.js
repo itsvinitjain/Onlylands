@@ -681,7 +681,7 @@ function PostLandForm({ user }) {
               <p>• Photos: {images.length} selected</p>
               <p>• Videos: {videos.length} selected</p>
               <p>• Premium listing with WhatsApp broadcast</p>
-              <p>• Instant activation after demo payment</p>
+              <p>• Instant activation after payment</p>
             </div>
           </div>
 
