@@ -707,25 +707,50 @@ function PaymentComponent({ listingId, user }) {
   const [loading, setLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
-  const handleDemoPayment = async () => {
+  const handlePayment = async () => {
     setLoading(true);
     try {
-      // Create payment order first (for record keeping)
+      // Create payment order
       const orderResponse = await axios.post('/api/payments/create-order', {
         amount: 29900, // ₹299 in paise
         listing_id: listingId
       });
 
-      // Simulate successful payment verification
-      await axios.post('/api/payments/verify', {
-        razorpay_order_id: orderResponse.data.order_id,
-        razorpay_payment_id: `pay_demo_${Date.now()}`,
-        razorpay_signature: `demo_signature_${Date.now()}`
-      });
+      // Initialize Razorpay
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+        amount: orderResponse.data.amount,
+        currency: orderResponse.data.currency,
+        name: 'OnlyLands',
+        description: 'Premium Listing Payment',
+        order_id: orderResponse.data.id,
+        handler: async function (response) {
+          try {
+            // Verify payment
+            await axios.post('/api/payments/verify', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            });
+            setPaymentSuccess(true);
+          } catch (error) {
+            alert('Payment verification failed: ' + (error.response?.data?.detail || 'Unknown error'));
+          }
+        },
+        prefill: {
+          name: user?.name || '',
+          email: user?.email || '',
+          contact: user?.phone_number || ''
+        },
+        theme: {
+          color: '#10B981'
+        }
+      };
 
-      setPaymentSuccess(true);
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
     } catch (error) {
-      alert('Demo payment processing failed: ' + (error.response?.data?.detail || 'Unknown error'));
+      alert('Payment processing failed: ' + (error.response?.data?.detail || 'Unknown error'));
     } finally {
       setLoading(false);
     }
