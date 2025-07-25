@@ -830,7 +830,7 @@ function PaymentComponent({ listingId, user }) {
         </button>
 
         <p className="text-xs text-gray-500 text-center">
-          🔒 This is a demo payment simulation for testing purposes
+          🔒 Secure payment processing via Razorpay
         </p>
       </div>
     </div>
