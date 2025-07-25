@@ -228,6 +228,10 @@ async def verify_otp(request: dict):
                     }
                     db.users.insert_one(user)
                 
+                # Remove MongoDB ObjectId for JSON serialization
+                if '_id' in user:
+                    del user['_id']
+                
                 # Generate JWT token
                 token = jwt.encode({
                     "user_id": user["user_id"],
@@ -260,6 +264,10 @@ async def verify_otp(request: dict):
                 }
                 db.users.insert_one(user)
             
+            # Remove MongoDB ObjectId for JSON serialization
+            if '_id' in user:
+                del user['_id']
+            
             # Generate JWT token
             token = jwt.encode({
                 "user_id": user["user_id"],
@@ -272,6 +280,9 @@ async def verify_otp(request: dict):
         else:
             raise HTTPException(status_code=400, detail="Invalid OTP")
             
+    except HTTPException:
+        # Re-raise HTTP exceptions (like 400 for missing params or invalid OTP)
+        raise
     except Exception as e:
         print(f"Error verifying OTP: {e}")
         raise HTTPException(status_code=500, detail="Failed to verify OTP")
