@@ -201,9 +201,9 @@ frontend:
 
   - task: "Enhanced Login Flow"
     implemented: true
-    working: true
+    working: false
     file: "App.js, LoginChoice.js, OTPLogin.js"
-    stuck_count: 2
+    stuck_count: 3
     priority: "high"
     needs_retesting: false
     status_history:
@@ -228,6 +228,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "🎉 FRONTEND BROKER LOGIN BUG FIX VERIFICATION COMPLETED - Conducted comprehensive frontend testing of the critical broker login user_type bug fix as specifically requested in the review. PERFECT RESULTS (6/6 major tests passed, 100% success rate): ✅ SELLER LOGIN TEST - Homepage loads correctly, login choice screen works, seller login form functional, demo OTP '123456' works, successful login shows 'Welcome, Seller', seller-specific features (Post Your Land, My Listings) visible after login ✅ BROKER LOGIN TEST (CRITICAL BUG FIX VERIFIED) - Broker login form works correctly, demo OTP '123456' accepted, CRITICAL SUCCESS: Login now shows 'Welcome, Broker' (not 'Welcome, Seller'), broker-specific features (View Dashboard) visible, JWT token correctly contains user_type: 'broker' ✅ USER TYPE SWITCHING TEST - Successfully logged out from seller, logged in as broker with same phone number, then switched back to seller - all user type changes work correctly ✅ USER STATE PERSISTENCE TEST - JWT token properly stored in localStorage, user data correctly stored with proper user_type field, token has correct 3-part JWT structure ✅ JWT TOKEN VERIFICATION TEST - Successfully decoded JWT payload, confirmed user_type field matches login request ('seller' for seller login, 'broker' for broker login), user_id and phone_number fields correct ✅ NAVIGATION AND FEATURES TEST - All navigation flows work correctly, user-specific features display appropriately based on user_type. THE CRITICAL BROKER LOGIN BUG HAS BEEN COMPLETELY FIXED IN THE FRONTEND: Users selecting 'Login as Broker' are now correctly logged in as 'Broker' with proper welcome message, appropriate features, and correct JWT token user_type. The frontend correctly displays the logged-in user type and provides access to appropriate features for each user type."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL GENUINE OTP SYSTEM FAILURE - Conducted comprehensive testing of the complete genuine OTP login flow with verified phone number +917021758061 as requested in the review. DETAILED FINDINGS: ✅ UI COMPONENTS WORKING PERFECTLY: Homepage loads correctly with proper OnlyLands branding, Login button navigation works flawlessly, Login choice screen displays both 'Login as Seller' and 'Login as Broker' options correctly, Both seller and broker login forms load properly and accept the verified phone number +917021758061, Mobile responsiveness works excellently (tested on 390x844 viewport), All navigation flows work smoothly (Back to Login Options, Back to Home), Error handling for empty/invalid phone numbers works correctly, View Listings functionality works properly with search features. ❌ CRITICAL OTP SYSTEM FAILURE: OTP sending fails for both seller and broker login with verified phone number +917021758061, Error message displayed: 'Failed to send OTP. Please check your phone number and try again.', No OTP input form appears after clicking Send OTP (timeout after 5 seconds), Demo OTP '123456' cannot be tested because OTP input form never appears, System appears to be using genuine Twilio integration but SMS delivery is failing. 🔍 ROOT CAUSE ANALYSIS: The system is correctly configured for genuine Twilio integration (no demo mode fallback detected), The verified phone number +917021758061 is accepted by the input validation, The error suggests Twilio SMS delivery channel issues or account limitations, This confirms the system is NOT in demo mode - it's attempting real SMS delivery and failing. ⚠️ IMPACT: Users cannot complete the login process with any phone number (verified or unverified), The authentication system is completely non-functional for end users, This is a critical blocker preventing any user from accessing seller or broker features. The UI and navigation work perfectly, but the core OTP functionality is broken due to Twilio SMS delivery issues."
 
   - task: "Enhanced Listings View"
     implemented: true
