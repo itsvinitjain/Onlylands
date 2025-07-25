@@ -4,6 +4,7 @@ import uuid
 import time
 import base64
 import os
+import jwt
 from datetime import datetime
 
 class OnlyLandsAPITester:
