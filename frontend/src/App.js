@@ -42,11 +42,25 @@ function App() {
     }
   }, [token]);
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    setToken(null);
-    setUser(null);
-    setCurrentView('home');
+  const updateToken = (newToken) => {
+    setToken(newToken);
+    if (newToken) {
+      try {
+        const tokenPayload = JSON.parse(atob(newToken.split('.')[1]));
+        setUser({
+          user_id: tokenPayload.user_id,
+          user_type: tokenPayload.user_type,
+          phone_number: tokenPayload.phone_number
+        });
+      } catch (e) {
+        console.error('Failed to parse token:', e);
+        localStorage.removeItem('token');
+        setToken(null);
+        setUser(null);
+      }
+    } else {
+      setUser(null);
+    }
   };
 
   const renderView = () => {
