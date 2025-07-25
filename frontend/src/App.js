@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import LoginChoice from './LoginChoice';
 import './App.css';
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
