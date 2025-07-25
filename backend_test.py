@@ -88,37 +88,80 @@ class OnlyLandsAPITester:
             print(f"Total Payments: {response.get('total_payments')}")
         return success
 
-    def test_send_otp(self, phone_number):
-        """Test sending OTP"""
+    def test_send_otp(self, phone_number, user_type="seller"):
+        """Test sending OTP with user_type parameter"""
         success, response = self.run_test(
-            "Send OTP",
+            f"Send OTP for {user_type}",
             "POST",
-            "api/auth/send-otp",
+            "api/send-otp",
             200,
-            data={"phone_number": phone_number}
+            data={"phone_number": phone_number, "user_type": user_type}
         )
         if success:
             print(f"OTP Status: {response.get('status')}")
-            print(f"Phone: {response.get('phone')}")
+            print(f"Message: {response.get('message')}")
+            if response.get('demo_info'):
+                print(f"Demo Info: {response.get('demo_info')}")
         return success
 
-    def test_verify_otp(self, phone_number, otp_code):
-        """Test verifying OTP"""
+    def test_verify_otp(self, phone_number, otp_code, user_type="seller"):
+        """Test verifying OTP with user_type parameter"""
         success, response = self.run_test(
-            "Verify OTP",
+            f"Verify OTP for {user_type}",
             "POST",
-            "api/auth/verify-otp",
+            "api/verify-otp",
             200,
-            data={"phone_number": phone_number, "otp_code": otp_code}
+            data={"phone_number": phone_number, "otp": otp_code, "user_type": user_type}
         )
-        if success and response.get('verified'):
+        if success and response.get('token'):
             self.token = response.get('token')
-            self.user_id = response.get('user_id')
-            print(f"Verified: {response.get('verified')}")
-            print(f"User ID: {response.get('user_id')}")
-            print(f"User Type: {response.get('user_type')}")
+            user_data = response.get('user', {})
+            self.user_id = user_data.get('user_id')
+            print(f"Message: {response.get('message')}")
+            print(f"User ID: {user_data.get('user_id')}")
+            print(f"User Type: {user_data.get('user_type')}")
+            print(f"Phone Number: {user_data.get('phone_number')}")
             return True
         return False
+
+    def test_send_otp_missing_phone(self):
+        """Test sending OTP with missing phone number"""
+        success, response = self.run_test(
+            "Send OTP - Missing Phone Number",
+            "POST",
+            "api/send-otp",
+            400,
+            data={"user_type": "seller"}
+        )
+        if success:
+            print(f"Error Message: {response.get('detail')}")
+        return success
+
+    def test_verify_otp_invalid(self, phone_number, user_type="seller"):
+        """Test verifying OTP with invalid OTP"""
+        success, response = self.run_test(
+            f"Verify OTP - Invalid OTP for {user_type}",
+            "POST",
+            "api/verify-otp",
+            400,
+            data={"phone_number": phone_number, "otp": "999999", "user_type": user_type}
+        )
+        if success:
+            print(f"Error Message: {response.get('detail')}")
+        return success
+
+    def test_verify_otp_missing_params(self):
+        """Test verifying OTP with missing parameters"""
+        success, response = self.run_test(
+            "Verify OTP - Missing Parameters",
+            "POST",
+            "api/verify-otp",
+            400,
+            data={"user_type": "seller"}
+        )
+        if success:
+            print(f"Error Message: {response.get('detail')}")
+        return success
 
     def test_create_listing(self):
         """Test creating a land listing"""
