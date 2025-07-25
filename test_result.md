@@ -195,9 +195,9 @@ frontend:
 
   - task: "Enhanced Login Flow"
     implemented: true
-    working: true
+    working: false
     file: "App.js, LoginChoice.js, OTPLogin.js"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -213,6 +213,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ HYBRID OTP FUNCTIONALITY FULLY WORKING - Conducted comprehensive testing of the updated hybrid OTP login endpoints with Twilio fallback to demo mode. ALL 13 TESTS PASSED (100% success rate): ✅ Send OTP Endpoint - Works correctly for both seller and broker user types, returns demo_mode status with demo_info message when Twilio SMS is disabled ✅ Verify OTP Endpoint - Accepts demo OTP '123456' for both seller and broker, creates users correctly, generates JWT tokens ✅ Fallback Logic - Automatically falls back to demo mode when Twilio SMS delivery fails, demo mode works regardless of Twilio configuration ✅ Error Handling - Proper validation for missing phone numbers, invalid OTP codes, missing parameters ✅ User Management - New user creation and existing user login working correctly in demo mode ✅ JWT Token Generation - Working correctly with proper user data structure ✅ Demo Mode Consistency - Demo OTP '123456' consistently accepted, all other OTP codes properly rejected. The hybrid OTP system is functioning perfectly - when Twilio SMS delivery is disabled, it seamlessly falls back to demo mode allowing users to complete the login process using OTP '123456'. This resolves the previous critical authentication blocker."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL BROKER LOGIN BUG FOUND - Comprehensive testing of current OTP login flow revealed a critical issue with broker authentication. SELLER LOGIN WORKS PERFECTLY: ✅ Homepage loads correctly ✅ Login choice screen displays properly ✅ Seller login form works ✅ Demo mode message appears: 'Service temporarily unavailable. Use OTP 123456 for testing' ✅ OTP input field appears after sending OTP ✅ Demo OTP '123456' verification works ✅ Successful login with 'Welcome, Seller' message ✅ Logout functionality works ✅ User state persistence works ✅ Seller-specific features (Post Your Land, My Listings) visible after login ✅ Mobile responsiveness works correctly ✅ View Listings functionality works ✅ Navigation flows work properly. CRITICAL BROKER LOGIN BUG: ❌ When users select 'Login as Broker' and complete the entire OTP flow with demo OTP '123456', they are incorrectly logged in as 'Seller' instead of 'Broker'. The user_type parameter is not being handled correctly in the broker login flow. This means brokers cannot access broker-specific features and are given seller permissions instead. This is a critical authentication bug that breaks the user type differentiation system."
 
   - task: "Enhanced Listings View"
     implemented: true
