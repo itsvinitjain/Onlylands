@@ -255,12 +255,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Fixed Button Overlap Issue"
-    - "Enhanced Login Flow" 
+    - "Enhanced Login Flow"
     - "Enhanced Listings View"
     - "Mobile Responsiveness"
     - "Navigation Flow"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Enhanced Login Flow"
   test_all: false
   test_priority: "high_first"
 
