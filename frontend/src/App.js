@@ -703,7 +703,7 @@ function PostLandForm({ user }) {
 }
 
 // Payment Component
-function PaymentComponent({ listingId }) {
+function PaymentComponent({ listingId, user }) {
   const [loading, setLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
