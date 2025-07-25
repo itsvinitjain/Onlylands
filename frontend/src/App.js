@@ -97,11 +97,6 @@ function HomePage({ setCurrentView, user, logout }) {
           <div>
             <h1 className="text-4xl font-bold text-green-800">🏞️ OnlyLands</h1>
             <p className="text-gray-600 mt-2">Agricultural & Residential Land Marketplace</p>
-            <div className="mt-2">
-              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-                🏞️ Secure Platform
-              </span>
-            </div>
           </div>
           <nav className="flex space-x-4">
             {user ? (
