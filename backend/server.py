@@ -209,13 +209,9 @@ async def verify_otp(request: dict):
         if not phone_number or not otp:
             raise HTTPException(status_code=400, detail="Phone number and OTP are required")
         
-        if twilio_client and TWILIO_VERIFY_SERVICE_SID:
-            verification_check = twilio_client.verify.v2.services(TWILIO_VERIFY_SERVICE_SID).verification_checks.create(
-                to=phone_number,
-                code=otp
-            )
-            
-            if verification_check.status == 'approved':
+        # Demo mode - accept OTP 123456 for testing
+        if not twilio_client or not TWILIO_VERIFY_SERVICE_SID:
+            if otp == "123456":
                 # Check if user exists
                 user = db.users.find_one({"phone_number": phone_number})
                 if not user:
@@ -239,9 +235,40 @@ async def verify_otp(request: dict):
                 
                 return {"message": "OTP verified successfully", "token": token, "user": user}
             else:
-                raise HTTPException(status_code=400, detail="Invalid OTP")
+                raise HTTPException(status_code=400, detail="Invalid OTP. Use 123456 for demo mode")
+        
+        # Production mode with Twilio
+        verification_check = twilio_client.verify.v2.services(TWILIO_VERIFY_SERVICE_SID).verification_checks.create(
+            to=phone_number,
+            code=otp
+        )
+        
+        if verification_check.status == 'approved':
+            # Check if user exists
+            user = db.users.find_one({"phone_number": phone_number})
+            if not user:
+                # Create new user
+                user_id = str(uuid.uuid4())
+                user = {
+                    "user_id": user_id,
+                    "phone_number": phone_number,
+                    "user_type": user_type,
+                    "created_at": datetime.utcnow()
+                }
+                db.users.insert_one(user)
+            
+            # Generate JWT token
+            token = jwt.encode({
+                "user_id": user["user_id"],
+                "phone_number": phone_number,
+                "user_type": user["user_type"],
+                "exp": datetime.utcnow() + timedelta(hours=24)
+            }, JWT_SECRET, algorithm="HS256")
+            
+            return {"message": "OTP verified successfully", "token": token, "user": user}
         else:
-            raise HTTPException(status_code=500, detail="OTP service not configured")
+            raise HTTPException(status_code=400, detail="Invalid OTP")
+            
     except Exception as e:
         print(f"Error verifying OTP: {e}")
         raise HTTPException(status_code=500, detail="Failed to verify OTP")
