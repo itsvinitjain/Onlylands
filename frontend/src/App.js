@@ -797,7 +797,7 @@ function PaymentComponent({ listingId, user }) {
         </div>
 
         <button
-          onClick={handleDemoPayment}
+          onClick={handlePayment}
           disabled={loading}
           className="w-full bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-400 mb-4"
         >
