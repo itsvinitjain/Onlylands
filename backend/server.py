@@ -179,7 +179,7 @@ async def send_otp(request: dict):
             )
             return {"message": "OTP sent successfully", "status": verification.status}
         else:
-            return {"message": "OTP service not configured"}
+            raise HTTPException(status_code=500, detail="OTP service not configured")
     except Exception as e:
         print(f"Error sending OTP: {e}")
         raise HTTPException(status_code=500, detail="Failed to send OTP")
