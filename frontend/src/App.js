@@ -826,7 +826,7 @@ function PaymentComponent({ listingId, user }) {
           disabled={loading}
           className="w-full bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-400 mb-4"
         >
-          {loading ? 'Processing Demo Payment...' : '✅ Complete Demo Payment (₹299)'}
+          {loading ? 'Processing Payment...' : '✅ Complete Payment (₹299)'}
         </button>
 
         <p className="text-xs text-gray-500 text-center">
