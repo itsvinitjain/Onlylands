@@ -185,25 +185,32 @@ async def send_otp(request: dict):
         raise HTTPException(status_code=500, detail="Failed to send OTP")
 
 @app.post("/api/verify-otp")
-async def verify_otp(request: OTPVerify):
+async def verify_otp(request: dict):
     """Verify OTP and authenticate user"""
     try:
+        phone_number = request.get("phone_number")
+        otp = request.get("otp")
+        user_type = request.get("user_type", "seller")
+        
+        if not phone_number or not otp:
+            raise HTTPException(status_code=400, detail="Phone number and OTP are required")
+        
         if twilio_client and TWILIO_VERIFY_SERVICE_SID:
             verification_check = twilio_client.verify.v2.services(TWILIO_VERIFY_SERVICE_SID).verification_checks.create(
-                to=request.phone_number,
-                code=request.otp
+                to=phone_number,
+                code=otp
             )
             
             if verification_check.status == 'approved':
                 # Check if user exists
-                user = db.users.find_one({"phone_number": request.phone_number})
+                user = db.users.find_one({"phone_number": phone_number})
                 if not user:
                     # Create new user
                     user_id = str(uuid.uuid4())
                     user = {
                         "user_id": user_id,
-                        "phone_number": request.phone_number,
-                        "user_type": "seller",
+                        "phone_number": phone_number,
+                        "user_type": user_type,
                         "created_at": datetime.utcnow()
                     }
                     db.users.insert_one(user)
@@ -211,19 +218,19 @@ async def verify_otp(request: OTPVerify):
                 # Generate JWT token
                 token = jwt.encode({
                     "user_id": user["user_id"],
-                    "phone_number": request.phone_number,
+                    "phone_number": phone_number,
                     "user_type": user["user_type"],
                     "exp": datetime.utcnow() + timedelta(hours=24)
                 }, JWT_SECRET, algorithm="HS256")
                 
                 return {"message": "OTP verified successfully", "token": token, "user": user}
             else:
-                return {"message": "Invalid OTP"}
+                raise HTTPException(status_code=400, detail="Invalid OTP")
         else:
-            return {"message": "OTP service not configured"}
+            raise HTTPException(status_code=500, detail="OTP service not configured")
     except Exception as e:
         print(f"Error verifying OTP: {e}")
-        return {"message": "Failed to verify OTP"}
+        raise HTTPException(status_code=500, detail="Failed to verify OTP")
 
 @app.post("/api/post-land")
 async def post_land(
