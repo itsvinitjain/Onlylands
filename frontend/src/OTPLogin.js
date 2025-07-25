@@ -106,12 +106,12 @@ const OTPLogin = ({ setToken, setCurrentView, userType = 'seller' }) => {
                   type="text"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
-                  placeholder="Enter 6-digit OTP"
+                  placeholder="Enter OTP from SMS"
                   maxLength="6"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                 />
                 <p className="text-xs text-gray-500 mt-2">
-                  🔒 Enter the OTP sent to your phone number
+                  🔒 Enter the 6-digit OTP sent to your phone number
                 </p>
               </div>
               
