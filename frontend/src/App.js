@@ -267,7 +267,7 @@ function HomePage({ setCurrentView, user, logout }) {
 }
 
 // OTP Login Component
-function OTPLogin({ setToken, setCurrentView }) {
+function OTPLogin({ setToken, setCurrentView, userType }) {
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState(1);
