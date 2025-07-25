@@ -187,9 +187,12 @@ async def send_otp(request: dict):
         )
         return {"message": "OTP sent successfully", "status": verification.status}
         
+    except HTTPException:
+        # Re-raise HTTP exceptions (like 400 for missing phone number)
+        raise
     except Exception as e:
         print(f"Error sending OTP: {e}")
-        # In demo mode, still return success
+        # In demo mode, still return success for other errors
         if not twilio_client or not TWILIO_VERIFY_SERVICE_SID:
             return {
                 "message": "OTP sent successfully", 
