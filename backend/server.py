@@ -196,7 +196,7 @@ async def send_otp(request: dict):
 
 @app.post("/api/verify-otp")
 async def verify_otp(request: dict):
-    """Verify OTP and authenticate user"""
+    """Verify OTP using Twilio"""
     try:
         phone_number = request.get("phone_number")
         otp = request.get("otp")
@@ -205,39 +205,10 @@ async def verify_otp(request: dict):
         if not phone_number or not otp:
             raise HTTPException(status_code=400, detail="Phone number and OTP are required")
         
-        # Demo mode - accept OTP 123456 for testing
         if not twilio_client or not TWILIO_VERIFY_SERVICE_SID:
-            if otp == "123456":
-                # Check if user exists
-                user = db.users.find_one({"phone_number": phone_number})
-                if not user:
-                    # Create new user
-                    user_id = str(uuid.uuid4())
-                    user = {
-                        "user_id": user_id,
-                        "phone_number": phone_number,
-                        "user_type": user_type,
-                        "created_at": datetime.utcnow()
-                    }
-                    db.users.insert_one(user)
-                
-                # Remove MongoDB ObjectId for JSON serialization
-                if '_id' in user:
-                    del user['_id']
-                
-                # Generate JWT token
-                token = jwt.encode({
-                    "user_id": user["user_id"],
-                    "phone_number": phone_number,
-                    "user_type": user["user_type"],
-                    "exp": datetime.utcnow() + timedelta(hours=24)
-                }, JWT_SECRET, algorithm="HS256")
-                
-                return {"message": "OTP verified successfully", "token": token, "user": user}
-            else:
-                raise HTTPException(status_code=400, detail="Invalid OTP. Use 123456 for demo mode")
+            raise HTTPException(status_code=500, detail="Twilio OTP service not configured")
         
-        # Production mode with Twilio
+        # Verify OTP using Twilio Verify
         verification_check = twilio_client.verify.v2.services(TWILIO_VERIFY_SERVICE_SID).verification_checks.create(
             to=phone_number,
             code=otp
