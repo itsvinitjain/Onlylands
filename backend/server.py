@@ -163,21 +163,26 @@ async def root():
     return {"message": "OnlyLands API is running"}
 
 @app.post("/api/send-otp")
-async def send_otp(request: OTPRequest):
+async def send_otp(request: dict):
     """Send OTP to phone number"""
     try:
+        phone_number = request.get("phone_number")
+        user_type = request.get("user_type", "seller")
+        
+        if not phone_number:
+            raise HTTPException(status_code=400, detail="Phone number is required")
+        
         if twilio_client and TWILIO_VERIFY_SERVICE_SID:
             verification = twilio_client.verify.v2.services(TWILIO_VERIFY_SERVICE_SID).verifications.create(
-                to=request.phone_number,
+                to=phone_number,
                 channel='sms'
             )
             return {"message": "OTP sent successfully", "status": verification.status}
         else:
-            # Production mode with actual OTP
             return {"message": "OTP service not configured"}
     except Exception as e:
         print(f"Error sending OTP: {e}")
-        return {"message": "Failed to send OTP"}
+        raise HTTPException(status_code=500, detail="Failed to send OTP")
 
 @app.post("/api/verify-otp")
 async def verify_otp(request: OTPVerify):
