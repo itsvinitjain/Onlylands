@@ -275,9 +275,7 @@ function OTPLogin({ setToken, setCurrentView }) {
       const response = await axios.post('/api/auth/send-otp', { phone_number: phone });
       
       // Handle different response types
-      if (response.data.status === 'demo_mode') {
-        alert(`Demo Mode: Use OTP 123456 for testing\n\nNote: ${response.data.message}`);
-      } else if (response.data.status === 'sent') {
+      if (response.data.status === 'sent') {
         alert(`OTP sent successfully via ${response.data.channel.toUpperCase()}!`);
       }
       
