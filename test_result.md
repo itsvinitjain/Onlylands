@@ -183,10 +183,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "File Storage for Images/Videos"
-    - "Display Images/Videos from Storage"
-  stuck_tasks:
-    - "Display Images/Videos from Storage"
+    - "OTP Login Flow Implementation"
+    - "Enhanced Listings API"
+    - "API Health and Error Handling"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
