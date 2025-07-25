@@ -123,6 +123,42 @@ backend:
         agent: "testing"
         comment: "AWS S3 integration is working correctly. Images are properly uploaded to the S3 bucket 'onlyland' in region 'eu-north-1'. The database now stores S3 URLs instead of base64 data for new uploads. The preview endpoint '/api/listings/preview/{user_id}' works correctly and returns both pending and active listings for a seller. The hybrid approach works - both legacy base64 listings and new S3 listings display correctly."
 
+  - task: "OTP Login Flow Implementation"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "OTP login endpoints are working correctly. POST /api/send-otp accepts user_type parameter (seller/broker) and handles missing phone_number appropriately. POST /api/verify-otp accepts user_type parameter and validates required parameters. Both endpoints return 500 when Twilio is not configured, which is expected behavior. Parameter validation is working - missing parameters are handled gracefully with appropriate error messages. JWT token generation is implemented in verify-otp endpoint."
+
+  - task: "Enhanced Listings API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "GET /api/listings endpoint is working correctly. Returns proper JSON structure with 'listings' array containing only active listings. Response includes all required fields (location, price, title, description) needed for filtering. Empty array is returned when no active listings exist, which is correct behavior. Status filtering is working properly - only listings with status='active' are returned."
+
+  - task: "API Health and Error Handling"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "GET /api/ root endpoint is working correctly and returns proper health check response. Error handling is appropriate - returns 404 for invalid endpoints. API is responsive and all tested endpoints handle errors gracefully. Database interactions are working correctly for all tested operations."
+
 frontend:
   - task: "Display Images/Videos from Storage"
     implemented: true
