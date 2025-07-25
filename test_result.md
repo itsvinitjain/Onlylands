@@ -243,9 +243,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "OTP Login Flow Implementation"
-    - "Enhanced Listings API"
-    - "API Health and Error Handling"
+    - "Fixed Button Overlap Issue"
+    - "Enhanced Login Flow" 
+    - "Enhanced Listings View"
+    - "Mobile Responsiveness"
+    - "Navigation Flow"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
