@@ -66,7 +66,7 @@ function App() {
       case 'broker-dashboard':
         return <BrokerDashboard user={user} />;
       case 'listings':
-        return <ListingsView />;
+        return <EnhancedListingsView setCurrentView={setCurrentView} />;
       default:
         return <HomePage setCurrentView={setCurrentView} user={user} logout={logout} />;
     }
