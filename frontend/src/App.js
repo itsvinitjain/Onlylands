@@ -95,7 +95,7 @@ function HomePage({ setCurrentView, user, logout }) {
       <header className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-8">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center">
           <div className="mb-4 md:mb-0">
-            <h1 className="text-2xl md:text-2xl md:text-4xl font-bold text-green-800">🏞️ OnlyLands</h1>
+            <h1 className="text-2xl md:text-4xl font-bold text-green-800">🏞️ OnlyLands</h1>
             <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Agricultural & Residential Land Marketplace</p>
           </div>
           <nav className="flex flex-wrap gap-2 md:gap-4">
