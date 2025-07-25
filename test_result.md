@@ -134,6 +134,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "OTP login endpoints are working correctly. POST /api/send-otp accepts user_type parameter (seller/broker) and handles missing phone_number appropriately. POST /api/verify-otp accepts user_type parameter and validates required parameters. Both endpoints return 500 when Twilio is not configured, which is expected behavior. Parameter validation is working - missing parameters are handled gracefully with appropriate error messages. JWT token generation is implemented in verify-otp endpoint."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE OTP TESTING COMPLETED - All 13 OTP endpoint tests passed successfully: ✅ Send OTP with seller/broker user types working correctly ✅ Demo mode functionality working (returns demo_mode status and demo_info) ✅ Missing phone number validation working (returns 400 error) ✅ Verify OTP with demo OTP '123456' working for both seller and broker types ✅ JWT token generation and user creation working correctly ✅ Invalid OTP rejection working (returns 400 error) ✅ Missing parameters validation working (returns 400 error) ✅ User creation flow working - new users created with correct user_type ✅ Existing user login working ✅ Demo mode status properly returned ✅ Invalid demo OTP properly rejected. Fixed two critical issues: 1) send-otp endpoint now properly validates missing phone numbers 2) verify-otp endpoint now handles MongoDB ObjectId serialization correctly. All endpoints are functioning as expected in demo mode."
 
   - task: "Enhanced Listings API"
     implemented: true
