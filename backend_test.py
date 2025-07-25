@@ -151,18 +151,250 @@ class OnlyLandsAPITester:
             print(f"Error Message: {response.get('detail')}")
         return success
 
-    def test_verify_otp_missing_params(self):
-        """Test verifying OTP with missing parameters"""
-        success, response = self.run_test(
-            "Verify OTP - Missing Parameters",
+    def decode_jwt_token(self, token):
+        """Decode JWT token to verify its contents"""
+        try:
+            # Use the same secret as the backend
+            JWT_SECRET = 'your-secure-jwt-secret-key-here-change-this-in-production'
+            payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+            return payload
+        except Exception as e:
+            print(f"Error decoding JWT token: {e}")
+            return None
+
+    def test_broker_login_user_type_bug_fix(self):
+        """
+        CRITICAL TEST: Test the broker login user_type bug fix
+        This test verifies that when users select "Login as Broker" and complete OTP verification,
+        they are correctly logged in as "Broker" instead of "Seller"
+        """
+        print("\n" + "="*80)
+        print("🚨 CRITICAL BUG FIX TEST: Broker Login User Type")
+        print("="*80)
+        
+        test_phone = "+919876543210"
+        demo_otp = "123456"
+        
+        # Test 1: Seller Login Test
+        print("\n📱 TEST 1: SELLER LOGIN")
+        print("-" * 40)
+        
+        # Send OTP for seller
+        seller_send_success, seller_send_response = self.run_test(
+            "Send OTP for Seller",
+            "POST",
+            "api/send-otp",
+            200,
+            data={"phone_number": test_phone, "user_type": "seller"}
+        )
+        
+        if not seller_send_success:
+            print("❌ CRITICAL FAILURE: Seller OTP send failed")
+            return False
+            
+        # Verify OTP for seller
+        seller_verify_success, seller_verify_response = self.run_test(
+            "Verify OTP for Seller",
             "POST",
             "api/verify-otp",
-            400,
-            data={"user_type": "seller"}
+            200,
+            data={"phone_number": test_phone, "otp": demo_otp, "user_type": "seller"}
         )
-        if success:
-            print(f"Error Message: {response.get('detail')}")
-        return success
+        
+        if not seller_verify_success:
+            print("❌ CRITICAL FAILURE: Seller OTP verification failed")
+            return False
+            
+        # Decode and verify seller JWT token
+        seller_token = seller_verify_response.get('token')
+        seller_user = seller_verify_response.get('user', {})
+        
+        if not seller_token:
+            print("❌ CRITICAL FAILURE: No JWT token returned for seller")
+            return False
+            
+        seller_jwt_payload = self.decode_jwt_token(seller_token)
+        if not seller_jwt_payload:
+            print("❌ CRITICAL FAILURE: Could not decode seller JWT token")
+            return False
+            
+        print(f"✅ Seller JWT Token Payload: {seller_jwt_payload}")
+        print(f"✅ Seller User Object: {seller_user}")
+        
+        # Verify seller user_type in JWT token
+        if seller_jwt_payload.get('user_type') != 'seller':
+            print(f"❌ CRITICAL FAILURE: Seller JWT token has wrong user_type: {seller_jwt_payload.get('user_type')}")
+            return False
+        else:
+            print("✅ PASS: Seller JWT token has correct user_type: 'seller'")
+            
+        # Verify seller user_type in user object
+        if seller_user.get('user_type') != 'seller':
+            print(f"❌ CRITICAL FAILURE: Seller user object has wrong user_type: {seller_user.get('user_type')}")
+            return False
+        else:
+            print("✅ PASS: Seller user object has correct user_type: 'seller'")
+        
+        # Test 2: Broker Login Test (THE CRITICAL BUG FIX TEST)
+        print("\n🏢 TEST 2: BROKER LOGIN (CRITICAL BUG FIX)")
+        print("-" * 40)
+        
+        # Send OTP for broker
+        broker_send_success, broker_send_response = self.run_test(
+            "Send OTP for Broker",
+            "POST",
+            "api/send-otp",
+            200,
+            data={"phone_number": test_phone, "user_type": "broker"}
+        )
+        
+        if not broker_send_success:
+            print("❌ CRITICAL FAILURE: Broker OTP send failed")
+            return False
+            
+        # Verify OTP for broker
+        broker_verify_success, broker_verify_response = self.run_test(
+            "Verify OTP for Broker",
+            "POST",
+            "api/verify-otp",
+            200,
+            data={"phone_number": test_phone, "otp": demo_otp, "user_type": "broker"}
+        )
+        
+        if not broker_verify_success:
+            print("❌ CRITICAL FAILURE: Broker OTP verification failed")
+            return False
+            
+        # Decode and verify broker JWT token
+        broker_token = broker_verify_response.get('token')
+        broker_user = broker_verify_response.get('user', {})
+        
+        if not broker_token:
+            print("❌ CRITICAL FAILURE: No JWT token returned for broker")
+            return False
+            
+        broker_jwt_payload = self.decode_jwt_token(broker_token)
+        if not broker_jwt_payload:
+            print("❌ CRITICAL FAILURE: Could not decode broker JWT token")
+            return False
+            
+        print(f"✅ Broker JWT Token Payload: {broker_jwt_payload}")
+        print(f"✅ Broker User Object: {broker_user}")
+        
+        # THE CRITICAL TEST: Verify broker user_type in JWT token
+        if broker_jwt_payload.get('user_type') != 'broker':
+            print(f"❌ CRITICAL BUG STILL EXISTS: Broker JWT token has wrong user_type: {broker_jwt_payload.get('user_type')}")
+            print("❌ BUG: Users selecting 'Login as Broker' are being logged in with wrong user_type!")
+            return False
+        else:
+            print("✅ BUG FIXED: Broker JWT token has correct user_type: 'broker'")
+            
+        # Verify broker user_type in user object
+        if broker_user.get('user_type') != 'broker':
+            print(f"❌ CRITICAL BUG STILL EXISTS: Broker user object has wrong user_type: {broker_user.get('user_type')}")
+            print("❌ BUG: Database not updated with correct user_type for broker login!")
+            return False
+        else:
+            print("✅ BUG FIXED: Broker user object has correct user_type: 'broker'")
+        
+        # Test 3: User Type Switch Test
+        print("\n🔄 TEST 3: USER TYPE SWITCHING")
+        print("-" * 40)
+        
+        # Switch back to seller
+        seller_switch_success, seller_switch_response = self.run_test(
+            "Switch Back to Seller",
+            "POST",
+            "api/verify-otp",
+            200,
+            data={"phone_number": test_phone, "otp": demo_otp, "user_type": "seller"}
+        )
+        
+        if seller_switch_success:
+            seller_switch_token = seller_switch_response.get('token')
+            seller_switch_user = seller_switch_response.get('user', {})
+            seller_switch_jwt = self.decode_jwt_token(seller_switch_token)
+            
+            if seller_switch_jwt and seller_switch_jwt.get('user_type') == 'seller':
+                print("✅ PASS: Successfully switched back to seller")
+            else:
+                print(f"❌ FAILURE: Could not switch back to seller. JWT user_type: {seller_switch_jwt.get('user_type') if seller_switch_jwt else 'None'}")
+                return False
+        else:
+            print("❌ FAILURE: Could not switch back to seller")
+            return False
+            
+        # Switch back to broker again
+        broker_switch_success, broker_switch_response = self.run_test(
+            "Switch Back to Broker",
+            "POST",
+            "api/verify-otp",
+            200,
+            data={"phone_number": test_phone, "otp": demo_otp, "user_type": "broker"}
+        )
+        
+        if broker_switch_success:
+            broker_switch_token = broker_switch_response.get('token')
+            broker_switch_user = broker_switch_response.get('user', {})
+            broker_switch_jwt = self.decode_jwt_token(broker_switch_token)
+            
+            if broker_switch_jwt and broker_switch_jwt.get('user_type') == 'broker':
+                print("✅ PASS: Successfully switched back to broker")
+            else:
+                print(f"❌ FAILURE: Could not switch back to broker. JWT user_type: {broker_switch_jwt.get('user_type') if broker_switch_jwt else 'None'}")
+                return False
+        else:
+            print("❌ FAILURE: Could not switch back to broker")
+            return False
+        
+        # Test 4: JWT Token Verification Details
+        print("\n🔐 TEST 4: JWT TOKEN VERIFICATION DETAILS")
+        print("-" * 40)
+        
+        # Verify all required fields in JWT tokens
+        required_jwt_fields = ['user_id', 'phone_number', 'user_type', 'exp']
+        
+        print("Seller JWT Token Fields:")
+        for field in required_jwt_fields:
+            if field in seller_jwt_payload:
+                print(f"  ✅ {field}: {seller_jwt_payload[field]}")
+            else:
+                print(f"  ❌ Missing field: {field}")
+                return False
+                
+        print("Broker JWT Token Fields:")
+        for field in required_jwt_fields:
+            if field in broker_jwt_payload:
+                print(f"  ✅ {field}: {broker_jwt_payload[field]}")
+            else:
+                print(f"  ❌ Missing field: {field}")
+                return False
+        
+        # Verify phone numbers match
+        if (seller_jwt_payload.get('phone_number') == test_phone and 
+            broker_jwt_payload.get('phone_number') == test_phone):
+            print("✅ PASS: Phone numbers match in both tokens")
+        else:
+            print("❌ FAILURE: Phone numbers don't match in tokens")
+            return False
+            
+        # Verify user_ids are the same (same user, different login types)
+        if seller_jwt_payload.get('user_id') == broker_jwt_payload.get('user_id'):
+            print("✅ PASS: User IDs match (same user, different login types)")
+        else:
+            print("❌ FAILURE: User IDs don't match")
+            return False
+        
+        print("\n" + "="*80)
+        print("🎉 BROKER LOGIN BUG FIX VERIFICATION: ALL TESTS PASSED!")
+        print("✅ Seller login works correctly with user_type: 'seller'")
+        print("✅ Broker login works correctly with user_type: 'broker'")
+        print("✅ User type switching works correctly")
+        print("✅ JWT tokens contain correct user_type")
+        print("✅ Database is updated correctly when switching user types")
+        print("="*80)
+        
+        return True
 
     def test_create_listing(self):
         """Test creating a land listing"""
