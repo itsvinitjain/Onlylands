@@ -110,7 +110,6 @@ function HomePage({ setCurrentView, user, logout }) {
                   Welcome, {user.user_type === 'seller' ? 'Seller' : 'Broker'}
                 </span>
                 <button 
-                <button 
                   onClick={logout}
                   className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
                 >
