@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime, timedelta
 
 # Backend URL
-BACKEND_URL = "https://e255bf36-1466-4e4b-81b9-91a06514275b.preview.emergentagent.com"
+BACKEND_URL = "https://e1833c0e-8697-4c1d-82e1-ad61f5ff183e.preview.emergentagent.com"
 
 # Use the order ID from the previous test
 razorpay_order_id = "order_Qjo1uD8sq4Cir7"

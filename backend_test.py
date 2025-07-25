@@ -652,7 +652,7 @@ class OnlyLandsAPITester:
 
 def main():
     # Get the backend URL from environment variable
-    backend_url = "https://e255bf36-1466-4e4b-81b9-91a06514275b.preview.emergentagent.com"
+    backend_url = "https://e1833c0e-8697-4c1d-82e1-ad61f5ff183e.preview.emergentagent.com"
     
     print(f"Testing OnlyLands API at: {backend_url}")
     print("=" * 50)
