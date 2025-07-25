@@ -110,11 +110,6 @@ function HomePage({ setCurrentView, user, logout }) {
                   Welcome, {user.user_type === 'seller' ? 'Seller' : 'Broker'}
                 </span>
                 <button 
-                  onClick={() => setCurrentView('admin')}
-                  className="bg-purple-500 text-white px-3 py-1 rounded text-sm hover:bg-purple-600 transition-colors"
-                >
-                  Admin
-                </button>
                 <button 
                   onClick={logout}
                   className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
@@ -125,11 +120,6 @@ function HomePage({ setCurrentView, user, logout }) {
             ) : (
               <div className="flex space-x-2">
                 <button 
-                  onClick={() => setCurrentView('admin')}
-                  className="bg-purple-500 text-white px-3 py-1 rounded text-sm hover:bg-purple-600 transition-colors"
-                >
-                  Admin
-                </button>
                 <button 
                   onClick={() => setCurrentView('listings')}
                   className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
