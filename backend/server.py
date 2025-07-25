@@ -168,7 +168,7 @@ async def root():
 
 @app.post("/api/send-otp")
 async def send_otp(request: dict):
-    """Send OTP to phone number using Twilio with demo mode fallback"""
+    """Send OTP to phone number using Twilio"""
     try:
         phone_number = request.get("phone_number")
         user_type = request.get("user_type", "seller")
@@ -177,50 +177,26 @@ async def send_otp(request: dict):
             raise HTTPException(status_code=400, detail="Phone number is required")
         
         if not twilio_client or not TWILIO_VERIFY_SERVICE_SID:
-            # Fallback to demo mode if Twilio not configured
-            return {
-                "message": "OTP sent successfully", 
-                "status": "demo_mode",
-                "demo_info": "Use OTP 123456 for testing"
-            }
+            raise HTTPException(status_code=500, detail="OTP service not configured")
         
-        try:
-            # Try to send OTP using Twilio Verify
-            verification = twilio_client.verify.v2.services(TWILIO_VERIFY_SERVICE_SID).verifications.create(
-                to=phone_number,
-                channel='sms'
-            )
-            
-            return {
-                "message": "OTP sent successfully", 
-                "status": verification.status,
-                "phone_number": phone_number
-            }
-            
-        except Exception as twilio_error:
-            # If Twilio fails (e.g., SMS delivery disabled), fall back to demo mode
-            error_msg = str(twilio_error)
-            if "delivery channel disabled" in error_msg.lower() or "sms" in error_msg.lower():
-                return {
-                    "message": "OTP sent successfully", 
-                    "status": "demo_mode",
-                    "demo_info": "SMS delivery disabled. Use OTP 123456 for testing"
-                }
-            else:
-                # Other Twilio errors
-                raise twilio_error
+        # Send OTP using Twilio Verify
+        verification = twilio_client.verify.v2.services(TWILIO_VERIFY_SERVICE_SID).verifications.create(
+            to=phone_number,
+            channel='sms'
+        )
+        
+        return {
+            "message": "OTP sent successfully", 
+            "status": verification.status,
+            "phone_number": phone_number
+        }
         
     except HTTPException:
-        # Re-raise HTTP exceptions (like 400 for missing phone number)
+        # Re-raise HTTP exceptions
         raise
     except Exception as e:
         print(f"Error sending OTP: {e}")
-        # Final fallback to demo mode
-        return {
-            "message": "OTP sent successfully", 
-            "status": "demo_mode",
-            "demo_info": "Service temporarily unavailable. Use OTP 123456 for testing"
-        }
+        raise HTTPException(status_code=500, detail="Failed to send OTP. Please check your phone number and try again.")
 
 @app.post("/api/verify-otp")
 async def verify_otp(request: dict):
