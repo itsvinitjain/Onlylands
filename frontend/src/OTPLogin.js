@@ -23,14 +23,9 @@ const OTPLogin = ({ setToken, setCurrentView, userType = 'seller' }) => {
       if (response.data.message) {
         setIsOtpSent(true);
         setError('');
-        
-        // Show demo mode info if applicable
-        if (response.data.status === 'demo_mode' && response.data.demo_info) {
-          setError(response.data.demo_info);
-        }
       }
     } catch (error) {
-      setError(error.response?.data?.detail || 'Failed to send OTP. Please try again.');
+      setError(error.response?.data?.detail || 'Failed to send OTP. Please check your phone number and try again.');
     } finally {
       setLoading(false);
     }
