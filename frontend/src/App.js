@@ -352,7 +352,7 @@ function OTPLogin({ setToken, setCurrentView }) {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
             />
             <p className="text-xs text-gray-500 mt-2">
-              🔒 Demo Mode: Use OTP <strong>123456</strong> for testing
+              🔒 Enter the OTP sent to your phone number
             </p>
             <button
               onClick={verifyOTP}
