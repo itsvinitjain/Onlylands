@@ -164,7 +164,7 @@ async def root():
 
 @app.post("/api/send-otp")
 async def send_otp(request: dict):
-    """Send OTP to phone number"""
+    """Send OTP to phone number using Twilio"""
     try:
         phone_number = request.get("phone_number")
         user_type = request.get("user_type", "seller")
@@ -172,33 +172,26 @@ async def send_otp(request: dict):
         if not phone_number:
             raise HTTPException(status_code=400, detail="Phone number is required")
         
-        # Demo mode - always return success for testing
         if not twilio_client or not TWILIO_VERIFY_SERVICE_SID:
-            return {
-                "message": "OTP sent successfully", 
-                "status": "demo_mode",
-                "demo_info": "Use OTP 123456 for testing"
-            }
+            raise HTTPException(status_code=500, detail="Twilio OTP service not configured")
         
-        # Production mode with Twilio
+        # Send OTP using Twilio Verify
         verification = twilio_client.verify.v2.services(TWILIO_VERIFY_SERVICE_SID).verifications.create(
             to=phone_number,
             channel='sms'
         )
-        return {"message": "OTP sent successfully", "status": verification.status}
+        
+        return {
+            "message": "OTP sent successfully", 
+            "status": verification.status,
+            "phone_number": phone_number
+        }
         
     except HTTPException:
         # Re-raise HTTP exceptions (like 400 for missing phone number)
         raise
     except Exception as e:
         print(f"Error sending OTP: {e}")
-        # In demo mode, still return success for other errors
-        if not twilio_client or not TWILIO_VERIFY_SERVICE_SID:
-            return {
-                "message": "OTP sent successfully", 
-                "status": "demo_mode",
-                "demo_info": "Use OTP 123456 for testing"
-            }
         raise HTTPException(status_code=500, detail="Failed to send OTP")
 
 @app.post("/api/verify-otp")
