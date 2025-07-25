@@ -763,7 +763,7 @@ function PaymentComponent({ listingId, user }) {
           <div className="text-6xl mb-4">✅</div>
           <h2 className="text-2xl font-bold text-green-600 mb-4">Payment Successful!</h2>
           <div className="bg-green-50 p-4 rounded-lg mb-6">
-            <p className="text-green-800 font-semibold mb-2">🎉 Demo Payment Completed</p>
+            <p className="text-green-800 font-semibold mb-2">🎉 Payment Completed Successfully</p>
             <p className="text-gray-600 text-sm mb-2">
               Your land listing has been activated and is now live!
             </p>
