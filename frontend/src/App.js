@@ -76,9 +76,9 @@ function App() {
       case 'login-choice':
         return <LoginChoice setCurrentView={setCurrentView} />;
       case 'seller-login':
-        return <OTPLogin setToken={setToken} setCurrentView={setCurrentView} userType="seller" />;
+        return <OTPLogin setToken={updateToken} setCurrentView={setCurrentView} userType="seller" />;
       case 'broker-login':
-        return <OTPLogin setToken={setToken} setCurrentView={setCurrentView} userType="broker" />;
+        return <OTPLogin setToken={updateToken} setCurrentView={setCurrentView} userType="broker" />;
       case 'post-land':
         return <PostLandForm user={user} />;
       case 'my-listings':
