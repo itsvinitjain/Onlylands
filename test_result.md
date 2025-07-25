@@ -258,12 +258,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Enhanced Login Flow"
     - "Enhanced Listings View"
     - "Mobile Responsiveness"
     - "Navigation Flow"
-  stuck_tasks:
-    - "Enhanced Login Flow"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
