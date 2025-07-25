@@ -811,13 +811,13 @@ function PaymentComponent({ listingId, user }) {
           </div>
         </div>
 
-        <div className="bg-blue-50 p-4 rounded-lg mb-6">
+        <div className="bg-green-50 p-4 rounded-lg mb-6">
           <div className="flex items-center mb-2">
-            <span className="text-blue-600 mr-2">🚀</span>
-            <span className="font-semibold text-blue-800">Demo Mode</span>
+            <span className="text-green-600 mr-2">🔒</span>
+            <span className="font-semibold text-green-800">Secure Payment</span>
           </div>
-          <p className="text-blue-700 text-sm">
-            Payment simulation - no actual charges will be made
+          <p className="text-green-700 text-sm">
+            Powered by Razorpay - India's most trusted payment gateway
           </p>
         </div>
 
