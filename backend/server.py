@@ -17,6 +17,10 @@ import razorpay
 from twilio.rest import Client
 import json
 import base64
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Initialize FastAPI app
 app = FastAPI()
