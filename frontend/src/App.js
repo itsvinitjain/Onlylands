@@ -786,7 +786,7 @@ function PaymentComponent({ listingId, user }) {
             </button>
           </div>
           <p className="text-xs text-gray-500">
-            💡 Demo Mode: No actual payment was processed
+            💡 Your listing is now active and visible to brokers
           </p>
         </div>
       </div>
