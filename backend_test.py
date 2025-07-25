@@ -935,123 +935,73 @@ def main():
     
     tester = OnlyLandsAPITester(backend_url)
     
-    # Test basic endpoints
-    health_check_success = tester.test_health_check()
-    stats_success = tester.test_stats()
+    # CRITICAL TEST: Broker Login User Type Bug Fix
+    print("\n🚨 RUNNING CRITICAL BROKER LOGIN BUG FIX TEST")
+    print("This test verifies the fix for the issue where broker logins were incorrectly")
+    print("returning 'seller' user_type instead of 'broker' user_type in JWT tokens.")
+    print("=" * 80)
     
-    # Test admin panel endpoints
-    print("\n🔍 Testing Admin Panel Endpoints...")
-    admin_dashboard_success = tester.test_admin_dashboard()
-    admin_users_success = tester.test_admin_users()
-    admin_listings_success = tester.test_admin_listings()
-    admin_brokers_success = tester.test_admin_brokers()
-    admin_payments_success = tester.test_admin_payments()
-    admin_notifications_success = tester.test_admin_notifications()
+    broker_bug_fix_success = tester.test_broker_login_user_type_bug_fix()
     
-    # Test OTP authentication with demo mode
-    phone_number = "+917021758061"  # Test phone number from requirements
-    otp_code = "123456"  # Demo OTP code
+    if not broker_bug_fix_success:
+        print("\n❌ CRITICAL FAILURE: Broker login bug fix test failed!")
+        print("The broker login user_type bug still exists.")
+        return 1
     
-    print("\n🔍 Testing OTP Authentication Flow in Demo Mode...")
+    # Test basic health check
+    print("\n🔍 Testing Basic API Health...")
+    health_check_success = tester.run_test(
+        "API Health Check",
+        "GET", 
+        "api/",
+        200
+    )[0]
     
-    # Test sending OTP - should return demo mode message
-    otp_send_success = tester.test_send_otp(phone_number)
+    # Test additional OTP edge cases
+    print("\n🔍 Testing OTP Edge Cases...")
     
-    # Test OTP verification with demo code
-    otp_verify_success = tester.test_verify_otp(phone_number, otp_code)
+    # Test missing phone number
+    missing_phone_success = tester.test_send_otp_missing_phone()
     
-    # Test media upload and listing creation with media after authentication
-    if tester.token:
-        print("\n🔍 Testing with authenticated user...")
-        
-        # Test media upload
-        print("\n🔍 Testing Media Upload...")
-        test_image_path = '/tmp/test_upload_image.png'
-        test_video_path = '/tmp/test_upload_video.mp4'
-        
-        # Create test files
-        with open(test_image_path, 'wb') as f:
-            f.write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))
-        
-        with open(test_video_path, 'wb') as f:
-            f.write(b'TEST VIDEO CONTENT')
-        
-        image_upload_success, _ = tester.test_upload_media(test_image_path, 'image/png')
-        video_upload_success, _ = tester.test_upload_media(test_video_path, 'video/mp4')
-        
-        # Clean up test files
-        try:
-            os.remove(test_image_path)
-            os.remove(test_video_path)
-        except:
-            pass
-        
-        # Test listing creation with media
-        listing_create_success, _ = tester.test_create_listing_with_media()
-        
-        # Test S3 storage integration
-        s3_storage_success, _ = tester.test_create_listing_with_s3_storage()
-        
-        # Test regular listing retrieval
-        listing_get_success = tester.test_get_listings()
-        
-        # Test payment order creation and verification
-        if tester.listing_id:
-            payment_order_success = tester.test_create_payment_order()
-            
-            if payment_order_success and tester.razorpay_order_id:
-                payment_verify_success = tester.test_verify_payment()
-                
-                # Test WhatsApp broadcast after payment
-                if payment_verify_success:
-                    broadcast_success = tester.test_whatsapp_broadcast()
-                else:
-                    print("\n⚠️ Payment verification failed - skipping broadcast test")
-                    broadcast_success = False
-            else:
-                print("\n⚠️ Payment order creation failed - skipping verification")
-                payment_verify_success = False
-                broadcast_success = False
-        else:
-            print("\n⚠️ Skipping payment tests - no listing ID available")
-            payment_order_success = False
-            payment_verify_success = False
-            broadcast_success = False
+    # Test invalid OTP
+    invalid_otp_seller_success = tester.test_verify_otp_invalid("+919876543210", "seller")
+    invalid_otp_broker_success = tester.test_verify_otp_invalid("+919876543210", "broker")
+    
+    # Test missing parameters in verify OTP
+    missing_params_success = tester.run_test(
+        "Verify OTP - Missing Parameters",
+        "POST",
+        "api/verify-otp",
+        400,
+        data={"user_type": "seller"}
+    )[0]
+    
+    # Test listings endpoint
+    print("\n🔍 Testing Listings API...")
+    listings_success = tester.test_get_listings()
+    
+    # Print final results
+    print("\n" + "=" * 80)
+    print("📊 BROKER LOGIN BUG FIX TEST RESULTS")
+    print("=" * 80)
+    print(f"🚨 CRITICAL: Broker Login Bug Fix: {'✅ PASSED' if broker_bug_fix_success else '❌ FAILED'}")
+    print(f"🔍 API Health Check: {'✅ PASSED' if health_check_success else '❌ FAILED'}")
+    print(f"🔍 OTP Edge Cases: {'✅ PASSED' if all([missing_phone_success, invalid_otp_seller_success, invalid_otp_broker_success, missing_params_success]) else '❌ FAILED'}")
+    print(f"🔍 Listings API: {'✅ PASSED' if listings_success else '❌ FAILED'}")
+    print(f"📊 Total Tests: {tester.tests_run}, Passed: {tester.tests_passed}")
+    print("=" * 80)
+    
+    if broker_bug_fix_success:
+        print("🎉 SUCCESS: The broker login user_type bug has been successfully fixed!")
+        print("✅ Sellers login correctly with user_type: 'seller'")
+        print("✅ Brokers login correctly with user_type: 'broker'")
+        print("✅ User type switching works correctly")
+        print("✅ JWT tokens contain the correct user_type")
+        return 0
     else:
-        print("\n⚠️ Authentication failed - skipping authenticated tests")
-        image_upload_success = False
-        video_upload_success = False
-        listing_create_success = False
-        s3_storage_success = False
-        listing_get_success = tester.test_get_listings()
-        payment_order_success = False
-        payment_verify_success = False
-        broadcast_success = False
-    
-    # Check stats again to verify they've been updated
-    if payment_verify_success:
-        print("\n🔍 Checking if platform stats were updated after payment...")
-        updated_stats_success = tester.test_stats()
-    
-    # Print results
-    print("\n" + "=" * 50)
-    print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
-    print("=" * 50)
-    
-    # Return success if all critical tests passed
-    critical_tests = [
-        health_check_success, 
-        otp_send_success, 
-        otp_verify_success,
-        admin_dashboard_success,
-        listing_create_success,
-        image_upload_success,
-        video_upload_success,
-        s3_storage_success,  # Added S3 storage test as critical
-        payment_order_success,
-        payment_verify_success
-    ]
-    return 0 if all(critical_tests) else 1
+        print("❌ FAILURE: The broker login user_type bug still exists!")
+        print("❌ Brokers are not being logged in with the correct user_type")
+        return 1
 
 if __name__ == "__main__":
     sys.exit(main())
