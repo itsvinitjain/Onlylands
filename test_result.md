@@ -195,9 +195,9 @@ frontend:
 
   - task: "Enhanced Login Flow"
     implemented: true
-    working: true
+    working: false
     file: "App.js, LoginChoice.js, OTPLogin.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -207,6 +207,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ COMPREHENSIVE OTP LOGIN TESTING COMPLETED - All requested OTP login features tested successfully after backend fixes: ✅ Navigation to Login - Homepage loads correctly, Login button functional ✅ Login Choice Screen - 'Choose Login Type' appears with both Seller/Broker options ✅ Seller Login Form - Phone input, validation, Send OTP button working ✅ Broker Login Form - Phone input, validation, Send OTP button working ✅ OTP Verification - Demo mode message 'Use OTP 123456' appears correctly ✅ OTP Input Field - Appears after sending OTP, accepts demo OTP ✅ User Authentication - JWT token generation and user creation working ✅ Error Handling - Invalid OTP shows proper error message ✅ Navigation Flow - Back buttons work correctly (Back to Login Options, Back to Home) ✅ Mobile Responsiveness - All screens display correctly on mobile (390x844) ✅ User Type Differentiation - Seller vs Broker forms work correctly. Demo mode functionality working perfectly with OTP '123456'. All core OTP login functionality is working as expected."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE FOUND - OTP login flow is broken due to Twilio SMS delivery channel being disabled. Backend logs show 'Delivery channel disabled: SMS' error. The UI flow works correctly (navigation, forms, validation) but OTP sending fails with 'Failed to send OTP' error for both seller and broker login. The demo mode functionality mentioned in previous tests is no longer present in the current backend implementation. Users cannot complete login process. This is a critical blocker for the core authentication functionality. The frontend properly handles the error by displaying 'Failed to send OTP' message, but users cannot proceed to OTP verification step."
 
   - task: "Enhanced Listings View"
     implemented: true
