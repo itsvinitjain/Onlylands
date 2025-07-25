@@ -92,32 +92,38 @@ function HomePage({ setCurrentView, user, logout }) {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <header className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-bold text-green-800">🏞️ OnlyLands</h1>
-            <p className="text-gray-600 mt-2">Agricultural & Residential Land Marketplace</p>
+      <header className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-8">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+          <div className="mb-4 md:mb-0">
+            <h1 className="text-2xl md:text-4xl font-bold text-green-800">🏞️ OnlyLands</h1>
+            <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Agricultural & Residential Land Marketplace</p>
           </div>
-          <nav className="flex space-x-4">
+          <nav className="flex flex-wrap gap-2 md:gap-4">
             {user ? (
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600">
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                <span className="text-xs md:text-sm text-gray-600">
                   Welcome, {user.user_type === 'seller' ? 'Seller' : 'Broker'}
                 </span>
                 <button 
                   onClick={logout}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                  className="bg-red-500 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg hover:bg-red-600 transition-colors text-sm md:text-base"
                 >
                   Logout
                 </button>
               </div>
             ) : (
-              <div className="flex space-x-2">
+              <div className="flex flex-wrap gap-2">
                 <button 
                   onClick={() => setCurrentView('listings')}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                  className="bg-blue-500 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm md:text-base"
                 >
                   View Listings
+                </button>
+                <button 
+                  onClick={() => setCurrentView('login')}
+                  className="bg-green-500 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg hover:bg-green-600 transition-colors text-sm md:text-base"
+                >
+                  Login
                 </button>
               </div>
             )}
