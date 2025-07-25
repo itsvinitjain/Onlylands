@@ -48,6 +48,8 @@ function App() {
 
   const renderView = () => {
     switch (currentView) {
+      case 'login-choice':
+        return <LoginChoice setCurrentView={setCurrentView} />;
       case 'otp-login':
         return <OTPLogin setToken={setToken} setCurrentView={setCurrentView} />;
       case 'post-land':
