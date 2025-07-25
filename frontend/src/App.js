@@ -347,7 +347,7 @@ function OTPLogin({ setToken, setCurrentView }) {
               type="text"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
-              placeholder="123456"
+              placeholder="Enter 6-digit OTP"
               maxLength="6"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
             />
