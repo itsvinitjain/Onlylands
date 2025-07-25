@@ -201,6 +201,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ WORKING - Login choice screen appears correctly when clicking 'Login' button. Both 'Login as Seller' and 'Login as Broker' buttons are functional. OTP login forms for both seller and broker are working properly with phone number input, OTP sending (returns expected 500 error due to Twilio not configured), and proper error handling. Back navigation works correctly."
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE OTP LOGIN TESTING COMPLETED - All requested OTP login features tested successfully after backend fixes: ✅ Navigation to Login - Homepage loads correctly, Login button functional ✅ Login Choice Screen - 'Choose Login Type' appears with both Seller/Broker options ✅ Seller Login Form - Phone input, validation, Send OTP button working ✅ Broker Login Form - Phone input, validation, Send OTP button working ✅ OTP Verification - Demo mode message 'Use OTP 123456' appears correctly ✅ OTP Input Field - Appears after sending OTP, accepts demo OTP ✅ User Authentication - JWT token generation and user creation working ✅ Error Handling - Invalid OTP shows proper error message ✅ Navigation Flow - Back buttons work correctly (Back to Login Options, Back to Home) ✅ Mobile Responsiveness - All screens display correctly on mobile (390x844) ✅ User Type Differentiation - Seller vs Broker forms work correctly. Demo mode functionality working perfectly with OTP '123456'. All core OTP login functionality is working as expected."
 
   - task: "Enhanced Listings View"
     implemented: true
