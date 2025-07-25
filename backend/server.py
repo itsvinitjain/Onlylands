@@ -247,16 +247,24 @@ async def verify_otp(request: dict):
                     "created_at": datetime.utcnow()
                 }
                 db.users.insert_one(user)
+            else:
+                # Update existing user's user_type if it's different
+                if user.get("user_type") != user_type:
+                    db.users.update_one(
+                        {"phone_number": phone_number},
+                        {"$set": {"user_type": user_type, "updated_at": datetime.utcnow()}}
+                    )
+                    user["user_type"] = user_type
             
             # Remove MongoDB ObjectId for JSON serialization
             if '_id' in user:
                 del user['_id']
             
-            # Generate JWT token
+            # Generate JWT token with the current user_type
             token = jwt.encode({
                 "user_id": user["user_id"],
                 "phone_number": phone_number,
-                "user_type": user["user_type"],
+                "user_type": user_type,  # Use the current login user_type
                 "exp": datetime.utcnow() + timedelta(hours=24)
             }, JWT_SECRET, algorithm="HS256")
             
