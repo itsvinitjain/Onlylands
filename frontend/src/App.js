@@ -63,6 +63,14 @@ function App() {
     }
   };
 
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setToken(null);
+    setUser(null);
+    setCurrentView('home');
+  };
+
   const renderView = () => {
     switch (currentView) {
       case 'login-choice':
