@@ -649,10 +649,14 @@ function PaymentComponent({ listingId, user }) {
         handler: async function (response) {
           try {
             // Verify payment
-            await axios.post('/api/payments/verify', {
+            await axios.post('/api/verify-payment', {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature
+            }, {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              }
             });
             setPaymentSuccess(true);
           } catch (error) {
