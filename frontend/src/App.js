@@ -87,6 +87,8 @@ function App() {
         return <BrokerRegistration setCurrentView={setCurrentView} />;
       case 'broker-dashboard':
         return <BrokerDashboard user={user} />;
+      case 'admin':
+        return <AdminInterface />;
       case 'listings':
         return <EnhancedListingsView setCurrentView={setCurrentView} />;
       default:
