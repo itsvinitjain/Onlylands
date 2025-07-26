@@ -50,7 +50,10 @@ function App() {
     }
   }, [token]);
 
-  const updateToken = (newToken) => {
+  const navigateToAdmin = () => {
+    setCurrentView('admin');
+    window.history.pushState(null, '', '/admin');
+  };
     setToken(newToken);
     if (newToken) {
       try {
