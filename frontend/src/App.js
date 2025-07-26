@@ -892,31 +892,150 @@ function BrokerRegistration({ setCurrentView }) {
 function BrokerDashboard({ user }) {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [registrationData, setRegistrationData] = useState({
+    name: '',
+    agency: '',
+    email: '',
+    location: ''
+  });
 
   useEffect(() => {
-    fetchLeads();
+    checkBrokerRegistration();
   }, []);
 
-  const fetchLeads = async () => {
+  const checkBrokerRegistration = async () => {
     try {
+      // Try to fetch broker profile to see if they're registered
       const response = await axios.get('/api/broker-dashboard', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
       setLeads(response.data.listings);
+      setIsRegistered(true);
     } catch (error) {
-      console.error('Failed to fetch leads:', error);
+      if (error.response?.status === 404 || error.response?.status === 403) {
+        // Broker not registered, show registration form
+        setIsRegistered(false);
+      } else {
+        console.error('Failed to fetch leads:', error);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const contactOwner = (listing) => {
-    const message = `Hi! I'm interested in your land listing: ${listing.title} in ${listing.location}. Can we discuss the details?`;
-    const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+  const handleBrokerRegistration = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const brokerData = {
+        name: registrationData.name,
+        agency: registrationData.agency,
+        phone_number: user.phone_number, // Use phone from authenticated user
+        email: registrationData.email
+      };
+
+      await axios.post('/api/broker-signup', brokerData);
+      alert('Registration successful! You can now access the broker dashboard.');
+      setIsRegistered(true);
+      checkBrokerRegistration(); // Refresh data
+    } catch (error) {
+      alert('Registration failed: ' + (error.response?.data?.detail || 'Unknown error'));
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // Show registration form if broker is not registered
+  if (!isRegistered && !loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Complete Broker Registration</h2>
+          <p className="text-gray-600 mb-6">You are logged in as a broker. Please complete your registration to access the dashboard.</p>
+          
+          <form onSubmit={handleBrokerRegistration} className="space-y-4">
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={registrationData.name}
+                onChange={(e) => setRegistrationData({...registrationData, name: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Agency Name
+              </label>
+              <input
+                type="text"
+                value={registrationData.agency}
+                onChange={(e) => setRegistrationData({...registrationData, agency: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                WhatsApp Number
+              </label>
+              <input
+                type="tel"
+                value={user.phone_number}
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
+              />
+              <p className="text-xs text-gray-500 mt-1">Phone number from your login</p>
+            </div>
+
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                value={registrationData.email}
+                onChange={(e) => setRegistrationData({...registrationData, email: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Location
+              </label>
+              <input
+                type="text"
+                value={registrationData.location}
+                onChange={(e) => setRegistrationData({...registrationData, location: e.target.value})}
+                placeholder="e.g., Mumbai, Maharashtra"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-400"
+            >
+              {loading ? 'Registering...' : 'Complete Registration'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -973,6 +1092,12 @@ function BrokerDashboard({ user }) {
       )}
     </div>
   );
+
+  const contactOwner = (listing) => {
+    const message = `Hi! I'm interested in your land listing: ${listing.title} in ${listing.location}. Can we discuss the details?`;
+    const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
 }
 
 // Listings View Component
