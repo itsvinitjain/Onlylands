@@ -377,21 +377,21 @@ async def create_payment_order(request: PaymentRequest, user_id: str = Depends(v
         print(f"Error creating payment order: {e}")
         raise HTTPException(status_code=500, detail="Failed to create payment order")
 
+class PaymentVerification(BaseModel):
+    razorpay_order_id: str
+    razorpay_payment_id: str
+    razorpay_signature: str
+
 @app.post("/api/verify-payment")
-async def verify_payment(
-    razorpay_order_id: str,
-    razorpay_payment_id: str,
-    razorpay_signature: str,
-    user_id: str = Depends(verify_jwt_token)
-):
+async def verify_payment(request: PaymentVerification, user_id: str = Depends(verify_jwt_token)):
     """Verify Razorpay payment"""
     try:
         if razorpay_client:
             # Verify payment signature
             params_dict = {
-                'razorpay_order_id': razorpay_order_id,
-                'razorpay_payment_id': razorpay_payment_id,
-                'razorpay_signature': razorpay_signature
+                'razorpay_order_id': request.razorpay_order_id,
+                'razorpay_payment_id': request.razorpay_payment_id,
+                'razorpay_signature': request.razorpay_signature
             }
             
             try:
@@ -399,17 +399,17 @@ async def verify_payment(
                 
                 # Update payment record
                 db.payments.update_one(
-                    {"razorpay_order_id": razorpay_order_id},
+                    {"razorpay_order_id": request.razorpay_order_id},
                     {"$set": {
                         "status": "completed",
-                        "razorpay_payment_id": razorpay_payment_id,
-                        "razorpay_signature": razorpay_signature,
+                        "razorpay_payment_id": request.razorpay_payment_id,
+                        "razorpay_signature": request.razorpay_signature,
                         "updated_at": datetime.utcnow()
                     }}
                 )
                 
                 # Find and activate listing
-                payment = db.payments.find_one({"razorpay_order_id": razorpay_order_id})
+                payment = db.payments.find_one({"razorpay_order_id": request.razorpay_order_id})
                 if payment:
                     db.listings.update_one(
                         {"listing_id": payment["listing_id"]},
