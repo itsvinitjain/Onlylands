@@ -7,6 +7,7 @@ const OTPLogin = ({ setToken, setCurrentView, userType = 'seller' }) => {
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [demoInfo, setDemoInfo] = useState('');
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
