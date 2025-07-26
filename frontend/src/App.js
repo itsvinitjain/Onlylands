@@ -639,11 +639,11 @@ function PaymentComponent({ listingId, user }) {
       // Initialize Razorpay
       const options = {
         key: process.env.REACT_APP_RAZORPAY_KEY_ID,
-        amount: orderResponse.data.amount,
-        currency: orderResponse.data.currency,
+        amount: orderResponse.data.order.amount,
+        currency: orderResponse.data.order.currency,
         name: 'OnlyLands',
         description: 'Premium Listing Payment',
-        order_id: orderResponse.data.id,
+        order_id: orderResponse.data.order.id,
         handler: async function (response) {
           try {
             // Verify payment
