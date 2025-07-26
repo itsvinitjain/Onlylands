@@ -271,8 +271,17 @@ async def verify_otp(request: dict):
         # Re-raise HTTP exceptions
         raise
     except Exception as e:
-        print(f"Error verifying OTP: {e}")
-        raise HTTPException(status_code=500, detail="Failed to verify OTP")
+        error_message = str(e)
+        print(f"Twilio verification error: {error_message}")
+        
+        # Handle specific Twilio verification errors
+        if "20404" in error_message:
+            raise HTTPException(status_code=400, detail="Invalid OTP or OTP has expired")
+        elif "20429" in error_message:
+            raise HTTPException(status_code=429, detail="Too many verification attempts. Please wait before trying again.")
+        else:
+            print(f"Error verifying OTP: {e}")
+            raise HTTPException(status_code=500, detail="Failed to verify OTP")
 
 @app.post("/api/post-land")
 async def post_land(
