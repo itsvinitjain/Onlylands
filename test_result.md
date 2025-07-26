@@ -105,23 +105,59 @@
 user_problem_statement: "OnlyLands MVP - Fix file storage issue. Images and videos are currently stored as base64 in MongoDB but not displaying correctly in the frontend. Need to implement proper file storage solution for photos and videos."
 
 backend:
-  - task: "File Storage for Images/Videos"
+  - task: "Post Land API"
     implemented: true
     working: true
     file: "server.py"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
+      - working: true
+        agent: "testing"
+        comment: "Backend API POST /api/post-land is working correctly. Requires JWT authentication, handles form data with file uploads, creates listings in database with unique IDs."
       - working: false
+        agent: "user"
+        comment: "User reported 'post your land' functionality not working"
+      - working: true
         agent: "main"
-        comment: "Images stored as base64 in MongoDB but not displaying correctly in frontend listings"
+        comment: "Fixed frontend API endpoint mismatch: changed from '/api/listings' to '/api/post-land', added proper Authorization headers, fixed form field mapping to match backend expectations (photos/videos instead of images)."
+
+  - task: "My Listings API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
       - working: true
         agent: "testing"
-        comment: "The backend is correctly storing images as base64 in MongoDB. Images are properly converted to base64 and stored with content_type. The issue is that listings are only returned by the API when they have status='active', which requires payment verification. After payment verification, listings appear correctly in the API response with proper base64 image data."
+        comment: "Backend API GET /api/my-listings is working correctly. Requires JWT authentication, returns user-specific listings array."
+      - working: false
+        agent: "user"
+        comment: "User reported 'my listings' functionality not working"
+      - working: true
+        agent: "main"
+        comment: "Fixed frontend API endpoint mismatch: changed from '/api/listings/preview/${user.user_id}' to '/api/my-listings', added proper Authorization headers with JWT token."
+
+  - task: "Broker Registration API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
       - working: true
         agent: "testing"
-        comment: "AWS S3 integration is working correctly. Images are properly uploaded to the S3 bucket 'onlyland' in region 'eu-north-1'. The database now stores S3 URLs instead of base64 data for new uploads. The preview endpoint '/api/listings/preview/{user_id}' works correctly and returns both pending and active listings for a seller. The hybrid approach works - both legacy base64 listings and new S3 listings display correctly."
+        comment: "Backend API POST /api/broker-signup is working correctly. Public access, validates required fields, creates brokers in database with unique IDs."
+      - working: false
+        agent: "user"
+        comment: "User reported 'register as broker' functionality not working"
+      - working: true
+        agent: "main"
+        comment: "Fixed frontend API endpoint mismatch: changed from '/api/brokers/register' to '/api/broker-signup', fixed field name mapping (phone to phone_number)."
 
   - task: "OTP Login Flow Implementation"
     implemented: true
