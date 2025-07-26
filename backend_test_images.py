@@ -7,7 +7,7 @@ from pymongo import MongoClient
 import sys
 
 # Backend URL
-BACKEND_URL = "https://e1833c0e-8697-4c1d-82e1-ad61f5ff183e.preview.emergentagent.com"
+BACKEND_URL = "https://33ca28b1-5bbc-432a-bf14-76b1e4dca3a4.preview.emergentagent.com"
 
 # MongoDB connection
 MONGO_URL = "mongodb://localhost:27017"

@@ -696,7 +696,7 @@ function PaymentComponent({ listingId, user }) {
               Back to Home
             </button>
             <button
-              onClick={() => window.open('https://e1833c0e-8697-4c1d-82e1-ad61f5ff183e.preview.emergentagent.com', '_blank')}
+              onClick={() => window.open('https://33ca28b1-5bbc-432a-bf14-76b1e4dca3a4.preview.emergentagent.com', '_blank')}
               className="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition-colors"
             >
               View Listings

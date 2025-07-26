@@ -481,7 +481,7 @@ class TwilioOTPTester:
 
 def main():
     # Use the backend URL from frontend/.env
-    backend_url = "https://e1833c0e-8697-4c1d-82e1-ad61f5ff183e.preview.emergentagent.com"
+    backend_url = "https://33ca28b1-5bbc-432a-bf14-76b1e4dca3a4.preview.emergentagent.com"
     
     print(f"Testing Twilio OTP Integration at: {backend_url}")
     
