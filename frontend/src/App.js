@@ -119,6 +119,7 @@ function App() {
 // Home Page Component
 function HomePage({ setCurrentView, user, logout }) {
   const [stats, setStats] = useState(null);
+  const [logoClickCount, setLogoClickCount] = useState(0);
 
   useEffect(() => {
     fetchStats();
@@ -131,6 +132,19 @@ function HomePage({ setCurrentView, user, logout }) {
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     }
+  };
+
+  const handleLogoClick = () => {
+    setLogoClickCount(prev => {
+      const newCount = prev + 1;
+      if (newCount === 5) {
+        // Secret admin access - click logo 5 times
+        setCurrentView('admin');
+        window.history.pushState(null, '', '/admin');
+        return 0;
+      }
+      return newCount;
+    });
   };
 
   return (
