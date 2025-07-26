@@ -674,36 +674,116 @@ function PaymentComponent({ listingId, user }) {
       const { order, demo_mode } = orderResponse.data;
 
       if (demo_mode) {
-        // Handle demo payment mode
-        console.log('Demo payment mode active');
+        // Create a Razorpay-like demo interface
+        console.log('Demo payment mode active - showing Razorpay-like interface');
         
-        // Show demo payment modal instead of Razorpay
-        const confirmPayment = window.confirm(
-          '🔥 DEMO PAYMENT MODE\n\n' +
-          'This is a demo payment for testing purposes.\n' +
-          `Amount: ₹${order.amount / 100}\n` +
-          'Order ID: ' + order.id + '\n\n' +
-          'Click OK to simulate successful payment, or Cancel to abort.'
-        );
+        // Create demo payment modal
+        const demoModal = document.createElement('div');
+        demoModal.id = 'razorpay-demo-modal';
+        demoModal.innerHTML = `
+          <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+            <div style="background: white; border-radius: 8px; padding: 0; width: 400px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+              <!-- Razorpay Header -->
+              <div style="background: #528FF0; color: white; padding: 16px 20px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center;">
+                  <div style="width: 24px; height: 24px; background: white; border-radius: 4px; margin-right: 10px; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: #528FF0; font-weight: bold; font-size: 14px;">R</span>
+                  </div>
+                  <span style="font-weight: 500;">Razorpay Secure (Demo)</span>
+                </div>
+                <button onclick="document.getElementById('razorpay-demo-modal').remove()" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">×</button>
+              </div>
+              
+              <!-- Payment Details -->
+              <div style="padding: 20px;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                  <h3 style="margin: 0 0 5px 0; color: #333;">Pay OnlyLands</h3>
+                  <p style="margin: 0; color: #666; font-size: 14px;">Premium Listing Payment</p>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: #666;">Amount:</span>
+                    <span style="font-weight: bold; color: #333;">₹${order.amount / 100}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: #666;">Order ID:</span>
+                    <span style="font-size: 12px; color: #666;">${order.id}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #666;">Currency:</span>
+                    <span style="color: #333;">INR</span>
+                  </div>
+                </div>
+                
+                <!-- Demo Test Cards -->
+                <div style="margin-bottom: 20px;">
+                  <h4 style="margin: 0 0 10px 0; color: #333; font-size: 14px;">Demo Test Payment</h4>
+                  <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; font-size: 12px; color: #1565c0;">
+                    💳 This is a demo payment. Click "Pay Now" to simulate successful payment.
+                  </div>
+                </div>
+                
+                <!-- Payment Buttons -->
+                <div style="display: flex; gap: 10px;">
+                  <button onclick="document.getElementById('razorpay-demo-modal').remove()" style="flex: 1; padding: 12px; border: 1px solid #ddd; background: white; color: #666; border-radius: 4px; cursor: pointer;">Cancel</button>
+                  <button id="demo-pay-button" style="flex: 2; padding: 12px; background: #528FF0; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">Pay ₹${order.amount / 100}</button>
+                </div>
+                
+                <!-- Security Info -->
+                <div style="text-align: center; margin-top: 15px; font-size: 11px; color: #999;">
+                  🔒 Demo payments are secure and for testing only
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(demoModal);
+        
+        // Handle demo payment
+        document.getElementById('demo-pay-button').onclick = async () => {
+          try {
+            // Show processing state
+            document.getElementById('demo-pay-button').innerHTML = 'Processing...';
+            document.getElementById('demo-pay-button').disabled = true;
+            
+            // Simulate payment processing delay
+            setTimeout(async () => {
+              try {
+                // Simulate successful payment with demo data
+                const demoResponse = {
+                  razorpay_order_id: order.id,
+                  razorpay_payment_id: `pay_demo_${Date.now()}`,
+                  razorpay_signature: `demo_signature_${Date.now()}`
+                };
 
-        if (confirmPayment) {
-          // Simulate successful payment with demo data
-          const demoResponse = {
-            razorpay_order_id: order.id,
-            razorpay_payment_id: `pay_demo_${Date.now()}`,
-            razorpay_signature: `demo_signature_${Date.now()}`
-          };
+                // Verify the demo payment
+                await axios.post('/api/verify-payment', demoResponse, {
+                  headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                  }
+                });
 
-          // Verify the demo payment
-          await axios.post('/api/verify-payment', demoResponse, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-          });
-
-          setPaymentSuccess(true);
-          alert('🎉 Demo Payment Successful!\n\nYour listing is now active and visible to brokers.');
-        }
+                // Remove modal
+                document.getElementById('razorpay-demo-modal').remove();
+                
+                // Show success
+                setPaymentSuccess(true);
+                alert('🎉 Payment Successful!\n\nYour listing is now active and visible to brokers.');
+                
+              } catch (error) {
+                document.getElementById('razorpay-demo-modal').remove();
+                alert('Payment verification failed: ' + (error.response?.data?.detail || 'Unknown error'));
+              }
+            }, 2000); // 2 second delay to simulate processing
+            
+          } catch (error) {
+            document.getElementById('razorpay-demo-modal').remove();
+            alert('Payment processing failed: ' + error.message);
+          }
+        };
+        
       } else {
         // Handle real Razorpay payment
         const options = {
