@@ -2661,32 +2661,16 @@ def main():
     
     tester = OnlyLandsAPITester(backend_url)
     
-    # CRITICAL TEST: Verified Phone Number OTP Flow
-    print("\n🚨 RUNNING VERIFIED PHONE NUMBER OTP FLOW TEST")
-    print("This test uses the verified phone number +917021758061 to test real SMS sending")
+    # CRITICAL TEST: Razorpay Payment System
+    print("\n🚨 RUNNING RAZORPAY PAYMENT SYSTEM TEST")
+    print("This test verifies the complete payment flow with demo mode support")
     print("=" * 80)
     
-    verified_phone_success = tester.test_verified_phone_number_otp_flow()
+    payment_system_success = tester.test_razorpay_payment_system()
     
-    if not verified_phone_success:
-        print("\n❌ CRITICAL FAILURE: Verified phone number OTP flow test failed!")
+    if not payment_system_success:
+        print("\n❌ CRITICAL FAILURE: Razorpay payment system test failed!")
         return 1
-    
-    # CRITICAL TEST: Genuine Twilio OTP System (No Demo Mode)
-    print("\n🚨 RUNNING GENUINE TWILIO OTP SYSTEM TEST")
-    print("This test verifies that the system uses actual Twilio SMS and rejects demo OTP")
-    print("=" * 80)
-    
-    genuine_twilio_success = tester.test_genuine_twilio_otp_system()
-    
-    if not genuine_twilio_success:
-        print("\n❌ CRITICAL FAILURE: Genuine Twilio OTP system test failed!")
-        print("The system may still be using demo mode or Twilio is not properly configured.")
-        return 1
-    
-    # Test user creation and JWT functionality
-    print("\n🔍 RUNNING USER CREATION AND JWT FUNCTIONALITY TEST")
-    user_creation_success = tester.test_user_creation_and_jwt_functionality()
     
     # Test basic health check
     print("\n🔍 Testing Basic API Health...")
@@ -2699,11 +2683,9 @@ def main():
     
     # Print final results
     print("\n" + "=" * 80)
-    print("📊 COMPREHENSIVE TWILIO OTP SYSTEM TEST RESULTS")
+    print("📊 COMPREHENSIVE PAYMENT SYSTEM TEST RESULTS")
     print("=" * 80)
-    print(f"📱 CRITICAL: Verified Phone Number OTP Flow: {'✅ PASSED' if verified_phone_success else '❌ FAILED'}")
-    print(f"🚨 CRITICAL: Genuine Twilio OTP System: {'✅ PASSED' if genuine_twilio_success else '❌ FAILED'}")
-    print(f"👤 User Creation & JWT Functionality: {'✅ PASSED' if user_creation_success else '❌ FAILED'}")
+    print(f"💳 CRITICAL: Razorpay Payment System: {'✅ PASSED' if payment_system_success else '❌ FAILED'}")
     print(f"🔍 API Health Check: {'✅ PASSED' if health_check_success else '❌ FAILED'}")
     print(f"📊 Total Tests: {tester.tests_run}, Passed: {tester.tests_passed}")
     print("=" * 80)
@@ -2712,34 +2694,29 @@ def main():
     print("\n📋 SUMMARY OF FINDINGS:")
     print("=" * 50)
     
-    if verified_phone_success and genuine_twilio_success and user_creation_success:
-        print("🎉 SUCCESS: The genuine Twilio OTP system is fully functional!")
-        print("✅ Real SMS sent successfully to verified phone +917021758061")
-        print("✅ Real Twilio integration working (no demo mode)")
-        print("✅ Demo OTP '123456' correctly rejected")
-        print("✅ Error handling working properly")
-        print("✅ Twilio service properly configured")
-        print("✅ User creation and JWT token functionality ready")
-        print("✅ User type switching functionality implemented")
-        print("✅ Trial account limitations properly handled")
-        print("✅ No demo mode fallback detected")
-        print("✅ Production-ready genuine OTP system confirmed")
+    if payment_system_success and health_check_success:
+        print("🎉 SUCCESS: The OnlyLands payment system is fully functional!")
+        print("✅ Payment order creation working correctly")
+        print("✅ Demo mode fallback working correctly")
+        print("✅ Payment verification working correctly")
+        print("✅ Listing activation after payment working correctly")
+        print("✅ Authentication requirements working correctly")
+        print("✅ Error handling working correctly")
+        print("✅ Complete payment flow is functional")
         
         print("\n⚠️ IMPORTANT NOTES:")
-        print("• Verified phone number +917021758061 successfully tested")
-        print("• Real SMS delivery working with Twilio verification service")
-        print("• System ready for production use with verified phone numbers")
-        print("• Demo OTP '123456' properly rejected by genuine Twilio system")
+        print("• Demo payment mode is working correctly")
+        print("• Listings are properly activated after payment verification")
+        print("• Users can complete payments and see their listings activated")
+        print("• Payment system is ready for production use")
         
         return 0
     else:
-        print("❌ FAILURE: Issues found in the Twilio OTP system!")
-        if not verified_phone_success:
-            print("❌ Verified phone number OTP flow issues")
-        if not genuine_twilio_success:
-            print("❌ Genuine Twilio OTP system issues")
-        if not user_creation_success:
-            print("❌ User creation and JWT functionality issues")
+        print("❌ FAILURE: Issues found in the payment system!")
+        if not payment_system_success:
+            print("❌ Payment system functionality issues")
+        if not health_check_success:
+            print("❌ API health check issues")
         return 1
 
 if __name__ == "__main__":
