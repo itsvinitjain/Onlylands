@@ -1551,4 +1551,70 @@ function MyListings({ user, setCurrentView }) {
   );
 }
 
+// Admin Interface Component
+function AdminInterface() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if admin is already logged in
+    const token = localStorage.getItem('adminToken');
+    if (token) {
+      // Verify token is still valid
+      verifyToken(token);
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  const verifyToken = async (token) => {
+    try {
+      const response = await axios.get('/api/admin/stats', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.status === 200) {
+        setIsAuthenticated(true);
+      } else {
+        localStorage.removeItem('adminToken');
+      }
+    } catch (error) {
+      console.error('Token verification failed:', error);
+      localStorage.removeItem('adminToken');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogin = (token) => {
+    localStorage.setItem('adminToken', token);
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    setIsAuthenticated(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-lg">Loading admin panel...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      {isAuthenticated ? (
+        <AdminDashboard onLogout={handleLogout} />
+      ) : (
+        <AdminLogin onLogin={handleLogin} />
+      )}
+    </div>
+  );
+}
+
 export default App;
