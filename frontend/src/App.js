@@ -28,6 +28,12 @@ function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
 
   useEffect(() => {
+    // Check URL for admin access
+    const urlPath = window.location.pathname;
+    if (urlPath === '/admin') {
+      setCurrentView('admin');
+    }
+
     // Check if user is logged in
     if (token) {
       // Decode token to get user info (simplified)
