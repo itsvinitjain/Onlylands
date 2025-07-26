@@ -23,21 +23,18 @@ const OTPLogin = ({ setToken, setCurrentView, userType = 'seller' }) => {
       if (response.data.message) {
         setIsOtpSent(true);
         setError('');
+        
+        // Show appropriate message based on OTP mode
+        if (response.data.status === 'demo_mode') {
+          setDemoInfo(response.data.demo_info || 'Use OTP 123456 for testing.');
+        } else {
+          setDemoInfo(''); // Clear demo info for genuine OTP
+        }
       }
     } catch (error) {
       const errorDetail = error.response?.data?.detail || 'Failed to send OTP. Please check your phone number and try again.';
       console.log('OTP Error:', errorDetail);
-      
-      // Show more specific error messages
-      if (errorDetail.includes('Rate limit exceeded') || errorDetail.includes('429')) {
-        setError('⏰ Rate limit exceeded. Please wait 1 hour before trying again, or try with a different verified phone number.');
-      } else if (errorDetail.includes('unverified') || errorDetail.includes('21608')) {
-        setError('📱 This phone number needs to be verified in your Twilio account first (trial account limitation).');
-      } else if (errorDetail.includes('Invalid phone number') || errorDetail.includes('21211')) {
-        setError('📞 Invalid phone number format. Please enter a valid phone number with country code (+91XXXXXXXXXX).');
-      } else {
-        setError(errorDetail);
-      }
+      setError(errorDetail);
     } finally {
       setLoading(false);
     }
