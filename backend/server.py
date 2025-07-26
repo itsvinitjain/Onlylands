@@ -576,43 +576,80 @@ class PaymentVerification(BaseModel):
 
 @app.post("/api/verify-payment")
 async def verify_payment(request: PaymentVerification, user_id: str = Depends(verify_jwt_token)):
-    """Verify Razorpay payment"""
+    """Verify Razorpay payment with demo mode support"""
     try:
-        if razorpay_client:
-            # Verify payment signature
-            params_dict = {
-                'razorpay_order_id': request.razorpay_order_id,
-                'razorpay_payment_id': request.razorpay_payment_id,
-                'razorpay_signature': request.razorpay_signature
-            }
+        # Find the payment record
+        payment = db.payments.find_one({"razorpay_order_id": request.razorpay_order_id})
+        if not payment:
+            raise HTTPException(status_code=400, detail="Payment not found")
+        
+        # Check if this is a demo payment
+        if payment.get("demo_mode", False) or request.razorpay_order_id.startswith("order_demo_"):
+            print(f"Processing demo payment verification: {request.razorpay_order_id}")
             
-            try:
-                razorpay_client.utility.verify_payment_signature(params_dict)
-                
-                # Update payment record
-                db.payments.update_one(
-                    {"razorpay_order_id": request.razorpay_order_id},
-                    {"$set": {
-                        "status": "completed",
-                        "razorpay_payment_id": request.razorpay_payment_id,
-                        "razorpay_signature": request.razorpay_signature,
-                        "updated_at": datetime.utcnow()
-                    }}
+            # For demo mode, always verify successfully
+            # Update payment record
+            db.payments.update_one(
+                {"razorpay_order_id": request.razorpay_order_id},
+                {"$set": {
+                    "status": "completed",
+                    "razorpay_payment_id": request.razorpay_payment_id,
+                    "razorpay_signature": request.razorpay_signature,
+                    "updated_at": datetime.utcnow(),
+                    "demo_verified": True
+                }}
+            )
+            
+            # Activate listing
+            if payment["listing_id"]:
+                db.listings.update_one(
+                    {"listing_id": payment["listing_id"]},
+                    {"$set": {"status": "active", "updated_at": datetime.utcnow()}}
                 )
-                
-                # Find and activate listing
-                payment = db.payments.find_one({"razorpay_order_id": request.razorpay_order_id})
-                if payment:
-                    db.listings.update_one(
-                        {"listing_id": payment["listing_id"]},
-                        {"$set": {"status": "active", "updated_at": datetime.utcnow()}}
-                    )
-                
-                return {"message": "Payment verified successfully"}
-            except Exception as e:
-                return {"message": "Payment verification failed"}
-        else:
-            return {"message": "Payment service not configured"}
+                print(f"Listing {payment['listing_id']} activated via demo payment")
+            
+            return {"message": "Payment verified successfully (Demo Mode)", "demo_mode": True}
+        
+        # Handle real Razorpay verification
+        if not razorpay_client:
+            raise HTTPException(status_code=500, detail="Payment service not configured")
+        
+        # Verify payment signature
+        params_dict = {
+            'razorpay_order_id': request.razorpay_order_id,
+            'razorpay_payment_id': request.razorpay_payment_id,
+            'razorpay_signature': request.razorpay_signature
+        }
+        
+        try:
+            razorpay_client.utility.verify_payment_signature(params_dict)
+            
+            # Update payment record
+            db.payments.update_one(
+                {"razorpay_order_id": request.razorpay_order_id},
+                {"$set": {
+                    "status": "completed",
+                    "razorpay_payment_id": request.razorpay_payment_id,
+                    "razorpay_signature": request.razorpay_signature,
+                    "updated_at": datetime.utcnow()
+                }}
+            )
+            
+            # Find and activate listing
+            if payment["listing_id"]:
+                db.listings.update_one(
+                    {"listing_id": payment["listing_id"]},
+                    {"$set": {"status": "active", "updated_at": datetime.utcnow()}}
+                )
+                print(f"Listing {payment['listing_id']} activated via real payment")
+            
+            return {"message": "Payment verified successfully", "demo_mode": False}
+        except Exception as e:
+            print(f"Payment verification failed: {e}")
+            return {"message": "Payment verification failed"}
+        
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Error verifying payment: {e}")
         raise HTTPException(status_code=500, detail="Failed to verify payment")
