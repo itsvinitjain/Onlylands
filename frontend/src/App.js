@@ -224,7 +224,7 @@ function HomePage({ setCurrentView, user, logout }) {
                 </button>
               ) : (
                 <button 
-                  onClick={() => setCurrentView('broker-register')}
+                  onClick={() => setCurrentView('login-choice')}
                   className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors w-full"
                 >
                   Register as Broker
