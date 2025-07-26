@@ -366,6 +366,18 @@ backend:
         agent: "testing"
         comment: "✅ COMPREHENSIVE BROKER SIGNUP API TESTING COMPLETED - All critical tests passed successfully: ✅ Public Access - POST /api/broker-signup correctly works without authentication (public registration) ✅ Required Fields Validation - Properly validates required fields: name, agency, phone_number, email ✅ Data Processing - Successfully processes JSON request body with broker registration data ✅ Database Storage - Creates broker records in MongoDB with unique broker_id ✅ Response Format - Returns correct JSON response with broker_id and success message ✅ Duplicate Handling - Handles duplicate phone numbers appropriately ✅ Field Validation - Returns 422 validation errors for missing required fields. The 'register as broker' functionality is working perfectly. Users can successfully register as brokers without authentication."
 
+  - task: "Razorpay Payment System (/api/create-payment-order, /api/verify-payment)"
+    implemented: true
+    working: false
+    file: "server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL PAYMENT SYSTEM ISSUE IDENTIFIED - Comprehensive testing of Razorpay payment integration revealed the root cause of payment modal not opening: ✅ ENDPOINTS WORKING: Both /api/create-payment-order and /api/verify-payment endpoints exist and are accessible ✅ AUTHENTICATION: Both endpoints properly require JWT authentication (return 403 without auth) ✅ PAYMENT VERIFICATION: /api/verify-payment endpoint is functional and correctly rejects invalid signatures ✅ DATABASE OPERATIONS: Payment records and listing status updates are implemented correctly ❌ CRITICAL ISSUE: Payment order creation fails with 'Authentication failed' error ❌ ROOT CAUSE: Invalid Razorpay API keys in backend/.env - RAZORPAY_KEY_SECRET is set to 'thisissecretkey' (placeholder) instead of valid test key ❌ IMPACT: Frontend cannot receive valid Razorpay order data to initialize payment modal ❌ USER EXPERIENCE: 'Complete Payment' button fails because backend returns 500 error instead of valid order. SOLUTION REQUIRED: Replace placeholder Razorpay keys with valid test keys from Razorpay dashboard. The payment system architecture is correct but fails due to invalid API credentials."
+
 agent_communication:
   - agent: "main"
     message: "User reported that core features are not working: 'post your land', 'my listings', and 'register as broker'. Investigated and found API endpoint mismatches and authentication issues between frontend and backend. Fixed all endpoint URLs, field name mappings, and authentication headers. The issues were: 1) Post Land: frontend called '/api/listings' but backend is '/api/post-land' 2) My Listings: frontend called '/api/listings/preview/{id}' but backend is '/api/my-listings' 3) Broker Signup: frontend called '/api/brokers/register' but backend is '/api/broker-signup'. Also fixed field name mismatches and added proper JWT Authorization headers where required."
