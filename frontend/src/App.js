@@ -54,6 +54,8 @@ function App() {
     setCurrentView('admin');
     window.history.pushState(null, '', '/admin');
   };
+
+  const updateToken = (newToken) => {
     setToken(newToken);
     if (newToken) {
       try {
