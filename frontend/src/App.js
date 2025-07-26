@@ -771,7 +771,15 @@ function BrokerRegistration({ setCurrentView }) {
     setLoading(true);
 
     try {
-      await axios.post('/api/brokers/register', formData);
+      // Map frontend form fields to backend expected field names
+      const brokerData = {
+        name: formData.name,
+        agency: formData.agency,
+        phone_number: formData.phone, // Backend expects phone_number
+        email: formData.email
+      };
+
+      await axios.post('/api/broker-signup', brokerData);
       alert('Registration successful! You will now receive WhatsApp notifications for new listings.');
       setCurrentView('home');
     } catch (error) {
