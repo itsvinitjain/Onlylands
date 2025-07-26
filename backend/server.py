@@ -179,11 +179,15 @@ async def send_otp(request: dict):
         if not twilio_client or not TWILIO_VERIFY_SERVICE_SID:
             raise HTTPException(status_code=500, detail="OTP service not configured")
         
+        print(f"Attempting to send OTP to {phone_number}")
+        
         # Send OTP using Twilio Verify
         verification = twilio_client.verify.v2.services(TWILIO_VERIFY_SERVICE_SID).verifications.create(
             to=phone_number,
             channel='sms'
         )
+        
+        print(f"Twilio response: {verification.status}")
         
         return {
             "message": "OTP sent successfully", 
@@ -200,14 +204,23 @@ async def send_otp(request: dict):
         
         # Handle specific Twilio errors with proper messages
         if "20429" in error_message:
-            raise HTTPException(status_code=429, detail="Rate limit exceeded. Please wait a few minutes before trying again.")
+            # Rate limit exceeded - suggest waiting
+            raise HTTPException(
+                status_code=429, 
+                detail="Rate limit exceeded. Please wait 1 hour before trying again, or try with a different phone number."
+            )
         elif "21211" in error_message:
-            raise HTTPException(status_code=400, detail="Invalid phone number format. Please enter a valid phone number.")
+            raise HTTPException(status_code=400, detail="Invalid phone number format. Please enter a valid phone number with country code.")
         elif "21608" in error_message:
-            raise HTTPException(status_code=400, detail="Phone number not verified for trial account. Please add this number to your Twilio verified numbers.")
+            raise HTTPException(
+                status_code=400, 
+                detail="This phone number needs to be verified in your Twilio account first (trial account limitation)."
+            )
+        elif "21614" in error_message:
+            raise HTTPException(status_code=400, detail="SMS to this phone number is not allowed by your account settings.")
         else:
             print(f"Error sending OTP: {e}")
-            raise HTTPException(status_code=500, detail=f"Failed to send OTP: {error_message}")
+            raise HTTPException(status_code=500, detail="Failed to send OTP. Please try again later.")
 
 @app.post("/api/verify-otp")
 async def verify_otp(request: dict):
