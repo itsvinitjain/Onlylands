@@ -457,33 +457,114 @@ async def get_listings():
         raise HTTPException(status_code=500, detail="Failed to get listings")
 
 @app.post("/api/create-payment-order")
-async def create_payment_order(request: PaymentRequest, user_id: str = Depends(verify_jwt_token)):
-    """Create Razorpay payment order"""
+async def create_payment_order(request: dict, user_id: str = Depends(verify_jwt_token)):
+    """Create Razorpay payment order with demo mode support"""
     try:
-        if razorpay_client:
-            order = razorpay_client.order.create({
-                "amount": request.amount * 100,  # Amount in paisa
-                "currency": request.currency,
-                "receipt": f"receipt_{request.listing_id}",
-                "payment_capture": 1
-            })
+        amount = request.get("amount", 299)  # Default ₹299
+        listing_id = request.get("listing_id")
+        
+        if not listing_id:
+            raise HTTPException(status_code=400, detail="Listing ID is required")
+        
+        # Convert rupees to paise (₹299 = 29900 paise)
+        amount_in_paise = amount * 100
+        
+        # Check if we have real Razorpay keys or using demo
+        if not razorpay_client or RAZORPAY_KEY_ID == "rzp_test_demo123":
+            print("Using demo payment mode - generating mock order")
+            # Create demo order response
+            order_id = f"order_demo_{int(time.time())}"
+            order_data = {
+                "id": order_id,
+                "amount": amount_in_paise,
+                "currency": "INR", 
+                "status": "created",
+                "receipt": f"receipt_{listing_id}_{int(time.time())}",
+                "notes": {
+                    "listing_id": listing_id,
+                    "user_id": user_id,
+                    "demo_mode": True
+                }
+            }
             
-            # Save payment record
+            # Store payment record in database
             payment_record = {
-                "payment_id": str(uuid.uuid4()),
-                "listing_id": request.listing_id,
-                "seller_id": user_id,
-                "amount": request.amount,
-                "currency": request.currency,
-                "razorpay_order_id": order['id'],
-                "status": "pending",
+                "razorpay_order_id": order_id,
+                "listing_id": listing_id,
+                "user_id": user_id,
+                "amount": amount_in_paise,
+                "currency": "INR",
+                "status": "created",
+                "demo_mode": True,
                 "created_at": datetime.utcnow()
             }
             db.payments.insert_one(payment_record)
             
-            return {"order": order}
-        else:
-            return {"message": "Payment service not configured"}
+            print(f"Demo payment order created: {order_id}")
+            return {"order": order_data, "demo_mode": True}
+        
+        try:
+            # Try real Razorpay integration
+            order = razorpay_client.order.create({
+                "amount": amount_in_paise,
+                "currency": "INR",
+                "receipt": f"receipt_{listing_id}_{int(time.time())}",
+                "notes": {
+                    "listing_id": listing_id,
+                    "user_id": user_id
+                }
+            })
+            
+            # Store payment record in database
+            payment_record = {
+                "razorpay_order_id": order["id"],
+                "listing_id": listing_id,
+                "user_id": user_id,
+                "amount": amount_in_paise,
+                "currency": "INR",
+                "status": "created",
+                "demo_mode": False,
+                "created_at": datetime.utcnow()
+            }
+            db.payments.insert_one(payment_record)
+            
+            return {"order": order, "demo_mode": False}
+            
+        except Exception as razorpay_error:
+            print(f"Razorpay error: {razorpay_error}")
+            # Fall back to demo mode
+            order_id = f"order_demo_{int(time.time())}"
+            order_data = {
+                "id": order_id,
+                "amount": amount_in_paise,
+                "currency": "INR",
+                "status": "created", 
+                "receipt": f"receipt_{listing_id}_{int(time.time())}",
+                "notes": {
+                    "listing_id": listing_id,
+                    "user_id": user_id,
+                    "demo_mode": True
+                }
+            }
+            
+            # Store payment record in database
+            payment_record = {
+                "razorpay_order_id": order_id,
+                "listing_id": listing_id,
+                "user_id": user_id,
+                "amount": amount_in_paise,
+                "currency": "INR",
+                "status": "created",
+                "demo_mode": True,
+                "created_at": datetime.utcnow()
+            }
+            db.payments.insert_one(payment_record)
+            
+            print(f"Fallback: Demo payment order created: {order_id}")
+            return {"order": order_data, "demo_mode": True}
+        
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Error creating payment order: {e}")
         raise HTTPException(status_code=500, detail="Failed to create payment order")
