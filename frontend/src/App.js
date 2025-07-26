@@ -646,16 +646,14 @@ function PaymentComponent({ listingId, user }) {
         order_id: orderResponse.data.order.id,
         handler: async function (response) {
           try {
-            // Verify payment - send as form data to match backend expectations
-            const formData = new URLSearchParams();
-            formData.append('razorpay_order_id', response.razorpay_order_id);
-            formData.append('razorpay_payment_id', response.razorpay_payment_id);
-            formData.append('razorpay_signature', response.razorpay_signature);
-
-            await axios.post('/api/verify-payment', formData, {
+            // Verify payment
+            await axios.post('/api/verify-payment', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            }, {
               headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
               }
             });
             setPaymentSuccess(true);
