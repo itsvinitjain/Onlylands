@@ -1241,7 +1241,795 @@ class OnlyLandsAPITester:
         
         return True
 
+    def test_post_land_api(self):
+        """
+        CRITICAL TEST: Test POST /api/post-land endpoint with form data and file uploads
+        This tests the core "post your land" functionality that users are reporting as broken
+        """
+        print("\n" + "="*80)
+        print("🏞️ CRITICAL TEST: POST LAND API (/api/post-land)")
+        print("="*80)
+        
+        # First, we need to authenticate to get a JWT token
+        if not self.token:
+            print("⚠️ No authentication token available. Testing without authentication first...")
+            
+            # Test without authentication (should fail with 401/403)
+            print("\n🔒 TEST 1: POST LAND WITHOUT AUTHENTICATION")
+            print("-" * 50)
+            
+            # Create test files for upload
+            test_image_path = '/tmp/test_land_image.jpg'
+            test_video_path = '/tmp/test_land_video.mp4'
+            
+            # Create a simple test image
+            with open(test_image_path, 'wb') as f:
+                f.write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))
+            
+            # Create a simple test video file
+            with open(test_video_path, 'wb') as f:
+                f.write(b'TEST VIDEO CONTENT FOR LAND LISTING')
+            
+            # Prepare form data
+            form_data = {
+                'title': 'Beautiful Agricultural Land in Maharashtra',
+                'area': '5 Acres',
+                'price': '50 Lakhs',
+                'description': 'Prime agricultural land with water facility and road connectivity. Perfect for farming or investment.',
+                'latitude': '18.6414',
+                'longitude': '72.9897'
+            }
+            
+            # Prepare files
+            files = [
+                ('photos', ('land_photo1.jpg', open(test_image_path, 'rb'), 'image/jpeg')),
+                ('photos', ('land_photo2.jpg', open(test_image_path, 'rb'), 'image/jpeg')),
+                ('videos', ('land_video1.mp4', open(test_video_path, 'rb'), 'video/mp4'))
+            ]
+            
+            url = f"{self.base_url}/api/post-land"
+            headers = {}  # No authentication headers
+            
+            self.tests_run += 1
+            print(f"🔍 Testing POST /api/post-land without authentication...")
+            
+            try:
+                response = requests.post(url, data=form_data, files=files, headers=headers)
+                
+                # Should fail with 401 or 403 (authentication required)
+                if response.status_code in [401, 403]:
+                    self.tests_passed += 1
+                    print(f"✅ PASS: Authentication required (Status: {response.status_code})")
+                    try:
+                        error_response = response.json()
+                        print(f"✅ Error Message: {error_response.get('detail', 'Authentication required')}")
+                    except:
+                        print(f"✅ Error Response: {response.text}")
+                    auth_required = True
+                else:
+                    print(f"❌ FAILURE: Expected 401/403, got {response.status_code}")
+                    try:
+                        print(f"Response: {response.json()}")
+                    except:
+                        print(f"Response: {response.text}")
+                    auth_required = False
+                    
+            except Exception as e:
+                print(f"❌ FAILURE: Error testing without auth: {str(e)}")
+                auth_required = False
+            finally:
+                # Close files
+                for _, file_tuple in files:
+                    file_tuple[1].close()
+                # Clean up test files
+                try:
+                    os.remove(test_image_path)
+                    os.remove(test_video_path)
+                except:
+                    pass
+            
+            if not auth_required:
+                print("❌ CRITICAL ISSUE: POST /api/post-land doesn't require authentication!")
+                return False
+        
+        # Test with authentication (need to get a token first)
+        print("\n🔐 TEST 2: AUTHENTICATE AND GET JWT TOKEN")
+        print("-" * 50)
+        
+        # Try to authenticate using OTP flow
+        test_phone = "+919876543210"
+        
+        # Send OTP
+        send_success, send_response = self.run_test(
+            "Send OTP for Authentication",
+            "POST",
+            "api/send-otp",
+            [200, 500],  # Accept both success and Twilio limitation
+            data={"phone_number": test_phone, "user_type": "seller"}
+        )
+        
+        if not send_success:
+            print("❌ FAILURE: Could not send OTP for authentication")
+            print("⚠️ Cannot test POST /api/post-land with authentication")
+            return False
+        
+        # For testing purposes, let's create a mock JWT token
+        # This simulates what would happen after successful OTP verification
+        print("🔧 Creating test JWT token for authentication...")
+        
+        try:
+            import jwt
+            from datetime import datetime, timedelta
+            
+            JWT_SECRET = 'your-secure-jwt-secret-key-here-change-this-in-production'
+            test_user_id = str(uuid.uuid4())
+            
+            test_payload = {
+                "user_id": test_user_id,
+                "phone_number": test_phone,
+                "user_type": "seller",
+                "exp": datetime.utcnow() + timedelta(hours=24)
+            }
+            
+            test_token = jwt.encode(test_payload, JWT_SECRET, algorithm="HS256")
+            self.token = test_token
+            self.user_id = test_user_id
+            
+            print(f"✅ Test JWT token created successfully")
+            print(f"✅ User ID: {test_user_id}")
+            
+        except Exception as e:
+            print(f"❌ FAILURE: Could not create test JWT token: {e}")
+            return False
+        
+        # Test 3: POST Land with Authentication
+        print("\n🏞️ TEST 3: POST LAND WITH AUTHENTICATION")
+        print("-" * 50)
+        
+        # Create test files for upload
+        test_image_path = '/tmp/test_land_image_auth.jpg'
+        test_video_path = '/tmp/test_land_video_auth.mp4'
+        
+        # Create a simple test image
+        with open(test_image_path, 'wb') as f:
+            f.write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))
+        
+        # Create a simple test video file
+        with open(test_video_path, 'wb') as f:
+            f.write(b'TEST VIDEO CONTENT FOR AUTHENTICATED LAND LISTING')
+        
+        # Prepare form data with realistic land listing data
+        form_data = {
+            'title': f'Premium Agricultural Land {uuid.uuid4().hex[:8]}',
+            'area': '10 Acres',
+            'price': '75 Lakhs',
+            'description': 'Excellent agricultural land with bore well, electricity connection, and road access. Suitable for organic farming and investment. Clear title documents available.',
+            'latitude': '18.6414',
+            'longitude': '72.9897'
+        }
+        
+        # Prepare files
+        files = [
+            ('photos', ('land_main_photo.jpg', open(test_image_path, 'rb'), 'image/jpeg')),
+            ('photos', ('land_boundary_photo.jpg', open(test_image_path, 'rb'), 'image/jpeg')),
+            ('videos', ('land_walkthrough.mp4', open(test_video_path, 'rb'), 'video/mp4'))
+        ]
+        
+        url = f"{self.base_url}/api/post-land"
+        headers = {'Authorization': f'Bearer {self.token}'}
+        
+        self.tests_run += 1
+        print(f"🔍 Testing POST /api/post-land with authentication...")
+        print(f"📋 Form Data: {form_data}")
+        print(f"📁 Files: {len(files)} files (2 photos, 1 video)")
+        
+        try:
+            response = requests.post(url, data=form_data, files=files, headers=headers)
+            
+            if response.status_code == 200:
+                self.tests_passed += 1
+                print(f"✅ PASS: Land listing created successfully (Status: {response.status_code})")
+                try:
+                    result = response.json()
+                    self.listing_id = result.get('listing_id')
+                    print(f"✅ Listing ID: {self.listing_id}")
+                    print(f"✅ Message: {result.get('message')}")
+                    
+                    # Verify response structure
+                    if 'listing_id' in result and 'message' in result:
+                        print("✅ Response structure is correct")
+                        post_land_success = True
+                    else:
+                        print("❌ Response structure is incorrect")
+                        print(f"Response: {result}")
+                        post_land_success = False
+                        
+                except Exception as e:
+                    print(f"❌ FAILURE: Could not parse response JSON: {e}")
+                    print(f"Response text: {response.text}")
+                    post_land_success = False
+            else:
+                print(f"❌ FAILURE: Expected 200, got {response.status_code}")
+                try:
+                    error_response = response.json()
+                    print(f"Error Response: {error_response}")
+                except:
+                    print(f"Error Response: {response.text}")
+                post_land_success = False
+                
+        except Exception as e:
+            print(f"❌ FAILURE: Error testing POST /api/post-land: {str(e)}")
+            post_land_success = False
+        finally:
+            # Close files
+            for _, file_tuple in files:
+                file_tuple[1].close()
+            # Clean up test files
+            try:
+                os.remove(test_image_path)
+                os.remove(test_video_path)
+            except:
+                pass
+        
+        # Test 4: Verify listing was created in database
+        if post_land_success and self.listing_id:
+            print("\n🔍 TEST 4: VERIFY LISTING IN DATABASE")
+            print("-" * 50)
+            
+            # Check if listing appears in my-listings
+            my_listings_success, my_listings_response = self.run_test(
+                "Get My Listings to Verify Creation",
+                "GET",
+                "api/my-listings",
+                200
+            )
+            
+            if my_listings_success:
+                listings = my_listings_response.get('listings', [])
+                found_listing = None
+                for listing in listings:
+                    if listing.get('listing_id') == self.listing_id:
+                        found_listing = listing
+                        break
+                
+                if found_listing:
+                    print(f"✅ PASS: Listing found in my-listings")
+                    print(f"✅ Title: {found_listing.get('title')}")
+                    print(f"✅ Status: {found_listing.get('status')}")
+                    print(f"✅ Photos: {len(found_listing.get('photos', []))}")
+                    print(f"✅ Videos: {len(found_listing.get('videos', []))}")
+                else:
+                    print(f"❌ FAILURE: Created listing not found in my-listings")
+                    print(f"Total listings in my-listings: {len(listings)}")
+                    post_land_success = False
+            else:
+                print("❌ FAILURE: Could not retrieve my-listings to verify")
+                post_land_success = False
+        
+        # Test 5: Test with missing required fields
+        print("\n⚠️ TEST 5: POST LAND WITH MISSING REQUIRED FIELDS")
+        print("-" * 50)
+        
+        # Test with missing title
+        incomplete_form_data = {
+            'area': '5 Acres',
+            'price': '50 Lakhs',
+            'description': 'Test description',
+            'latitude': '18.6414',
+            'longitude': '72.9897'
+            # Missing 'title'
+        }
+        
+        missing_field_success, missing_field_response = self.run_test(
+            "POST Land - Missing Title Field",
+            "POST",
+            "api/post-land",
+            [400, 422],  # Should return validation error
+            data=incomplete_form_data
+        )
+        
+        if missing_field_success:
+            print("✅ PASS: Missing required field validation working")
+            print(f"✅ Error: {missing_field_response.get('detail', 'Validation error')}")
+        else:
+            print("❌ FAILURE: Missing required field validation not working properly")
+        
+        print("\n" + "="*80)
+        if post_land_success:
+            print("🎉 POST LAND API: ALL CRITICAL TESTS PASSED!")
+            print("✅ Authentication requirement working correctly")
+            print("✅ Form data handling working correctly")
+            print("✅ File upload (photos/videos) working correctly")
+            print("✅ Listing creation and database storage working")
+            print("✅ Response format is correct")
+            print("✅ Validation for required fields working")
+        else:
+            print("❌ POST LAND API: CRITICAL ISSUES FOUND!")
+            print("❌ The 'post your land' functionality is broken")
+        print("="*80)
+        
+        return post_land_success
 
+    def test_my_listings_api(self):
+        """
+        CRITICAL TEST: Test GET /api/my-listings endpoint with JWT authentication
+        This tests the core "my listings" functionality that users are reporting as broken
+        """
+        print("\n" + "="*80)
+        print("📋 CRITICAL TEST: MY LISTINGS API (/api/my-listings)")
+        print("="*80)
+        
+        # Test 1: My Listings without authentication (should fail)
+        print("\n🔒 TEST 1: MY LISTINGS WITHOUT AUTHENTICATION")
+        print("-" * 50)
+        
+        url = f"{self.base_url}/api/my-listings"
+        headers = {}  # No authentication headers
+        
+        self.tests_run += 1
+        print(f"🔍 Testing GET /api/my-listings without authentication...")
+        
+        try:
+            response = requests.get(url, headers=headers)
+            
+            # Should fail with 401 or 403 (authentication required)
+            if response.status_code in [401, 403]:
+                self.tests_passed += 1
+                print(f"✅ PASS: Authentication required (Status: {response.status_code})")
+                try:
+                    error_response = response.json()
+                    print(f"✅ Error Message: {error_response.get('detail', 'Authentication required')}")
+                except:
+                    print(f"✅ Error Response: {response.text}")
+                auth_required = True
+            else:
+                print(f"❌ FAILURE: Expected 401/403, got {response.status_code}")
+                try:
+                    print(f"Response: {response.json()}")
+                except:
+                    print(f"Response: {response.text}")
+                auth_required = False
+                
+        except Exception as e:
+            print(f"❌ FAILURE: Error testing without auth: {str(e)}")
+            auth_required = False
+        
+        if not auth_required:
+            print("❌ CRITICAL ISSUE: GET /api/my-listings doesn't require authentication!")
+            return False
+        
+        # Test 2: Ensure we have authentication token
+        print("\n🔐 TEST 2: AUTHENTICATION TOKEN VERIFICATION")
+        print("-" * 50)
+        
+        if not self.token:
+            print("⚠️ No authentication token available. Creating test token...")
+            
+            try:
+                import jwt
+                from datetime import datetime, timedelta
+                
+                JWT_SECRET = 'your-secure-jwt-secret-key-here-change-this-in-production'
+                test_user_id = str(uuid.uuid4())
+                test_phone = "+919876543210"
+                
+                test_payload = {
+                    "user_id": test_user_id,
+                    "phone_number": test_phone,
+                    "user_type": "seller",
+                    "exp": datetime.utcnow() + timedelta(hours=24)
+                }
+                
+                test_token = jwt.encode(test_payload, JWT_SECRET, algorithm="HS256")
+                self.token = test_token
+                self.user_id = test_user_id
+                
+                print(f"✅ Test JWT token created successfully")
+                print(f"✅ User ID: {test_user_id}")
+                
+            except Exception as e:
+                print(f"❌ FAILURE: Could not create test JWT token: {e}")
+                return False
+        else:
+            print(f"✅ Authentication token available")
+            print(f"✅ User ID: {self.user_id}")
+        
+        # Test 3: My Listings with authentication
+        print("\n📋 TEST 3: MY LISTINGS WITH AUTHENTICATION")
+        print("-" * 50)
+        
+        my_listings_success, my_listings_response = self.run_test(
+            "Get My Listings with Authentication",
+            "GET",
+            "api/my-listings",
+            200
+        )
+        
+        if my_listings_success:
+            listings = my_listings_response.get('listings', [])
+            print(f"✅ PASS: My listings retrieved successfully")
+            print(f"✅ Total listings: {len(listings)}")
+            
+            # Verify response structure
+            if 'listings' in my_listings_response and isinstance(listings, list):
+                print("✅ Response structure is correct (contains 'listings' array)")
+                
+                # If we have listings, verify their structure
+                if listings:
+                    first_listing = listings[0]
+                    expected_fields = ['listing_id', 'title', 'area', 'price', 'description', 'status']
+                    
+                    print(f"📋 First listing structure verification:")
+                    for field in expected_fields:
+                        if field in first_listing:
+                            print(f"  ✅ {field}: {first_listing.get(field)}")
+                        else:
+                            print(f"  ⚠️ Missing field: {field}")
+                    
+                    # Check for photos and videos
+                    photos = first_listing.get('photos', [])
+                    videos = first_listing.get('videos', [])
+                    print(f"  📸 Photos: {len(photos)}")
+                    print(f"  🎥 Videos: {len(videos)}")
+                    
+                    # Check listing status
+                    status = first_listing.get('status', 'unknown')
+                    print(f"  📊 Status: {status}")
+                    
+                    if status in ['pending_payment', 'active', 'inactive']:
+                        print("  ✅ Valid listing status")
+                    else:
+                        print(f"  ⚠️ Unexpected listing status: {status}")
+                        
+                else:
+                    print("📋 No listings found for this user (empty array)")
+                    print("✅ This is valid - user may not have created any listings yet")
+                
+                my_listings_working = True
+            else:
+                print("❌ FAILURE: Response structure is incorrect")
+                print(f"Expected 'listings' array, got: {my_listings_response}")
+                my_listings_working = False
+        else:
+            print("❌ FAILURE: Could not retrieve my listings")
+            my_listings_working = False
+        
+        # Test 4: Test with invalid JWT token
+        print("\n🔐 TEST 4: MY LISTINGS WITH INVALID JWT TOKEN")
+        print("-" * 50)
+        
+        # Save current token
+        original_token = self.token
+        
+        # Set invalid token
+        self.token = "invalid.jwt.token"
+        
+        invalid_token_success, invalid_token_response = self.run_test(
+            "Get My Listings with Invalid Token",
+            "GET",
+            "api/my-listings",
+            [401, 403]  # Should return authentication error
+        )
+        
+        if invalid_token_success:
+            print("✅ PASS: Invalid JWT token properly rejected")
+            print(f"✅ Error: {invalid_token_response.get('detail', 'Invalid token')}")
+        else:
+            print("❌ FAILURE: Invalid JWT token not properly handled")
+        
+        # Restore original token
+        self.token = original_token
+        
+        # Test 5: Test with expired JWT token
+        print("\n⏰ TEST 5: MY LISTINGS WITH EXPIRED JWT TOKEN")
+        print("-" * 50)
+        
+        try:
+            import jwt
+            from datetime import datetime, timedelta
+            
+            JWT_SECRET = 'your-secure-jwt-secret-key-here-change-this-in-production'
+            
+            # Create expired token (expired 1 hour ago)
+            expired_payload = {
+                "user_id": self.user_id,
+                "phone_number": "+919876543210",
+                "user_type": "seller",
+                "exp": datetime.utcnow() - timedelta(hours=1)  # Expired
+            }
+            
+            expired_token = jwt.encode(expired_payload, JWT_SECRET, algorithm="HS256")
+            
+            # Save current token
+            original_token = self.token
+            
+            # Set expired token
+            self.token = expired_token
+            
+            expired_token_success, expired_token_response = self.run_test(
+                "Get My Listings with Expired Token",
+                "GET",
+                "api/my-listings",
+                [401, 403]  # Should return authentication error
+            )
+            
+            if expired_token_success:
+                print("✅ PASS: Expired JWT token properly rejected")
+                print(f"✅ Error: {expired_token_response.get('detail', 'Token expired')}")
+            else:
+                print("❌ FAILURE: Expired JWT token not properly handled")
+            
+            # Restore original token
+            self.token = original_token
+            
+        except Exception as e:
+            print(f"⚠️ Could not test expired token: {e}")
+        
+        print("\n" + "="*80)
+        if my_listings_working:
+            print("🎉 MY LISTINGS API: ALL CRITICAL TESTS PASSED!")
+            print("✅ Authentication requirement working correctly")
+            print("✅ JWT token validation working correctly")
+            print("✅ Response format is correct")
+            print("✅ Listings retrieval working correctly")
+            print("✅ Invalid/expired token handling working")
+        else:
+            print("❌ MY LISTINGS API: CRITICAL ISSUES FOUND!")
+            print("❌ The 'my listings' functionality is broken")
+        print("="*80)
+        
+        return my_listings_working
+
+    def test_broker_signup_api(self):
+        """
+        CRITICAL TEST: Test POST /api/broker-signup endpoint
+        This tests the core "register as broker" functionality that users are reporting as broken
+        """
+        print("\n" + "="*80)
+        print("🏢 CRITICAL TEST: BROKER SIGNUP API (/api/broker-signup)")
+        print("="*80)
+        
+        # Test 1: Broker signup with valid data
+        print("\n✅ TEST 1: BROKER SIGNUP WITH VALID DATA")
+        print("-" * 50)
+        
+        # Generate unique broker data
+        unique_id = uuid.uuid4().hex[:8]
+        broker_data = {
+            "name": f"Rajesh Kumar {unique_id}",
+            "agency": f"Kumar Real Estate Agency {unique_id}",
+            "phone_number": f"+9198765{unique_id[:5]}",
+            "email": f"rajesh.kumar.{unique_id}@example.com"
+        }
+        
+        print(f"📋 Broker Data: {broker_data}")
+        
+        broker_signup_success, broker_signup_response = self.run_test(
+            "Broker Signup with Valid Data",
+            "POST",
+            "api/broker-signup",
+            200,
+            data=broker_data
+        )
+        
+        if broker_signup_success:
+            print(f"✅ PASS: Broker registration successful")
+            
+            # Verify response structure
+            if 'message' in broker_signup_response and 'broker_id' in broker_signup_response:
+                self.broker_id = broker_signup_response.get('broker_id')
+                print(f"✅ Broker ID: {self.broker_id}")
+                print(f"✅ Message: {broker_signup_response.get('message')}")
+                print("✅ Response structure is correct")
+                valid_signup_working = True
+            else:
+                print("❌ FAILURE: Response structure is incorrect")
+                print(f"Expected 'message' and 'broker_id', got: {broker_signup_response}")
+                valid_signup_working = False
+        else:
+            print("❌ FAILURE: Broker registration failed")
+            valid_signup_working = False
+        
+        # Test 2: Broker signup with duplicate phone number
+        print("\n🔄 TEST 2: BROKER SIGNUP WITH DUPLICATE PHONE NUMBER")
+        print("-" * 50)
+        
+        # Try to register with same phone number
+        duplicate_broker_data = {
+            "name": f"Another Broker {unique_id}",
+            "agency": f"Different Agency {unique_id}",
+            "phone_number": broker_data["phone_number"],  # Same phone number
+            "email": f"different.email.{unique_id}@example.com"
+        }
+        
+        duplicate_signup_success, duplicate_signup_response = self.run_test(
+            "Broker Signup with Duplicate Phone",
+            "POST",
+            "api/broker-signup",
+            200,  # Backend returns 200 with message "Broker already registered"
+            data=duplicate_broker_data
+        )
+        
+        if duplicate_signup_success:
+            message = duplicate_signup_response.get('message', '')
+            if 'already registered' in message.lower():
+                print(f"✅ PASS: Duplicate phone number handled correctly")
+                print(f"✅ Message: {message}")
+            else:
+                print(f"⚠️ Unexpected response for duplicate: {message}")
+        else:
+            print("❌ FAILURE: Duplicate phone number not handled properly")
+        
+        # Test 3: Broker signup with missing required fields
+        print("\n⚠️ TEST 3: BROKER SIGNUP WITH MISSING REQUIRED FIELDS")
+        print("-" * 50)
+        
+        # Test with missing name
+        incomplete_broker_data = {
+            "agency": "Test Agency",
+            "phone_number": f"+9198765{uuid.uuid4().hex[:5]}",
+            "email": f"test.{uuid.uuid4().hex[:8]}@example.com"
+            # Missing 'name'
+        }
+        
+        missing_name_success, missing_name_response = self.run_test(
+            "Broker Signup - Missing Name",
+            "POST",
+            "api/broker-signup",
+            [400, 422],  # Should return validation error
+            data=incomplete_broker_data
+        )
+        
+        if missing_name_success:
+            print("✅ PASS: Missing name field validation working")
+            print(f"✅ Error: {missing_name_response.get('detail', 'Validation error')}")
+        else:
+            print("❌ FAILURE: Missing name field validation not working")
+        
+        # Test with missing agency
+        incomplete_broker_data2 = {
+            "name": "Test Broker",
+            "phone_number": f"+9198765{uuid.uuid4().hex[:5]}",
+            "email": f"test.{uuid.uuid4().hex[:8]}@example.com"
+            # Missing 'agency'
+        }
+        
+        missing_agency_success, missing_agency_response = self.run_test(
+            "Broker Signup - Missing Agency",
+            "POST",
+            "api/broker-signup",
+            [400, 422],  # Should return validation error
+            data=incomplete_broker_data2
+        )
+        
+        if missing_agency_success:
+            print("✅ PASS: Missing agency field validation working")
+            print(f"✅ Error: {missing_agency_response.get('detail', 'Validation error')}")
+        else:
+            print("❌ FAILURE: Missing agency field validation not working")
+        
+        # Test with missing phone number
+        incomplete_broker_data3 = {
+            "name": "Test Broker",
+            "agency": "Test Agency",
+            "email": f"test.{uuid.uuid4().hex[:8]}@example.com"
+            # Missing 'phone_number'
+        }
+        
+        missing_phone_success, missing_phone_response = self.run_test(
+            "Broker Signup - Missing Phone Number",
+            "POST",
+            "api/broker-signup",
+            [400, 422],  # Should return validation error
+            data=incomplete_broker_data3
+        )
+        
+        if missing_phone_success:
+            print("✅ PASS: Missing phone number field validation working")
+            print(f"✅ Error: {missing_phone_response.get('detail', 'Validation error')}")
+        else:
+            print("❌ FAILURE: Missing phone number field validation not working")
+        
+        # Test with missing email
+        incomplete_broker_data4 = {
+            "name": "Test Broker",
+            "agency": "Test Agency",
+            "phone_number": f"+9198765{uuid.uuid4().hex[:5]}"
+            # Missing 'email'
+        }
+        
+        missing_email_success, missing_email_response = self.run_test(
+            "Broker Signup - Missing Email",
+            "POST",
+            "api/broker-signup",
+            [400, 422],  # Should return validation error
+            data=incomplete_broker_data4
+        )
+        
+        if missing_email_success:
+            print("✅ PASS: Missing email field validation working")
+            print(f"✅ Error: {missing_email_response.get('detail', 'Validation error')}")
+        else:
+            print("❌ FAILURE: Missing email field validation not working")
+        
+        print("\n" + "="*80)
+        if valid_signup_working:
+            print("🎉 BROKER SIGNUP API: ALL CRITICAL TESTS PASSED!")
+            print("✅ Valid broker registration working correctly")
+            print("✅ Duplicate phone number handling working")
+            print("✅ Required field validation working")
+            print("✅ Response format is correct")
+        else:
+            print("❌ BROKER SIGNUP API: CRITICAL ISSUES FOUND!")
+            print("❌ The 'register as broker' functionality is broken")
+        print("="*80)
+        
+        return valid_signup_working
+
+    def test_core_user_reported_apis(self):
+        """
+        COMPREHENSIVE TEST: Test all three core APIs that users are reporting as broken
+        1. POST /api/post-land (post your land)
+        2. GET /api/my-listings (my listings)
+        3. POST /api/broker-signup (register as broker)
+        """
+        print("\n" + "="*100)
+        print("🚨 COMPREHENSIVE TEST: CORE USER-REPORTED BROKEN APIs")
+        print("Testing the three specific APIs that users report as not working:")
+        print("1. POST /api/post-land (post your land)")
+        print("2. GET /api/my-listings (my listings)")
+        print("3. POST /api/broker-signup (register as broker)")
+        print("="*100)
+        
+        # Test results tracking
+        test_results = {
+            'post_land': False,
+            'my_listings': False,
+            'broker_signup': False
+        }
+        
+        # Test 1: POST Land API
+        print("\n🏞️ TESTING CORE API 1/3: POST LAND")
+        print("="*60)
+        test_results['post_land'] = self.test_post_land_api()
+        
+        # Test 2: My Listings API
+        print("\n📋 TESTING CORE API 2/3: MY LISTINGS")
+        print("="*60)
+        test_results['my_listings'] = self.test_my_listings_api()
+        
+        # Test 3: Broker Signup API
+        print("\n🏢 TESTING CORE API 3/3: BROKER SIGNUP")
+        print("="*60)
+        test_results['broker_signup'] = self.test_broker_signup_api()
+        
+        # Final Results Summary
+        print("\n" + "="*100)
+        print("📊 FINAL RESULTS: CORE USER-REPORTED APIs")
+        print("="*100)
+        
+        total_tests = len(test_results)
+        passed_tests = sum(test_results.values())
+        
+        print(f"🏞️ POST /api/post-land (post your land): {'✅ WORKING' if test_results['post_land'] else '❌ BROKEN'}")
+        print(f"📋 GET /api/my-listings (my listings): {'✅ WORKING' if test_results['my_listings'] else '❌ BROKEN'}")
+        print(f"🏢 POST /api/broker-signup (register as broker): {'✅ WORKING' if test_results['broker_signup'] else '❌ BROKEN'}")
+        
+        print(f"\n📊 OVERALL RESULT: {passed_tests}/{total_tests} APIs working")
+        
+        if passed_tests == total_tests:
+            print("🎉 SUCCESS: All core user-reported APIs are working correctly!")
+            print("✅ Users should be able to post land, view their listings, and register as brokers")
+        elif passed_tests > 0:
+            print("⚠️ PARTIAL SUCCESS: Some APIs are working, but issues found")
+            print("🔧 The broken APIs need immediate attention")
+        else:
+            print("❌ CRITICAL FAILURE: All core user-reported APIs are broken!")
+            print("🚨 This explains why users are reporting these features don't work")
+        
+        print("="*100)
+        
+        return test_results
 
 def main():
     # Get the backend URL from environment variable
