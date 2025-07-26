@@ -1162,7 +1162,11 @@ function MyListings({ user, setCurrentView }) {
 
   const fetchMyListings = async () => {
     try {
-      const response = await axios.get(`/api/listings/preview/${user.user_id}`);
+      const response = await axios.get('/api/my-listings', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       setListings(response.data.listings);
     } catch (error) {
       console.error('Failed to fetch my listings:', error);
