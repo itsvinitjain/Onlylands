@@ -671,43 +671,78 @@ function PaymentComponent({ listingId, user }) {
         }
       });
 
-      // Initialize Razorpay
-      const options = {
-        key: process.env.REACT_APP_RAZORPAY_KEY_ID,
-        amount: orderResponse.data.order.amount,
-        currency: orderResponse.data.order.currency,
-        name: 'OnlyLands',
-        description: 'Premium Listing Payment',
-        order_id: orderResponse.data.order.id,
-        handler: async function (response) {
-          try {
-            // Verify payment
-            await axios.post('/api/verify-payment', {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature
-            }, {
-              headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-              }
-            });
-            setPaymentSuccess(true);
-          } catch (error) {
-            alert('Payment verification failed: ' + (error.response?.data?.detail || 'Unknown error'));
-          }
-        },
-        prefill: {
-          name: user?.name || '',
-          email: user?.email || '',
-          contact: user?.phone_number || ''
-        },
-        theme: {
-          color: '#10B981'
-        }
-      };
+      const { order, demo_mode } = orderResponse.data;
 
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
+      if (demo_mode) {
+        // Handle demo payment mode
+        console.log('Demo payment mode active');
+        
+        // Show demo payment modal instead of Razorpay
+        const confirmPayment = window.confirm(
+          '🔥 DEMO PAYMENT MODE\n\n' +
+          'This is a demo payment for testing purposes.\n' +
+          `Amount: ₹${order.amount / 100}\n` +
+          'Order ID: ' + order.id + '\n\n' +
+          'Click OK to simulate successful payment, or Cancel to abort.'
+        );
+
+        if (confirmPayment) {
+          // Simulate successful payment with demo data
+          const demoResponse = {
+            razorpay_order_id: order.id,
+            razorpay_payment_id: `pay_demo_${Date.now()}`,
+            razorpay_signature: `demo_signature_${Date.now()}`
+          };
+
+          // Verify the demo payment
+          await axios.post('/api/verify-payment', demoResponse, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+
+          setPaymentSuccess(true);
+          alert('🎉 Demo Payment Successful!\n\nYour listing is now active and visible to brokers.');
+        }
+      } else {
+        // Handle real Razorpay payment
+        const options = {
+          key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+          amount: order.amount,
+          currency: order.currency,
+          name: 'OnlyLands',
+          description: 'Premium Listing Payment',
+          order_id: order.id,
+          handler: async function (response) {
+            try {
+              // Verify payment
+              await axios.post('/api/verify-payment', {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              }, {
+                headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+              });
+              setPaymentSuccess(true);
+            } catch (error) {
+              alert('Payment verification failed: ' + (error.response?.data?.detail || 'Unknown error'));
+            }
+          },
+          prefill: {
+            name: user?.name || '',
+            email: user?.email || '',
+            contact: user?.phone_number || ''
+          },
+          theme: {
+            color: '#10B981'
+          }
+        };
+
+        const razorpay = new window.Razorpay(options);
+        razorpay.open();
+      }
     } catch (error) {
       alert('Payment processing failed: ' + (error.response?.data?.detail || 'Unknown error'));
     } finally {
