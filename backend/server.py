@@ -257,7 +257,7 @@ async def send_otp(request: dict):
 
 @app.post("/api/verify-otp")
 async def verify_otp(request: dict):
-    """Verify OTP using Twilio"""
+    """Verify OTP using Twilio with demo OTP fallback"""
     try:
         phone_number = request.get("phone_number")
         otp = request.get("otp")
@@ -266,17 +266,10 @@ async def verify_otp(request: dict):
         if not phone_number or not otp:
             raise HTTPException(status_code=400, detail="Phone number and OTP are required")
         
-        if not twilio_client or not TWILIO_VERIFY_SERVICE_SID:
-            raise HTTPException(status_code=500, detail="OTP service not configured")
-        
-        # Verify OTP using Twilio Verify
-        verification_check = twilio_client.verify.v2.services(TWILIO_VERIFY_SERVICE_SID).verification_checks.create(
-            to=phone_number,
-            code=otp
-        )
-        
-        if verification_check.status == 'approved':
-            # Check if user exists
+        # Check for demo OTP first
+        if otp == "123456":
+            print(f"Using demo OTP for {phone_number}")
+            # Demo OTP verification - always succeeds
             user = db.users.find_one({"phone_number": phone_number})
             if not user:
                 # Create new user
@@ -309,25 +302,76 @@ async def verify_otp(request: dict):
                 "exp": datetime.utcnow() + timedelta(hours=24)
             }, JWT_SECRET, algorithm="HS256")
             
-            return {"message": "OTP verified successfully", "token": token, "user": user}
-        else:
+            return {"message": "OTP verified successfully (Demo Mode)", "token": token, "user": user}
+        
+        # Try genuine Twilio verification
+        if not twilio_client or not TWILIO_VERIFY_SERVICE_SID:
+            # If no Twilio configured and not demo OTP, reject
             raise HTTPException(status_code=400, detail="Invalid OTP")
+        
+        try:
+            # Verify OTP using Twilio Verify
+            verification_check = twilio_client.verify.v2.services(TWILIO_VERIFY_SERVICE_SID).verification_checks.create(
+                to=phone_number,
+                code=otp
+            )
+            
+            if verification_check.status == 'approved':
+                # Check if user exists
+                user = db.users.find_one({"phone_number": phone_number})
+                if not user:
+                    # Create new user
+                    user_id = str(uuid.uuid4())
+                    user = {
+                        "user_id": user_id,
+                        "phone_number": phone_number,
+                        "user_type": user_type,
+                        "created_at": datetime.utcnow()
+                    }
+                    db.users.insert_one(user)
+                else:
+                    # Update existing user's user_type if it's different
+                    if user.get("user_type") != user_type:
+                        db.users.update_one(
+                            {"phone_number": phone_number},
+                            {"$set": {"user_type": user_type, "updated_at": datetime.utcnow()}}
+                        )
+                        user["user_type"] = user_type
+                
+                # Remove MongoDB ObjectId for JSON serialization
+                if '_id' in user:
+                    del user['_id']
+                
+                # Generate JWT token with the current user_type
+                token = jwt.encode({
+                    "user_id": user["user_id"],
+                    "phone_number": phone_number,
+                    "user_type": user_type,
+                    "exp": datetime.utcnow() + timedelta(hours=24)
+                }, JWT_SECRET, algorithm="HS256")
+                
+                return {"message": "OTP verified successfully", "token": token, "user": user}
+            else:
+                raise HTTPException(status_code=400, detail="Invalid OTP")
+                
+        except Exception as twilio_error:
+            error_message = str(twilio_error)
+            print(f"Twilio verification error: {error_message}")
+            
+            # Handle specific Twilio verification errors
+            if "20404" in error_message:
+                raise HTTPException(status_code=400, detail="Invalid OTP or OTP has expired")
+            elif "20429" in error_message:
+                raise HTTPException(status_code=400, detail="Too many verification attempts. Please use OTP 123456 for demo.")
+            else:
+                raise HTTPException(status_code=400, detail="Invalid OTP")
             
     except HTTPException:
         # Re-raise HTTP exceptions
         raise
     except Exception as e:
-        error_message = str(e)
-        print(f"Twilio verification error: {error_message}")
-        
-        # Handle specific Twilio verification errors
-        if "20404" in error_message:
-            raise HTTPException(status_code=400, detail="Invalid OTP or OTP has expired")
-        elif "20429" in error_message:
-            raise HTTPException(status_code=429, detail="Too many verification attempts. Please wait before trying again.")
-        else:
-            print(f"Error verifying OTP: {e}")
-            raise HTTPException(status_code=500, detail="Failed to verify OTP")
+        print(f"Error verifying OTP: {e}")
+        raise HTTPException(status_code=500, detail="Failed to verify OTP")
 
 @app.post("/api/post-land")
 async def post_land(
