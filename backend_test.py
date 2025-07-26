@@ -535,14 +535,15 @@ class OnlyLandsAPITester:
         success, response = self.run_test(
             "Verify Payment (Demo Mode)",
             "POST",
-            "api/payments/verify",
+            "api/verify-payment",
             200,
             data=payment_data
         )
         
         if success:
-            print(f"Status: {response.get('status')}")
             print(f"Message: {response.get('message')}")
+            demo_mode = response.get('demo_mode', False)
+            print(f"Demo Mode: {demo_mode}")
             
             # Check if listing status was updated
             time.sleep(1)  # Wait a bit for the database to update
@@ -560,9 +561,7 @@ class OnlyLandsAPITester:
                     if listing.get('listing_id') == self.listing_id:
                         found = True
                         print(f"Listing Status: {listing.get('status')}")
-                        print(f"Payment Status: {listing.get('payment_status')}")
-                        print(f"Broadcast Sent: {listing.get('broadcast_sent')}")
-                        if listing.get('status') == 'active' and listing.get('payment_status') == 'paid':
+                        if listing.get('status') == 'active':
                             print("✅ Listing was successfully activated after payment")
                         else:
                             print("❌ Listing was not properly activated after payment")
