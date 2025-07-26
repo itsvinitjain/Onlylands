@@ -198,7 +198,7 @@ function HomePage({ setCurrentView, user, logout }) {
                 </div>
               ) : (
                 <button 
-                  onClick={() => setCurrentView('otp-login')}
+                  onClick={() => setCurrentView('login-choice')}
                   className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors w-full"
                 >
                   Login as Seller
