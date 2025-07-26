@@ -378,9 +378,10 @@ function PostLandForm({ user }) {
         formDataToSend.append('videos', video);
       });
 
-      const response = await axios.post('/api/listings', formDataToSend, {
+      const response = await axios.post('/api/post-land', formDataToSend, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
 
