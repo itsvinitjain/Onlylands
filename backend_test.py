@@ -485,30 +485,38 @@ class OnlyLandsAPITester:
         return success
 
     def test_create_payment_order(self):
-        """Test creating a payment order"""
+        """Test creating a payment order with demo mode support"""
         if not self.listing_id:
             print("❌ Cannot test payment - no listing ID available")
             return False
             
         payment_data = {
-            "amount": 29900,  # ₹299 in paise
+            "amount": 299,  # ₹299
             "listing_id": self.listing_id
         }
         
         success, response = self.run_test(
             "Create Payment Order",
             "POST",
-            "api/payments/create-order",
+            "api/create-payment-order",
             200,
             data=payment_data
         )
         
         if success:
-            self.razorpay_order_id = response.get('order_id')
+            order = response.get('order', {})
+            self.razorpay_order_id = order.get('id')
+            demo_mode = response.get('demo_mode', False)
+            
             print(f"Order ID: {self.razorpay_order_id}")
-            print(f"Amount: {response.get('amount')}")
-            print(f"Currency: {response.get('currency')}")
-            print(f"Key ID: {response.get('key_id')}")
+            print(f"Amount: {order.get('amount')}")
+            print(f"Currency: {order.get('currency')}")
+            print(f"Demo Mode: {demo_mode}")
+            
+            if demo_mode:
+                print("✅ Demo mode payment order created successfully")
+            else:
+                print("✅ Real Razorpay payment order created successfully")
         return success
         
     def test_verify_payment(self):
