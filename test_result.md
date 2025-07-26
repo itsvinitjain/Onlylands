@@ -321,9 +321,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Razorpay Payment System"
-  stuck_tasks:
-    - "Razorpay Payment System"
+    - "Complete Payment Flow Testing"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
