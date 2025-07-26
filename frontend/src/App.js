@@ -899,8 +899,12 @@ function BrokerDashboard({ user }) {
 
   const fetchLeads = async () => {
     try {
-      const response = await axios.get(`/api/brokers/${user.user_id}/leads`);
-      setLeads(response.data.leads);
+      const response = await axios.get('/api/broker-dashboard', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      setLeads(response.data.listings);
     } catch (error) {
       console.error('Failed to fetch leads:', error);
     } finally {
