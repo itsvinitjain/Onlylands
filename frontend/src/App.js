@@ -358,19 +358,17 @@ function PostLandForm({ user }) {
       // Create FormData for file upload
       const formDataToSend = new FormData();
       
-      // Add form fields
-      Object.keys(formData).forEach(key => {
-        if (formData[key]) {
-          formDataToSend.append(key, formData[key]);
-        }
-      });
-      
-      // Add seller_id
-      formDataToSend.append('seller_id', user.user_id);
+      // Add form fields to FormData
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('area', formData.area);
+      formDataToSend.append('price', formData.price);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('latitude', formData.latitude || '18.6414'); // Default latitude
+      formDataToSend.append('longitude', formData.longitude || '72.9897'); // Default longitude
       
       // Add images
       images.forEach(image => {
-        formDataToSend.append('images', image);
+        formDataToSend.append('photos', image);
       });
       
       // Add videos
