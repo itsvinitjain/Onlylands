@@ -321,11 +321,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Enhanced Listings View"
-    - "Mobile Responsiveness"
-    - "Navigation Flow"
+    - "Razorpay Payment System"
   stuck_tasks:
-    - "Enhanced Login Flow"
+    - "Razorpay Payment System"
   test_all: false
   test_priority: "high_first"
 
