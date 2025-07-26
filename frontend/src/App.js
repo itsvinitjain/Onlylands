@@ -3,6 +3,8 @@ import axios from 'axios';
 import LoginChoice from './LoginChoice';
 import OTPLogin from './OTPLogin';
 import EnhancedListingsView from './EnhancedListingsView';
+import AdminLogin from './AdminLogin';
+import AdminDashboard from './AdminDashboard';
 import './App.css';
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
