@@ -629,9 +629,13 @@ function PaymentComponent({ listingId, user }) {
     setLoading(true);
     try {
       // Create payment order
-      const orderResponse = await axios.post('/api/payments/create-order', {
-        amount: 29900, // ₹299 in paise
+      const orderResponse = await axios.post('/api/create-payment-order', {
+        amount: 299, // ₹299 
         listing_id: listingId
+      }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
       });
 
       // Initialize Razorpay
