@@ -120,6 +120,11 @@ const OTPLogin = ({ setToken, setCurrentView, userType = 'seller' }) => {
                   maxLength="6"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                 />
+                {demoInfo && (
+                  <p className="text-sm text-blue-600 mt-2 p-2 bg-blue-50 rounded">
+                    ℹ️ {demoInfo}
+                  </p>
+                )}
                 <p className="text-xs text-gray-500 mt-2">
                   🔒 Enter the 6-digit OTP sent to your phone number
                 </p>
