@@ -293,6 +293,45 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+backend:
+  - task: "POST Land API (/api/post-land)"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE POST LAND API TESTING COMPLETED - All critical tests passed successfully: ✅ Authentication Requirement - POST /api/post-land correctly requires JWT authentication (returns 403 without auth) ✅ Form Data Handling - Accepts multipart form data with title, area, price, description, latitude, longitude fields correctly ✅ File Upload Support - Successfully handles photo and video file uploads via multipart form data ✅ JWT Token Validation - Properly validates Bearer token in Authorization header ✅ Database Storage - Successfully creates land listings in MongoDB with unique listing_id ✅ Response Format - Returns correct JSON response with listing_id and success message ✅ Cross-verification - Created listings appear correctly in my-listings endpoint. The 'post your land' functionality is working perfectly. Users can successfully create land listings with photos/videos after authentication."
+
+  - task: "My Listings API (/api/my-listings)"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE MY LISTINGS API TESTING COMPLETED - All critical tests passed successfully: ✅ Authentication Requirement - GET /api/my-listings correctly requires JWT authentication (returns 403 without auth) ✅ JWT Token Validation - Properly validates Bearer token in Authorization header and extracts user_id ✅ User-specific Filtering - Returns only listings belonging to the authenticated user (seller_id matches user_id from JWT) ✅ Response Format - Returns correct JSON structure with 'listings' array containing user's listings ✅ Database Query - Successfully queries MongoDB listings collection filtered by seller_id ✅ Token Security - Properly rejects invalid and expired JWT tokens with appropriate error messages. The 'my listings' functionality is working perfectly. Authenticated users can successfully retrieve their own land listings."
+
+  - task: "Broker Signup API (/api/broker-signup)"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE BROKER SIGNUP API TESTING COMPLETED - All critical tests passed successfully: ✅ Public Access - POST /api/broker-signup correctly works without authentication (public registration) ✅ Required Fields Validation - Properly validates required fields: name, agency, phone_number, email ✅ Data Processing - Successfully processes JSON request body with broker registration data ✅ Database Storage - Creates broker records in MongoDB with unique broker_id ✅ Response Format - Returns correct JSON response with broker_id and success message ✅ Duplicate Handling - Handles duplicate phone numbers appropriately ✅ Field Validation - Returns 422 validation errors for missing required fields. The 'register as broker' functionality is working perfectly. Users can successfully register as brokers without authentication."
+
 agent_communication:
   - agent: "main"
     message: "User reported that core features are not working: 'post your land', 'my listings', and 'register as broker'. Investigating the API endpoint mismatches and authentication issues between frontend and backend."
+  - agent: "testing"
+    message: "🎉 COMPREHENSIVE CORE API TESTING COMPLETED - All three user-reported broken APIs are working perfectly! Conducted thorough testing of the specific APIs users reported as not working: 1) POST /api/post-land (post your land) - ✅ WORKING with proper authentication, form data handling, file uploads, and database storage. 2) GET /api/my-listings (my listings) - ✅ WORKING with proper JWT authentication, user-specific filtering, and correct response format. 3) POST /api/broker-signup (register as broker) - ✅ WORKING with proper validation, database storage, and public access. All APIs have correct authentication requirements, proper error handling, and expected functionality. The user's reported issues may be related to frontend integration or specific usage scenarios rather than backend API functionality. All core backend endpoints are functioning correctly and ready for production use."
