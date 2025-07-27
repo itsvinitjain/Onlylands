@@ -57,9 +57,26 @@ AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME')
 S3_REGION = os.environ.get('S3_REGION', 'us-east-1')
 
-# Initialize services
-client = MongoClient(MONGO_URL)
-db = client[DB_NAME]
+# Initialize services with error handling for MongoDB Atlas
+try:
+    client = MongoClient(
+        MONGO_URL,
+        serverSelectionTimeoutMS=5000,  # 5 second timeout
+        connectTimeoutMS=10000,         # 10 second connection timeout
+        socketTimeoutMS=5000,           # 5 second socket timeout
+        retryWrites=True,               # Enable retryable writes for Atlas
+        w='majority'                    # Write concern for Atlas
+    )
+    # Test the connection
+    client.admin.command('ping')
+    db = client[DB_NAME]
+    print(f"✅ Successfully connected to MongoDB: {DB_NAME}")
+except Exception as e:
+    print(f"❌ Failed to connect to MongoDB: {e}")
+    # For deployment, we'll create a fallback but let it continue
+    client = None
+    db = None
+
 security = HTTPBearer()
 
 # Initialize Twilio
