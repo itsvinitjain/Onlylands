@@ -1062,6 +1062,7 @@ function BrokerDashboard({ user }) {
   }, []);
 
   const checkBrokerRegistration = async () => {
+    console.log('🔍 Starting broker registration check...');
     try {
       // Try to fetch broker profile to see if they're registered
       const response = await axios.get('/api/broker-profile', {
@@ -1070,6 +1071,7 @@ function BrokerDashboard({ user }) {
         }
       });
       
+      console.log('✅ Broker profile found:', response.data);
       if (response.data && response.data.broker) {
         // Broker is registered, fetch dashboard data
         console.log('Broker is registered, fetching dashboard data...');
@@ -1080,27 +1082,30 @@ function BrokerDashboard({ user }) {
         });
         setLeads(dashboardResponse.data.listings);
         setIsRegistered(true);
+        console.log('✅ Dashboard data loaded, broker is registered');
       } else {
         // Broker profile not found, show registration form
-        console.log('Broker profile not found, showing registration form...');
+        console.log('❌ No broker data in response, showing registration form...');
         setIsRegistered(false);
       }
     } catch (error) {
-      console.log('Broker profile check error:', error.response?.status, error.response?.data);
+      console.log('❌ Broker profile check error:', error.response?.status, error.response?.data);
       if (error.response?.status === 404) {
         // Broker not registered, show registration form
-        console.log('404 error - broker not registered, showing registration form');
+        console.log('✅ 404 error - broker not registered, showing registration form');
         setIsRegistered(false);
       } else if (error.response?.status === 403) {
         // User is not a broker
-        console.log('403 error - user is not a broker');
+        console.log('❌ 403 error - user is not a broker');
         setIsRegistered(false);
       } else {
-        console.error('Failed to check broker registration:', error);
+        console.error('❌ Failed to check broker registration:', error);
         // For any other error, assume not registered and show form
+        console.log('❌ Unknown error, showing registration form as fallback');
         setIsRegistered(false);
       }
     } finally {
+      console.log('📋 Setting loading to false, isRegistered state:', !localStorage.getItem('broker-registration-checked'));
       setLoading(false);
     }
   };
