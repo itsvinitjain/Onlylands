@@ -67,11 +67,7 @@ function App() {
         };
         setUser(userData);
         
-        // Auto-redirect brokers to dashboard after login
-        if (userData.user_type === 'broker') {
-          console.log('Auto-redirecting broker to dashboard...');
-          setCurrentView('broker-dashboard');
-        }
+        // Note: Broker redirect is now handled in OTP verification
       } catch (e) {
         console.error('Failed to parse token:', e);
         localStorage.removeItem('token');
