@@ -1057,19 +1057,33 @@ function BrokerDashboard({ user }) {
   const checkBrokerRegistration = async () => {
     try {
       // Try to fetch broker profile to see if they're registered
-      const response = await axios.get('/api/broker-dashboard', {
+      const response = await axios.get('/api/broker-profile', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-      setLeads(response.data.listings);
-      setIsRegistered(true);
+      
+      if (response.data && response.data.broker) {
+        // Broker is registered, fetch dashboard data
+        const dashboardResponse = await axios.get('/api/broker-dashboard', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        setLeads(dashboardResponse.data.listings);
+        setIsRegistered(true);
+      } else {
+        // Broker profile not found, show registration form
+        setIsRegistered(false);
+      }
     } catch (error) {
       if (error.response?.status === 404 || error.response?.status === 403) {
         // Broker not registered, show registration form
         setIsRegistered(false);
       } else {
-        console.error('Failed to fetch leads:', error);
+        console.error('Failed to check broker registration:', error);
+        // Assume not registered if any other error
+        setIsRegistered(false);
       }
     } finally {
       setLoading(false);
