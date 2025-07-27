@@ -153,6 +153,23 @@ def upload_to_s3(file_content, filename, content_type):
         print(f"Error uploading to S3: {e}")
         return None
 
+# Database helper functions
+def check_db_connection():
+    """Check if database connection is available"""
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+    return db
+
+def safe_db_operation(operation_func, *args, **kwargs):
+    """Safely execute database operation with error handling"""
+    try:
+        check_db_connection()
+        return operation_func(*args, **kwargs)
+    except Exception as e:
+        print(f"Database operation error: {e}")
+        raise HTTPException(status_code=500, detail=f"Database operation failed: {str(e)}")
+
+# JWT token verification
 def verify_jwt_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """Verify JWT token for regular users"""
     try:
