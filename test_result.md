@@ -132,7 +132,7 @@ backend:
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "testing"
@@ -143,6 +143,9 @@ backend:
       - working: true
         agent: "main"
         comment: "Fixed frontend API endpoint mismatch: changed from '/api/listings/preview/${user.user_id}' to '/api/my-listings', added proper Authorization headers with JWT token."
+      - working: true
+        agent: "testing"
+        comment: "✅ MY LISTINGS API COMPREHENSIVE TESTING COMPLETED - Conducted thorough testing during broker registration flow testing. All critical tests passed successfully: ✅ Authentication Requirement - GET /api/my-listings correctly requires JWT authentication (returns 403 without auth) ✅ JWT Token Validation - Properly validates Bearer token in Authorization header and extracts user_id ✅ User-specific Filtering - Returns only listings belonging to the authenticated user (seller_id matches user_id from JWT) ✅ Response Format - Returns correct JSON structure with 'listings' array containing user's listings ✅ Database Query - Successfully queries MongoDB listings collection filtered by seller_id ✅ Status Updates - Correctly shows listing status changes (pending_payment → active after payment) ✅ Token Security - Properly rejects invalid and expired JWT tokens with appropriate error messages. The 'my listings' functionality is working perfectly. Authenticated users can successfully retrieve their own land listings with correct status updates."
 
   - task: "Broker Registration API"
     implemented: true
