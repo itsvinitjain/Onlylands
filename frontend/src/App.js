@@ -60,11 +60,18 @@ function App() {
     if (newToken) {
       try {
         const tokenPayload = JSON.parse(atob(newToken.split('.')[1]));
-        setUser({
+        const userData = {
           user_id: tokenPayload.user_id,
           user_type: tokenPayload.user_type,
           phone_number: tokenPayload.phone_number
-        });
+        };
+        setUser(userData);
+        
+        // Auto-redirect brokers to dashboard after login
+        if (userData.user_type === 'broker') {
+          console.log('Auto-redirecting broker to dashboard...');
+          setCurrentView('broker-dashboard');
+        }
       } catch (e) {
         console.error('Failed to parse token:', e);
         localStorage.removeItem('token');
