@@ -1973,6 +1973,322 @@ class OnlyLandsAPITester:
         
         return valid_signup_working
 
+    def test_broker_registration_flow(self):
+        """
+        CRITICAL TEST: Test the complete broker registration flow to identify why new phone numbers 
+        aren't showing the registration form. This addresses the specific review request.
+        """
+        print("\n" + "="*80)
+        print("🏢 CRITICAL BROKER REGISTRATION FLOW TEST")
+        print("Testing why new phone numbers aren't showing registration form")
+        print("="*80)
+        
+        # Use the specific phone number from the review request
+        test_phone = "+919998887776"
+        demo_otp = "123456"
+        
+        # Test 1: Login with new phone number as broker
+        print("\n📱 TEST 1: LOGIN WITH NEW PHONE NUMBER AS BROKER")
+        print("-" * 60)
+        
+        # Send OTP for broker
+        send_success, send_response = self.run_test(
+            "Send OTP for New Broker Phone Number",
+            "POST",
+            "api/send-otp",
+            200,
+            data={"phone_number": test_phone, "user_type": "broker"}
+        )
+        
+        if not send_success:
+            print("❌ CRITICAL FAILURE: Could not send OTP for new broker phone number")
+            return False
+        
+        print(f"✅ OTP Send Response: {send_response}")
+        
+        # Verify OTP for broker (this creates the user)
+        verify_success, verify_response = self.run_test(
+            "Verify OTP for New Broker (Creates User)",
+            "POST",
+            "api/verify-otp",
+            200,
+            data={"phone_number": test_phone, "otp": demo_otp, "user_type": "broker"}
+        )
+        
+        if not verify_success:
+            print("❌ CRITICAL FAILURE: Could not verify OTP for new broker")
+            return False
+        
+        # Extract JWT token and user info
+        broker_token = verify_response.get('token')
+        broker_user = verify_response.get('user', {})
+        
+        if not broker_token:
+            print("❌ CRITICAL FAILURE: No JWT token returned for broker login")
+            return False
+        
+        # Set token for subsequent requests
+        self.token = broker_token
+        self.user_id = broker_user.get('user_id')
+        
+        print(f"✅ Broker Login Successful")
+        print(f"✅ User ID: {broker_user.get('user_id')}")
+        print(f"✅ User Type: {broker_user.get('user_type')}")
+        print(f"✅ Phone Number: {broker_user.get('phone_number')}")
+        
+        # Verify user_type is correct
+        if broker_user.get('user_type') != 'broker':
+            print(f"❌ CRITICAL ISSUE: User logged in with wrong user_type: {broker_user.get('user_type')}")
+            return False
+        
+        # Test 2: Check /api/broker-profile endpoint - should return 404 for new brokers
+        print("\n🔍 TEST 2: CHECK BROKER PROFILE ENDPOINT (SHOULD RETURN 404)")
+        print("-" * 60)
+        
+        profile_success, profile_response = self.run_test(
+            "Get Broker Profile for New Broker (Should be 404)",
+            "GET",
+            "api/broker-profile",
+            404  # Should return 404 for new brokers without profile
+        )
+        
+        if profile_success:
+            print("✅ CORRECT: /api/broker-profile returns 404 for new broker")
+            print(f"✅ Error Message: {profile_response.get('detail', 'Broker profile not found')}")
+            profile_not_found = True
+        else:
+            print("❌ ISSUE: /api/broker-profile should return 404 for new broker")
+            print(f"❌ Actual Response: {profile_response}")
+            profile_not_found = False
+        
+        # Test 3: Verify broker-profile logic is working correctly
+        print("\n🔧 TEST 3: VERIFY BROKER PROFILE LOGIC")
+        print("-" * 60)
+        
+        # Check if broker exists in brokers collection (should not exist for new phone number)
+        # We can't directly query the database, but we can test the broker-signup endpoint
+        
+        # First, let's check if the broker is already registered by trying to register
+        broker_data = {
+            "name": "Test Broker Registration",
+            "agency": "Test Real Estate Agency",
+            "phone_number": test_phone,
+            "email": f"testbroker{uuid.uuid4().hex[:8]}@example.com"
+        }
+        
+        signup_success, signup_response = self.run_test(
+            "Try Broker Signup (Should Work for New Phone)",
+            "POST",
+            "api/broker-signup",
+            200,
+            data=broker_data
+        )
+        
+        if signup_success:
+            print("✅ CORRECT: Broker signup works for new phone number")
+            print(f"✅ Broker ID: {signup_response.get('broker_id')}")
+            print(f"✅ Message: {signup_response.get('message')}")
+            broker_can_register = True
+            self.broker_id = signup_response.get('broker_id')
+        else:
+            print("❌ ISSUE: Broker signup failed for new phone number")
+            print(f"❌ Response: {signup_response}")
+            broker_can_register = False
+        
+        # Test 4: After registration, check broker-profile again (should now return 200)
+        print("\n✅ TEST 4: CHECK BROKER PROFILE AFTER REGISTRATION")
+        print("-" * 60)
+        
+        if broker_can_register:
+            profile_after_success, profile_after_response = self.run_test(
+                "Get Broker Profile After Registration (Should be 200)",
+                "GET",
+                "api/broker-profile",
+                200  # Should now return 200 with broker data
+            )
+            
+            if profile_after_success:
+                print("✅ CORRECT: /api/broker-profile returns 200 after registration")
+                broker_profile = profile_after_response.get('broker', {})
+                print(f"✅ Broker Name: {broker_profile.get('name')}")
+                print(f"✅ Broker Agency: {broker_profile.get('agency')}")
+                print(f"✅ Broker Phone: {broker_profile.get('phone_number')}")
+                profile_works_after_registration = True
+            else:
+                print("❌ ISSUE: /api/broker-profile should return 200 after registration")
+                print(f"❌ Response: {profile_after_response}")
+                profile_works_after_registration = False
+        else:
+            profile_works_after_registration = False
+        
+        # Test 5: Test broker dashboard access
+        print("\n🏢 TEST 5: TEST BROKER DASHBOARD ACCESS")
+        print("-" * 60)
+        
+        if broker_can_register:
+            dashboard_success, dashboard_response = self.run_test(
+                "Get Broker Dashboard (Should Work After Registration)",
+                "GET",
+                "api/broker-dashboard",
+                200
+            )
+            
+            if dashboard_success:
+                print("✅ CORRECT: Broker dashboard accessible after registration")
+                listings = dashboard_response.get('listings', [])
+                print(f"✅ Available Listings: {len(listings)}")
+                dashboard_works = True
+            else:
+                print("❌ ISSUE: Broker dashboard not accessible after registration")
+                print(f"❌ Response: {dashboard_response}")
+                dashboard_works = False
+        else:
+            dashboard_works = False
+        
+        # Test 6: Test with another new phone number to verify the flow
+        print("\n🔄 TEST 6: VERIFY FLOW WITH ANOTHER NEW PHONE NUMBER")
+        print("-" * 60)
+        
+        test_phone_2 = "+919998887777"
+        
+        # Login with second new phone number
+        send_success_2, send_response_2 = self.run_test(
+            "Send OTP for Second New Broker Phone",
+            "POST",
+            "api/send-otp",
+            200,
+            data={"phone_number": test_phone_2, "user_type": "broker"}
+        )
+        
+        if send_success_2:
+            verify_success_2, verify_response_2 = self.run_test(
+                "Verify OTP for Second New Broker",
+                "POST",
+                "api/verify-otp",
+                200,
+                data={"phone_number": test_phone_2, "otp": demo_otp, "user_type": "broker"}
+            )
+            
+            if verify_success_2:
+                # Set token for second user
+                second_token = verify_response_2.get('token')
+                original_token = self.token
+                self.token = second_token
+                
+                # Check broker profile (should be 404)
+                profile_2_success, profile_2_response = self.run_test(
+                    "Check Second Broker Profile (Should be 404)",
+                    "GET",
+                    "api/broker-profile",
+                    404
+                )
+                
+                if profile_2_success:
+                    print("✅ CORRECT: Second new broker also gets 404 for profile")
+                    second_broker_flow_correct = True
+                else:
+                    print("❌ ISSUE: Second new broker should get 404 for profile")
+                    second_broker_flow_correct = False
+                
+                # Restore original token
+                self.token = original_token
+            else:
+                second_broker_flow_correct = False
+        else:
+            second_broker_flow_correct = False
+        
+        # Analysis and Summary
+        print("\n" + "="*80)
+        print("📊 BROKER REGISTRATION FLOW ANALYSIS")
+        print("="*80)
+        
+        all_tests_passed = (
+            send_success and verify_success and 
+            profile_not_found and broker_can_register and 
+            profile_works_after_registration and dashboard_works and
+            second_broker_flow_correct
+        )
+        
+        if all_tests_passed:
+            print("🎉 BROKER REGISTRATION FLOW: ALL TESTS PASSED!")
+            print("✅ New phone numbers can login as broker successfully")
+            print("✅ /api/broker-profile correctly returns 404 for new brokers")
+            print("✅ Broker registration works correctly")
+            print("✅ After registration, broker profile is accessible")
+            print("✅ Broker dashboard works after registration")
+            print("✅ Flow is consistent for multiple new phone numbers")
+            print("\n💡 CONCLUSION: The backend broker registration flow is working correctly.")
+            print("💡 If new brokers are not seeing the registration form, the issue is likely in the frontend logic.")
+            print("💡 Frontend should check /api/broker-profile and show registration form on 404 response.")
+        else:
+            print("❌ BROKER REGISTRATION FLOW: ISSUES FOUND!")
+            if not profile_not_found:
+                print("❌ CRITICAL: /api/broker-profile not returning 404 for new brokers")
+            if not broker_can_register:
+                print("❌ CRITICAL: Broker registration not working")
+            if not profile_works_after_registration:
+                print("❌ CRITICAL: Broker profile not accessible after registration")
+            if not dashboard_works:
+                print("❌ CRITICAL: Broker dashboard not working after registration")
+            if not second_broker_flow_correct:
+                print("❌ CRITICAL: Flow not consistent for multiple users")
+        
+        print("="*80)
+        
+        return all_tests_passed
+
+    def test_enhanced_listings_api(self):
+        """
+        TEST: Enhanced listings API endpoint
+        """
+        print("\n" + "="*80)
+        print("📋 TEST: ENHANCED LISTINGS API (/api/listings)")
+        print("="*80)
+        
+        # Test getting all active listings
+        listings_success, listings_response = self.run_test(
+            "Get All Active Listings",
+            "GET",
+            "api/listings",
+            200
+        )
+        
+        if listings_success:
+            listings = listings_response.get('listings', [])
+            print(f"✅ Total Active Listings: {len(listings)}")
+            
+            if listings:
+                # Check first listing structure
+                first_listing = listings[0]
+                required_fields = ['listing_id', 'title', 'price', 'area', 'description', 'status']
+                
+                print(f"✅ Sample Listing: {first_listing.get('title')}")
+                print(f"✅ Sample Price: {first_listing.get('price')}")
+                print(f"✅ Sample Status: {first_listing.get('status')}")
+                
+                # Verify all listings are active
+                all_active = all(listing.get('status') == 'active' for listing in listings)
+                if all_active:
+                    print("✅ PASS: All returned listings have 'active' status")
+                else:
+                    print("❌ FAILURE: Some listings are not active")
+                    return False
+                
+                # Check required fields
+                missing_fields = [field for field in required_fields if field not in first_listing]
+                if not missing_fields:
+                    print("✅ PASS: Listing structure contains all required fields")
+                else:
+                    print(f"❌ FAILURE: Missing fields in listing: {missing_fields}")
+                    return False
+            else:
+                print("✅ No active listings found (this is acceptable)")
+            
+            return True
+        else:
+            print("❌ FAILURE: Could not retrieve listings")
+            return False
+
     def test_core_user_reported_apis(self):
         """
         COMPREHENSIVE TEST: Test all three core APIs that users are reporting as broken
