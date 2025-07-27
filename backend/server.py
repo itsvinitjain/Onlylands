@@ -681,14 +681,59 @@ async def broker_signup(broker: BrokerSignup):
         print(f"Error registering broker: {e}")
         raise HTTPException(status_code=500, detail="Failed to register broker")
 
+@app.get("/api/broker-profile")
+async def get_broker_profile(user_id: str = Depends(verify_jwt_token)):
+    """Get broker profile - returns 404 if broker not registered"""
+    try:
+        # Get user info first
+        user = db.users.find_one({"user_id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Check if user is a broker and has a broker profile
+        if user.get("user_type") != "broker":
+            raise HTTPException(status_code=403, detail="User is not a broker")
+        
+        # Look for broker profile in brokers collection
+        broker = db.brokers.find_one({"phone_number": user.get("phone_number")})
+        if not broker:
+            raise HTTPException(status_code=404, detail="Broker profile not found")
+        
+        # Remove MongoDB ObjectId
+        if '_id' in broker:
+            del broker['_id']
+        
+        return {"broker": broker}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error getting broker profile: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get broker profile")
+
 @app.get("/api/broker-dashboard")
-async def broker_dashboard():
+async def broker_dashboard(user_id: str = Depends(verify_jwt_token)):
     """Get broker dashboard data"""
     try:
+        # First check if broker is registered
+        user = db.users.find_one({"user_id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        if user.get("user_type") != "broker":
+            raise HTTPException(status_code=403, detail="User is not a broker")
+        
+        # Check if broker profile exists
+        broker = db.brokers.find_one({"phone_number": user.get("phone_number")})
+        if not broker:
+            raise HTTPException(status_code=404, detail="Broker not registered")
+        
+        # Return active listings for registered broker
         listings = list(db.listings.find({"status": "active"}))
         for listing in listings:
             listing['_id'] = str(listing['_id'])
         return {"listings": listings}
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Error getting broker dashboard: {e}")
         raise HTTPException(status_code=500, detail="Failed to get broker dashboard")
