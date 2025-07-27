@@ -330,7 +330,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Complete Payment Flow Testing"
+    - "Broker Registration Flow Investigation Complete"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
