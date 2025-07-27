@@ -1065,6 +1065,7 @@ function BrokerDashboard({ user }) {
       
       if (response.data && response.data.broker) {
         // Broker is registered, fetch dashboard data
+        console.log('Broker is registered, fetching dashboard data...');
         const dashboardResponse = await axios.get('/api/broker-dashboard', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1074,15 +1075,22 @@ function BrokerDashboard({ user }) {
         setIsRegistered(true);
       } else {
         // Broker profile not found, show registration form
+        console.log('Broker profile not found, showing registration form...');
         setIsRegistered(false);
       }
     } catch (error) {
-      if (error.response?.status === 404 || error.response?.status === 403) {
+      console.log('Broker profile check error:', error.response?.status, error.response?.data);
+      if (error.response?.status === 404) {
         // Broker not registered, show registration form
+        console.log('404 error - broker not registered, showing registration form');
+        setIsRegistered(false);
+      } else if (error.response?.status === 403) {
+        // User is not a broker
+        console.log('403 error - user is not a broker');
         setIsRegistered(false);
       } else {
         console.error('Failed to check broker registration:', error);
-        // Assume not registered if any other error
+        // For any other error, assume not registered and show form
         setIsRegistered(false);
       }
     } finally {
