@@ -56,7 +56,13 @@ const OTPLogin = ({ setToken, setCurrentView, userType = 'seller' }) => {
         setToken(response.data.token);
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
-        setCurrentView('home');
+        
+        // For brokers, redirect directly to broker dashboard for registration check
+        if (userType === 'broker') {
+          setCurrentView('broker-dashboard');
+        } else {
+          setCurrentView('home');
+        }
       } else {
         setError('OTP verification failed');
       }
