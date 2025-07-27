@@ -58,24 +58,33 @@ S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME')
 S3_REGION = os.environ.get('S3_REGION', 'us-east-1')
 
 # Initialize services with error handling for MongoDB Atlas
-try:
-    client = MongoClient(
-        MONGO_URL,
-        serverSelectionTimeoutMS=5000,  # 5 second timeout
-        connectTimeoutMS=10000,         # 10 second connection timeout
-        socketTimeoutMS=5000,           # 5 second socket timeout
-        retryWrites=True,               # Enable retryable writes for Atlas
-        w='majority'                    # Write concern for Atlas
-    )
-    # Test the connection
-    client.admin.command('ping')
-    db = client[DB_NAME]
-    print(f"✅ Successfully connected to MongoDB: {DB_NAME}")
-except Exception as e:
-    print(f"❌ Failed to connect to MongoDB: {e}")
-    # For deployment, we'll create a fallback but let it continue
-    client = None
-    db = None
+def connect_to_mongodb(max_retries=3):
+    """Connect to MongoDB with retry logic"""
+    for attempt in range(max_retries):
+        try:
+            client = MongoClient(
+                MONGO_URL,
+                serverSelectionTimeoutMS=5000,  # 5 second timeout
+                connectTimeoutMS=10000,         # 10 second connection timeout
+                socketTimeoutMS=5000,           # 5 second socket timeout
+                retryWrites=True,               # Enable retryable writes for Atlas
+                w='majority'                    # Write concern for Atlas
+            )
+            # Test the connection
+            client.admin.command('ping')
+            print(f"✅ Successfully connected to MongoDB: {DB_NAME} (attempt {attempt + 1})")
+            return client, client[DB_NAME]
+        except Exception as e:
+            print(f"❌ MongoDB connection attempt {attempt + 1} failed: {e}")
+            if attempt < max_retries - 1:
+                print(f"⏳ Retrying in 2 seconds...")
+                time.sleep(2)
+            else:
+                print(f"❌ Failed to connect to MongoDB after {max_retries} attempts")
+                return None, None
+
+# Connect to MongoDB
+client, db = connect_to_mongodb()
 
 security = HTTPBearer()
 
