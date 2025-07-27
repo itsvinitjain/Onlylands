@@ -147,7 +147,7 @@ backend:
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "testing"
@@ -158,6 +158,9 @@ backend:
       - working: true
         agent: "main"
         comment: "Fixed frontend API endpoint mismatch: changed from '/api/brokers/register' to '/api/broker-signup', fixed field name mapping (phone to phone_number)."
+      - working: true
+        agent: "testing"
+        comment: "🎉 BROKER REGISTRATION FLOW COMPREHENSIVE TESTING COMPLETED - Conducted thorough testing of the complete broker registration flow as requested in the review to identify why new phone numbers aren't showing the registration form. PERFECT RESULTS (9/9 tests passed, 100% success rate): ✅ NEW PHONE NUMBER LOGIN - Successfully tested login with new phone number +919998887776 as broker, OTP sending works correctly, OTP verification creates user with correct user_type: 'broker', JWT token generation working properly ✅ BROKER PROFILE ENDPOINT LOGIC - /api/broker-profile correctly returns 404 for new brokers without profile, error message 'Broker profile not found' is appropriate, this is the expected behavior for new brokers ✅ BROKER REGISTRATION PROCESS - Broker signup works correctly for new phone numbers, creates broker profile with unique broker_id, all required fields validated properly ✅ POST-REGISTRATION VERIFICATION - After registration, /api/broker-profile returns 200 with complete broker data, broker dashboard becomes accessible with active listings, profile data includes name, agency, and phone number correctly ✅ CONSISTENCY TESTING - Tested with multiple new phone numbers (+919998887776, +919998887777), flow is consistent for all new broker registrations, all new brokers get 404 for profile before registration ✅ COMPLETE FLOW VERIFICATION - Login → Profile Check (404) → Registration → Profile Check (200) → Dashboard Access works perfectly. CRITICAL FINDING: The backend broker registration flow is working correctly. If new brokers are not seeing the registration form, the issue is in the frontend logic. Frontend should check /api/broker-profile endpoint and show registration form when it returns 404. The backend APIs are functioning as designed."
 
   - task: "OTP Login Flow Implementation"
     implemented: true
