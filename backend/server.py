@@ -201,6 +201,34 @@ def verify_admin_token(credentials: HTTPAuthorizationCredentials = Depends(secur
 async def root():
     return {"message": "OnlyLands API is running"}
 
+@app.get("/api/health")
+async def health_check():
+    """Health check endpoint for deployment verification"""
+    try:
+        # Check database connection
+        if db is not None:
+            db.admin.command('ping')
+            db_status = "connected"
+        else:
+            db_status = "disconnected"
+        
+        return {
+            "status": "healthy",
+            "database": db_status,
+            "timestamp": datetime.utcnow().isoformat(),
+            "services": {
+                "twilio": "configured" if twilio_client else "not_configured",
+                "razorpay": "configured" if razorpay_client else "not_configured",
+                "s3": "configured" if s3_client else "not_configured"
+            }
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
 @app.post("/api/send-otp")
 async def send_otp(request: dict):
     """Send OTP to phone number using Twilio with demo fallback"""
