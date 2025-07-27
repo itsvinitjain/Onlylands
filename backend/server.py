@@ -305,25 +305,30 @@ async def verify_otp(request: dict):
         if otp == "123456":
             print(f"Using demo OTP for {phone_number}")
             # Demo OTP verification - always succeeds
-            user = db.users.find_one({"phone_number": phone_number})
-            if not user:
-                # Create new user
-                user_id = str(uuid.uuid4())
-                user = {
-                    "user_id": user_id,
-                    "phone_number": phone_number,
-                    "user_type": user_type,
-                    "created_at": datetime.utcnow()
-                }
-                db.users.insert_one(user)
-            else:
-                # Update existing user's user_type if it's different
-                if user.get("user_type") != user_type:
-                    db.users.update_one(
-                        {"phone_number": phone_number},
-                        {"$set": {"user_type": user_type, "updated_at": datetime.utcnow()}}
-                    )
-                    user["user_type"] = user_type
+            try:
+                check_db_connection()
+                user = db.users.find_one({"phone_number": phone_number})
+                if not user:
+                    # Create new user
+                    user_id = str(uuid.uuid4())
+                    user = {
+                        "user_id": user_id,
+                        "phone_number": phone_number,
+                        "user_type": user_type,
+                        "created_at": datetime.utcnow()
+                    }
+                    db.users.insert_one(user)
+                else:
+                    # Update existing user's user_type if it's different
+                    if user.get("user_type") != user_type:
+                        db.users.update_one(
+                            {"phone_number": phone_number},
+                            {"$set": {"user_type": user_type, "updated_at": datetime.utcnow()}}
+                        )
+                        user["user_type"] = user_type
+            except Exception as e:
+                print(f"Database error during demo OTP verification: {e}")
+                raise HTTPException(status_code=500, detail="Database connection error")
             
             # Remove MongoDB ObjectId for JSON serialization
             if '_id' in user:
