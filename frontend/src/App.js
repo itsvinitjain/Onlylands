@@ -369,7 +369,7 @@ function PaymentSuccessModal({ isOpen, onClose, onViewListings }) {
     </div>
   );
 }
-function PostLandForm({ user }) {
+function PostLandForm({ user, setCurrentView }) {
   const [formData, setFormData] = useState({
     title: '',
     location: '',
@@ -385,6 +385,7 @@ function PostLandForm({ user }) {
   const [videoPreviews, setVideoPreviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [listingCreated, setListingCreated] = useState(null);
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
