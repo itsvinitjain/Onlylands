@@ -847,6 +847,7 @@ function PaymentComponent({ listingId, user }) {
                   'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
               });
+              setShowPaymentSuccess(true);
               setPaymentSuccess(true);
             } catch (error) {
               alert('Payment verification failed: ' + (error.response?.data?.detail || 'Unknown error'));
