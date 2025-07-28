@@ -1537,6 +1537,21 @@ function MyListings({ user, setCurrentView }) {
     fetchMyListings();
   }, [user]);
 
+  const getImageSrc = (imageData) => {
+    // Handle S3 URLs (string format)
+    if (typeof imageData === 'string') {
+      return imageData;
+    }
+    
+    // Handle base64 format (legacy format)
+    if (imageData && imageData.data) {
+      return `data:${imageData.content_type};base64,${imageData.data}`;
+    }
+    
+    // Fallback placeholder
+    return '/placeholder-land.jpg';
+  };
+
   const fetchMyListings = async () => {
     try {
       const response = await axios.get('/api/my-listings', {
