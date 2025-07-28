@@ -469,7 +469,7 @@ function PostLandForm({ user, setCurrentView }) {
   };
 
   if (listingCreated) {
-    return <PaymentComponent listingId={listingCreated} user={user} />;
+    return <PaymentComponent listingId={listingCreated} user={user} setCurrentView={setCurrentView} />;
   }
 
   return (
