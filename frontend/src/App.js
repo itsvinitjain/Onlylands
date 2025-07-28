@@ -96,7 +96,7 @@ function App() {
       case 'broker-login':
         return <OTPLogin setToken={updateToken} setCurrentView={setCurrentView} userType="broker" />;
       case 'post-land':
-        return <PostLandForm user={user} />;
+        return <PostLandForm user={user} setCurrentView={setCurrentView} />;
       case 'my-listings':
         return <MyListings user={user} setCurrentView={setCurrentView} />;
       case 'broker-register':
