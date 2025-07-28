@@ -810,9 +810,9 @@ function PaymentComponent({ listingId, user }) {
                 // Remove modal
                 document.getElementById('razorpay-demo-modal').remove();
                 
-                // Show success
+                // Show success modal instead of alert
+                setShowPaymentSuccess(true);
                 setPaymentSuccess(true);
-                alert('🎉 Payment Successful!\n\nYour listing is now active and visible to brokers.');
                 
               } catch (error) {
                 document.getElementById('razorpay-demo-modal').remove();
