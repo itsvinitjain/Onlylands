@@ -890,10 +890,10 @@ function PaymentComponent({ listingId, user }) {
           </div>
           <div className="grid grid-cols-2 gap-4 mb-6">
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => setCurrentView('home')}
               className="bg-blue-500 text-white px-4 py-3 rounded-lg hover:bg-blue-600 transition-colors"
             >
-              Back to Home
+              🏠 Back to Home
             </button>
             <button
               onClick={() => setCurrentView('listings')}
