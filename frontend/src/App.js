@@ -1639,15 +1639,18 @@ function MyListings({ user, setCurrentView }) {
                   </div>
                   
                   {/* Main Image */}
-                  {listing.images && listing.images.length > 0 ? (
+                  {listing.photos && listing.photos.length > 0 ? (
                     <div className="relative h-48 bg-gray-200">
                       <img
-                        src={getImageSrc(listing.images[0])}
+                        src={getImageSrc(listing.photos[0])}
                         alt={listing.title}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src = '/placeholder-land.jpg';
+                        }}
                       />
                       <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
-                        📷 {listing.images.length} {listing.videos?.length > 0 && `🎥 ${listing.videos.length}`}
+                        📷 {listing.photos.length} {listing.videos?.length > 0 && `🎥 ${listing.videos.length}`}
                       </div>
                     </div>
                   ) : (
