@@ -330,7 +330,45 @@ function HomePage({ setCurrentView, user, logout }) {
 
 
 
-// Post Land Form Component
+// Payment Success Modal Component
+function PaymentSuccessModal({ isOpen, onClose, onViewListings }) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+        <div className="text-center">
+          <div className="mb-4">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">🎉 Payment Successful!</h3>
+            <p className="text-gray-600 mb-6">
+              Your land listing has been activated and is now live on our platform. Brokers will be able to see your listing and contact you via WhatsApp.
+            </p>
+          </div>
+          
+          <div className="space-y-3">
+            <button
+              onClick={onViewListings}
+              className="w-full bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 transition-colors font-semibold"
+            >
+              📋 View All Listings
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              🏠 Back to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 function PostLandForm({ user }) {
   const [formData, setFormData] = useState({
     title: '',
