@@ -1677,7 +1677,7 @@ function MyListings({ user, setCurrentView }) {
                         View Details
                       </button>
                       <div className="text-xs text-gray-500">
-                        {listing.images?.length > 0 && `${listing.images.length} photos`}
+                        {listing.photos?.length > 0 && `${listing.photos.length} photos`}
                         {listing.videos?.length > 0 && ` • ${listing.videos.length} videos`}
                       </div>
                     </div>
