@@ -950,6 +950,19 @@ function PaymentComponent({ listingId, user }) {
           🔒 Secure payment processing via Razorpay
         </p>
       </div>
+
+      {/* Payment Success Modal */}
+      <PaymentSuccessModal
+        isOpen={showPaymentSuccess}
+        onClose={() => {
+          setShowPaymentSuccess(false);
+          setCurrentView('home');
+        }}
+        onViewListings={() => {
+          setShowPaymentSuccess(false);
+          setCurrentView('listings');
+        }}
+      />
     </div>
   );
 }
