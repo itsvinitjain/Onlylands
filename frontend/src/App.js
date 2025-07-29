@@ -278,7 +278,7 @@ function HomePage({ setCurrentView, user, logout }) {
                 <li>• WhatsApp direct contact</li>
                 <li>• Free registration</li>
               </ul>
-              {user && user.user_type === 'broker' ? (
+              {user && user.user_type === 'broker' && brokerRegistered ? (
                 <button 
                   onClick={() => setCurrentView('broker-dashboard')}
                   className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors w-full"
@@ -290,7 +290,7 @@ function HomePage({ setCurrentView, user, logout }) {
                   onClick={() => setCurrentView('login-choice')}
                   className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors w-full"
                 >
-                  Register as Broker
+                  {user && user.user_type === 'broker' ? 'Complete Registration' : 'Register as Broker'}
                 </button>
               )}
             </div>
