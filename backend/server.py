@@ -146,41 +146,32 @@ def get_image_src(image_data):
         return None
 
 def upload_to_s3(file_content, filename, content_type):
-    """Upload file to S3 and return URL, or return base64 data if S3 not configured"""
+    """Upload file to S3 and return URL"""
     if not s3_client or not S3_BUCKET_NAME:
-        # Fallback to base64 storage when S3 is not configured
-        import base64
-        encoded = base64.b64encode(file_content).decode('utf-8')
-        return {
-            "data": encoded,
-            "content_type": content_type,
-            "filename": filename,
-            "storage_type": "base64"
-        }
+        print(f"S3 not configured. S3_CLIENT: {s3_client is not None}, S3_BUCKET: {S3_BUCKET_NAME}")
+        return None
     
     try:
+        # Generate unique filename with timestamp
+        import time
+        unique_filename = f"{int(time.time())}_{filename}"
+        
         s3_client.put_object(
             Bucket=S3_BUCKET_NAME,
-            Key=filename,
+            Key=unique_filename,
             Body=file_content,
-            ContentType=content_type
+            ContentType=content_type,
+            ACL='public-read'  # Make file publicly readable
         )
-        return {
-            "s3_url": f"https://{S3_BUCKET_NAME}.s3.{S3_REGION}.amazonaws.com/{filename}",
-            "filename": filename,
-            "storage_type": "s3"
-        }
-    except ClientError as e:
-        print(f"Error uploading to S3: {e}")
-        # Fallback to base64 if S3 upload fails
-        import base64
-        encoded = base64.b64encode(file_content).decode('utf-8')
-        return {
-            "data": encoded,
-            "content_type": content_type,
-            "filename": filename,
-            "storage_type": "base64_fallback"
-        }
+        
+        # Return S3 URL
+        s3_url = f"https://{S3_BUCKET_NAME}.s3.{S3_REGION}.amazonaws.com/{unique_filename}"
+        print(f"✅ File uploaded to S3: {s3_url}")
+        return s3_url
+        
+    except Exception as e:
+        print(f"❌ Error uploading to S3: {e}")
+        return None
 
 # Database helper functions
 def check_db_connection():
