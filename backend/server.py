@@ -146,31 +146,30 @@ def get_image_src(image_data):
         return None
 
 def upload_to_s3(file_content, filename, content_type):
-    """Upload file to S3 and return URL"""
-    if not s3_client or not S3_BUCKET_NAME:
-        print(f"S3 not configured. S3_CLIENT: {s3_client is not None}, S3_BUCKET: {S3_BUCKET_NAME}")
-        return None
-    
+    """Upload file to local storage (mimicking S3) and return URL"""
     try:
+        import os
+        
+        # Create uploads directory if it doesn't exist
+        uploads_dir = "/app/uploads"
+        os.makedirs(uploads_dir, exist_ok=True)
+        
         # Generate unique filename with timestamp
         import time
         unique_filename = f"{int(time.time())}_{filename}"
+        file_path = os.path.join(uploads_dir, unique_filename)
         
-        s3_client.put_object(
-            Bucket=S3_BUCKET_NAME,
-            Key=unique_filename,
-            Body=file_content,
-            ContentType=content_type,
-            ACL='public-read'  # Make file publicly readable
-        )
+        # Save file locally
+        with open(file_path, "wb") as f:
+            f.write(file_content)
         
-        # Return S3 URL
-        s3_url = f"https://{S3_BUCKET_NAME}.s3.{S3_REGION}.amazonaws.com/{unique_filename}"
-        print(f"✅ File uploaded to S3: {s3_url}")
-        return s3_url
+        # Return local URL that will be served by the backend
+        local_url = f"/api/uploads/{unique_filename}"
+        print(f"✅ File stored locally: {local_url}")
+        return local_url
         
     except Exception as e:
-        print(f"❌ Error uploading to S3: {e}")
+        print(f"❌ Error storing file locally: {e}")
         return None
 
 # Database helper functions
