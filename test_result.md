@@ -336,6 +336,21 @@ test_plan:
   test_priority: "high_first"
 
 backend:
+  - task: "Local File Storage System (Images/Videos)"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Images and videos not displaying in listings - root cause identified as missing /app/uploads directory causing silent failures in upload_to_s3 function. All uploaded listings had empty photos/videos arrays."
+      - working: true
+        agent: "main"
+        comment: "FIXED - Created missing /app/uploads directory. Tested upload_to_s3 function successfully saves files locally. File serving endpoint /api/uploads/{filename} working correctly (returns 200). Upload system mimics S3 behavior by saving to local storage and returning /api/uploads/{filename} URLs. Ready for comprehensive testing."
+
   - task: "POST Land API (/api/post-land)"
     implemented: true
     working: true
