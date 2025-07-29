@@ -40,16 +40,39 @@ function App() {
       // Decode token to get user info (simplified)
       try {
         const tokenPayload = JSON.parse(atob(token.split('.')[1]));
-        setUser({
+        const userData = {
           user_id: tokenPayload.user_id,
           user_type: tokenPayload.user_type,
           phone_number: tokenPayload.phone_number
-        });
+        };
+        setUser(userData);
+        
+        // If user is a broker, check if they're registered
+        if (userData.user_type === 'broker') {
+          checkBrokerRegistrationStatus();
+        }
       } catch (e) {
         localStorage.removeItem('token');
         setToken(null);
       }
     }
+  }, [token]);
+
+  const checkBrokerRegistrationStatus = async () => {
+    try {
+      const response = await axios.get('/api/broker-profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.data && response.data.broker) {
+        setBrokerRegistered(true);
+      }
+    } catch (error) {
+      // 404 means not registered yet, which is fine
+      setBrokerRegistered(false);
+    }
+  };
   }, [token]);
 
   const navigateToAdmin = () => {
