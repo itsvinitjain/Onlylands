@@ -560,6 +560,9 @@ async def serve_uploaded_file(filename: str):
             return FileResponse(file_path)
         else:
             raise HTTPException(status_code=404, detail="File not found")
+    except HTTPException:
+        # Re-raise HTTP exceptions (like 404)
+        raise
     except Exception as e:
         print(f"Error serving file: {e}")
         raise HTTPException(status_code=500, detail="Failed to serve file")
