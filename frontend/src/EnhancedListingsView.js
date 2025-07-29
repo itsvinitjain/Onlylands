@@ -109,8 +109,48 @@ const EnhancedListingsView = ({ setCurrentView }) => {
   };
 
   const openWhatsApp = (phoneNumber) => {
-    const message = encodeURIComponent("Hi, I'm interested in your land listing from OnlyLands.");
-    window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+    const message = encodeURIComponent("Hi, I'm interested in your land listing on OnlyLands. Could you please provide more details?");
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const openDetailModal = (listing) => {
+    setSelectedListing(listing);
+    setCurrentSlide(0);
+  };
+
+  const closeDetailModal = () => {
+    setSelectedListing(null);
+    setCurrentSlide(0);
+  };
+
+  const nextSlide = () => {
+    const totalMedia = (selectedListing?.photos?.length || 0) + (selectedListing?.videos?.length || 0);
+    if (totalMedia > 0) {
+      setCurrentSlide((prev) => (prev + 1) % totalMedia);
+    }
+  };
+
+  const prevSlide = () => {
+    const totalMedia = (selectedListing?.photos?.length || 0) + (selectedListing?.videos?.length || 0);
+    if (totalMedia > 0) {
+      setCurrentSlide((prev) => (prev - 1 + totalMedia) % totalMedia);
+    }
+  };
+
+  const getAllMedia = (listing) => {
+    const media = [];
+    if (listing?.photos) {
+      listing.photos.forEach((photo, index) => {
+        media.push({ type: 'image', src: photo, index });
+      });
+    }
+    if (listing?.videos) {
+      listing.videos.forEach((video, index) => {
+        media.push({ type: 'video', src: video, index });
+      });
+    }
+    return media;
   };
 
   if (loading) {
