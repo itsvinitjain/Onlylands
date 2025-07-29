@@ -397,7 +397,7 @@ class HybridOTPTester:
 
 def main():
     """Run comprehensive hybrid OTP functionality tests"""
-    backend_url = "https://33ca28b1-5bbc-432a-bf14-76b1e4dca3a4.preview.emergentagent.com"
+    backend_url = "https://547a6392-129c-42e0-badb-1a283db0eb37.preview.emergentagent.com"
     
     print("🔍 COMPREHENSIVE HYBRID OTP FUNCTIONALITY TESTING")
     print(f"Backend URL: {backend_url}")

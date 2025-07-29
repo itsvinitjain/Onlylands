@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime, timedelta
 
 # Backend URL
-BACKEND_URL = "https://33ca28b1-5bbc-432a-bf14-76b1e4dca3a4.preview.emergentagent.com"
+BACKEND_URL = "https://547a6392-129c-42e0-badb-1a283db0eb37.preview.emergentagent.com"
 
 # Create a test user ID
 user_id = str(uuid.uuid4())

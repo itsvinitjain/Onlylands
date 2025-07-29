@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime, timedelta
 
 def test_my_listings_auth():
-    base_url = "https://33ca28b1-5bbc-432a-bf14-76b1e4dca3a4.preview.emergentagent.com"
+    base_url = "https://547a6392-129c-42e0-badb-1a283db0eb37.preview.emergentagent.com"
     
     print("Testing /api/my-listings authentication...")
     
