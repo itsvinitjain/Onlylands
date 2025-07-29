@@ -73,7 +73,6 @@ function App() {
       setBrokerRegistered(false);
     }
   };
-  }, [token]);
 
   const navigateToAdmin = () => {
     setCurrentView('admin');
