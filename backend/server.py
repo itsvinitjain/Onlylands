@@ -794,6 +794,7 @@ async def broker_signup(broker: BrokerSignup):
             "agency": broker.agency,
             "phone_number": broker.phone_number,
             "email": broker.email,
+            "location": broker.location,
             "photo": broker.photo,
             "created_at": datetime.utcnow()
         }
