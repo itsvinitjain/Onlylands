@@ -87,19 +87,22 @@ const EnhancedListingsView = ({ setCurrentView }) => {
   };
 
   const getImageSrc = (imageData) => {
-    if (!imageData) return '/placeholder-land.jpg';
-    if (typeof imageData === 'string' && imageData.startsWith('https://')) {
-      return imageData;
-    }
-    if (typeof imageData === 'string' && imageData.startsWith('data:')) {
-      return imageData;
-    }
-    if (imageData.s3_url) {
+    // Handle S3 URL format (new structure)
+    if (imageData && imageData.s3_url) {
       return imageData.s3_url;
     }
-    if (imageData.data) {
+    
+    // Handle base64 format (fallback or legacy)
+    if (imageData && imageData.data) {
       return `data:${imageData.content_type};base64,${imageData.data}`;
     }
+    
+    // Handle direct string URLs (legacy format)
+    if (typeof imageData === 'string') {
+      return imageData;
+    }
+    
+    // Fallback placeholder
     return '/placeholder-land.jpg';
   };
 
