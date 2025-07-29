@@ -252,18 +252,36 @@ const EnhancedListingsView = ({ setCurrentView }) => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredListings.map((listing) => (
-            <div key={listing.listing_id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-              {/* Image */}
-              <div className="h-48 bg-gray-200 overflow-hidden">
+            <div key={listing.listing_id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => openDetailModal(listing)}>
+              {/* Image Slider */}
+              <div className="relative h-48 bg-gray-200 overflow-hidden">
                 {listing.photos && listing.photos.length > 0 ? (
-                  <img
-                    src={getImageSrc(listing.photos[0])}
-                    alt={listing.title}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.src = '/placeholder-land.jpg';
-                    }}
-                  />
+                  <div className="relative w-full h-full">
+                    <img
+                      src={getImageSrc(listing.photos[0])}
+                      alt={listing.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = '/placeholder-land.jpg';
+                      }}
+                    />
+                    {/* Media Counter */}
+                    {(listing.photos?.length > 1 || listing.videos?.length > 0) && (
+                      <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-full text-xs">
+                        {(listing.photos?.length || 0) + (listing.videos?.length || 0)} media
+                      </div>
+                    )}
+                    {/* Play icon for videos */}
+                    {listing.videos && listing.videos.length > 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="bg-black bg-opacity-50 text-white p-3 rounded-full">
+                          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gray-100">
                     <span className="text-gray-400 text-4xl">🏞️</span>
