@@ -1220,19 +1220,6 @@ function BrokerDashboard({ user }) {
 
             <div>
               <label className="block text-gray-700 text-sm font-bold mb-2">
-                WhatsApp Number
-              </label>
-              <input
-                type="tel"
-                value={user.phone_number}
-                disabled
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
-              />
-              <p className="text-xs text-gray-500 mt-1">Phone number from your login</p>
-            </div>
-
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2">
                 Email
               </label>
               <input
