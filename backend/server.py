@@ -484,25 +484,25 @@ async def post_land(
 ):
     """Post a new land listing"""
     try:
-        # Upload photos to S3
+        # Upload photos (S3 or base64 fallback)
         photo_urls = []
         for photo in photos:
             if photo.filename:
                 content = await photo.read()
                 filename = f"photos/{uuid.uuid4()}.{photo.filename.split('.')[-1]}"
-                photo_url = upload_to_s3(content, filename, photo.content_type)
-                if photo_url:
-                    photo_urls.append(photo_url)
+                photo_data = upload_to_s3(content, filename, photo.content_type)
+                if photo_data:
+                    photo_urls.append(photo_data)
         
-        # Upload videos to S3
+        # Upload videos (S3 or base64 fallback)
         video_urls = []
         for video in videos:
             if video.filename:
                 content = await video.read()
                 filename = f"videos/{uuid.uuid4()}.{video.filename.split('.')[-1]}"
-                video_url = upload_to_s3(content, filename, video.content_type)
-                if video_url:
-                    video_urls.append(video_url)
+                video_data = upload_to_s3(content, filename, video.content_type)
+                if video_data:
+                    video_urls.append(video_data)
         
         # Create listing
         listing_id = str(uuid.uuid4())
