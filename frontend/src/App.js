@@ -26,6 +26,7 @@ function App() {
   const [currentView, setCurrentView] = useState('home');
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
+  const [brokerRegistered, setBrokerRegistered] = useState(false);
 
   useEffect(() => {
     // Check URL for admin access
