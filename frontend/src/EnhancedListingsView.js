@@ -87,7 +87,12 @@ const EnhancedListingsView = ({ setCurrentView }) => {
   };
 
   const getImageSrc = (imageData) => {
-    // Handle S3 URLs (string format) - this is the primary format now
+    // Handle local file URLs (starts with /api/uploads/)
+    if (typeof imageData === 'string' && imageData.startsWith('/api/uploads/')) {
+      return `${process.env.REACT_APP_BACKEND_URL}${imageData}`;
+    }
+    
+    // Handle S3 URLs (string format with https://)
     if (typeof imageData === 'string' && imageData.startsWith('https://')) {
       return imageData;
     }
