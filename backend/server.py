@@ -156,8 +156,10 @@ def upload_to_s3(file_content, filename, content_type):
         os.makedirs(uploads_dir, exist_ok=True)
         
         # Generate unique filename with timestamp
+        # Replace any path separators to flatten the filename
         import time
-        unique_filename = f"{int(time.time())}_{filename}"
+        clean_filename = filename.replace('/', '_').replace('\\', '_')
+        unique_filename = f"{int(time.time())}_{clean_filename}"
         file_path = os.path.join(uploads_dir, unique_filename)
         
         # Save file locally
