@@ -41,7 +41,8 @@ function App() {
         const tokenPayload = JSON.parse(atob(token.split('.')[1]));
         setUser({
           user_id: tokenPayload.user_id,
-          user_type: tokenPayload.user_type
+          user_type: tokenPayload.user_type,
+          phone_number: tokenPayload.phone_number
         });
       } catch (e) {
         localStorage.removeItem('token');
