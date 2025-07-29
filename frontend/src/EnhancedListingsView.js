@@ -341,6 +341,176 @@ const EnhancedListingsView = ({ setCurrentView }) => {
           ))}
         </div>
       )}
+
+      {/* Detailed Modal */}
+      {selectedListing && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="text-2xl font-bold text-gray-800">{selectedListing.title}</h2>
+              <button
+                onClick={closeDetailModal}
+                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              {/* Media Slider */}
+              <div className="mb-6">
+                {getAllMedia(selectedListing).length > 0 ? (
+                  <div className="relative">
+                    <div className="relative h-64 md:h-96 bg-gray-200 rounded-lg overflow-hidden">
+                      {(() => {
+                        const allMedia = getAllMedia(selectedListing);
+                        const currentMedia = allMedia[currentSlide];
+                        
+                        if (!currentMedia) return null;
+
+                        if (currentMedia.type === 'image') {
+                          return (
+                            <img
+                              src={getImageSrc(currentMedia.src)}
+                              alt={selectedListing.title}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.src = '/placeholder-land.jpg';
+                              }}
+                            />
+                          );
+                        } else {
+                          return (
+                            <video
+                              src={getImageSrc(currentMedia.src)}
+                              controls
+                              className="w-full h-full object-cover"
+                            >
+                              Your browser does not support the video tag.
+                            </video>
+                          );
+                        }
+                      })()}
+                    </div>
+
+                    {/* Navigation Arrows */}
+                    {getAllMedia(selectedListing).length > 1 && (
+                      <>
+                        <button
+                          onClick={prevSlide}
+                          className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={nextSlide}
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </>
+                    )}
+
+                    {/* Media Counter */}
+                    <div className="absolute bottom-4 right-4 bg-black bg-opacity-60 text-white px-3 py-1 rounded-full text-sm">
+                      {currentSlide + 1} / {getAllMedia(selectedListing).length}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <span className="text-gray-400 text-6xl">🏞️</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Property Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Property Details</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center text-gray-600">
+                        <span className="mr-3 text-lg">📍</span>
+                        <span>{selectedListing.location || selectedListing.city || 'Location not specified'}</span>
+                      </div>
+                      <div className="flex items-center text-gray-600">
+                        <span className="mr-3 text-lg">📏</span>
+                        <span>{selectedListing.area}</span>
+                      </div>
+                      <div className="flex items-center text-green-600 font-bold text-xl">
+                        <span className="mr-3 text-lg">💰</span>
+                        <span>₹{selectedListing.price}</span>
+                      </div>
+                      <div className="flex items-center text-gray-600">
+                        <span className="mr-3 text-lg">📋</span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          selectedListing.status === 'active' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {selectedListing.status === 'active' ? 'Available' : 'Pending'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Description</h3>
+                    <p className="text-gray-600 leading-relaxed">{selectedListing.description}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Media Gallery</h3>
+                    <div className="grid grid-cols-3 gap-2">
+                      {getAllMedia(selectedListing).map((media, index) => (
+                        <div
+                          key={index}
+                          className={`relative cursor-pointer rounded-lg overflow-hidden ${
+                            index === currentSlide ? 'ring-2 ring-blue-500' : ''
+                          }`}
+                          onClick={() => setCurrentSlide(index)}
+                        >
+                          {media.type === 'image' ? (
+                            <img
+                              src={getImageSrc(media.src)}
+                              alt={`${selectedListing.title} ${index + 1}`}
+                              className="w-full h-16 object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-16 bg-gray-300 flex items-center justify-center">
+                              <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-4">
+                    <button
+                      onClick={() => openWhatsApp(selectedListing.phone_number)}
+                      className="w-full bg-green-500 text-white py-3 px-6 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center text-lg font-semibold"
+                    >
+                      <span className="mr-3">📱</span>
+                      Contact Owner via WhatsApp
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
