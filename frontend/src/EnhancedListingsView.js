@@ -87,19 +87,14 @@ const EnhancedListingsView = ({ setCurrentView }) => {
   };
 
   const getImageSrc = (imageData) => {
-    // Handle S3 URL format (new structure)
-    if (imageData && imageData.s3_url) {
-      return imageData.s3_url;
+    // Handle S3 URLs (string format) - this is the primary format now
+    if (typeof imageData === 'string' && imageData.startsWith('https://')) {
+      return imageData;
     }
     
-    // Handle base64 format (fallback or legacy)
+    // Handle base64 format (legacy format)
     if (imageData && imageData.data) {
       return `data:${imageData.content_type};base64,${imageData.data}`;
-    }
-    
-    // Handle direct string URLs (legacy format)
-    if (typeof imageData === 'string') {
-      return imageData;
     }
     
     // Fallback placeholder
