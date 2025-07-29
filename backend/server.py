@@ -125,6 +125,7 @@ class BrokerSignup(BaseModel):
     agency: str
     phone_number: str
     email: str
+    location: Optional[str] = None
     photo: Optional[str] = None
 
 class PaymentRequest(BaseModel):
