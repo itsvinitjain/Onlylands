@@ -532,6 +532,18 @@ async def get_listings():
         print(f"Error getting listings: {e}")
         raise HTTPException(status_code=500, detail="Failed to get listings")
 
+@app.get("/api/debug/all-listings")
+async def get_all_listings_debug():
+    """Debug endpoint to see all listings regardless of status"""
+    try:
+        listings = list(db.listings.find({}))
+        for listing in listings:
+            listing['_id'] = str(listing['_id'])
+        return {"listings": listings, "count": len(listings)}
+    except Exception as e:
+        print(f"Error getting debug listings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get debug listings")
+
 @app.post("/api/create-payment-order")
 async def create_payment_order(request: dict, user_id: str = Depends(verify_jwt_token)):
     """Create Razorpay payment order with demo mode support"""
