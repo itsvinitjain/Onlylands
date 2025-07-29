@@ -1538,14 +1538,19 @@ function MyListings({ user, setCurrentView }) {
   }, [user]);
 
   const getImageSrc = (imageData) => {
-    // Handle S3 URLs (string format)
-    if (typeof imageData === 'string') {
-      return imageData;
+    // Handle S3 URL format (new structure)
+    if (imageData && imageData.s3_url) {
+      return imageData.s3_url;
     }
     
-    // Handle base64 format (legacy format)
+    // Handle base64 format (fallback or legacy)
     if (imageData && imageData.data) {
       return `data:${imageData.content_type};base64,${imageData.data}`;
+    }
+    
+    // Handle direct string URLs (legacy format)
+    if (typeof imageData === 'string') {
+      return imageData;
     }
     
     // Fallback placeholder
