@@ -1211,7 +1211,6 @@ function BrokerDashboard({ user }) {
       console.log('✅ Registration response:', response.data);
       
       alert('Registration successful! You can now access the broker dashboard.');
-      setBrokerRegistered(true);
       setIsRegistered(true);
       checkBrokerRegistration(); // Refresh data
     } catch (error) {
