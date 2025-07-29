@@ -327,7 +327,10 @@ const EnhancedListingsView = ({ setCurrentView }) => {
 
                 {/* Contact Button */}
                 <button
-                  onClick={() => openWhatsApp(listing.phone_number)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openWhatsApp(listing.phone_number);
+                  }}
                   className="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center"
                 >
                   <span className="mr-2">📱</span>
