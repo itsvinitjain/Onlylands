@@ -144,7 +144,7 @@ function App() {
 }
 
 // Home Page Component
-function HomePage({ setCurrentView, user, logout }) {
+function HomePage({ setCurrentView, user, logout, brokerRegistered }) {
   const [stats, setStats] = useState(null);
   const [logoClickCount, setLogoClickCount] = useState(0);
 
