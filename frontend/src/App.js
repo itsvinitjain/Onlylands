@@ -1169,7 +1169,8 @@ function BrokerDashboard({ user }) {
         name: registrationData.name,
         agency: registrationData.agency,
         phone_number: user.phone_number, // Use phone from authenticated user
-        email: registrationData.email
+        email: registrationData.email,
+        location: registrationData.location
       };
 
       await axios.post('/api/broker-signup', brokerData);
