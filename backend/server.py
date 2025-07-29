@@ -549,6 +549,19 @@ async def get_listings():
         print(f"Error getting listings: {e}")
         raise HTTPException(status_code=500, detail="Failed to get listings")
 
+@app.get("/api/uploads/{filename}")
+async def serve_uploaded_file(filename: str):
+    """Serve uploaded files from local storage"""
+    try:
+        file_path = f"/app/uploads/{filename}"
+        if os.path.exists(file_path):
+            return FileResponse(file_path)
+        else:
+            raise HTTPException(status_code=404, detail="File not found")
+    except Exception as e:
+        print(f"Error serving file: {e}")
+        raise HTTPException(status_code=500, detail="Failed to serve file")
+
 @app.get("/api/debug/all-listings")
 async def get_all_listings_debug():
     """Debug endpoint to see all listings regardless of status"""
