@@ -9,6 +9,8 @@ const EnhancedListingsView = ({ setCurrentView }) => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [priceRange, setPriceRange] = useState('');
   const [locations, setLocations] = useState([]);
+  const [selectedListing, setSelectedListing] = useState(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
