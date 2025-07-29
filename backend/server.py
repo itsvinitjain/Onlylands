@@ -146,9 +146,17 @@ def get_image_src(image_data):
         return None
 
 def upload_to_s3(file_content, filename, content_type):
-    """Upload file to S3 and return URL"""
-    if not s3_client:
-        return None
+    """Upload file to S3 and return URL, or return base64 data if S3 not configured"""
+    if not s3_client or not S3_BUCKET_NAME:
+        # Fallback to base64 storage when S3 is not configured
+        import base64
+        encoded = base64.b64encode(file_content).decode('utf-8')
+        return {
+            "data": encoded,
+            "content_type": content_type,
+            "filename": filename,
+            "storage_type": "base64"
+        }
     
     try:
         s3_client.put_object(
@@ -157,10 +165,22 @@ def upload_to_s3(file_content, filename, content_type):
             Body=file_content,
             ContentType=content_type
         )
-        return f"https://{S3_BUCKET_NAME}.s3.{S3_REGION}.amazonaws.com/{filename}"
+        return {
+            "s3_url": f"https://{S3_BUCKET_NAME}.s3.{S3_REGION}.amazonaws.com/{filename}",
+            "filename": filename,
+            "storage_type": "s3"
+        }
     except ClientError as e:
         print(f"Error uploading to S3: {e}")
-        return None
+        # Fallback to base64 if S3 upload fails
+        import base64
+        encoded = base64.b64encode(file_content).decode('utf-8')
+        return {
+            "data": encoded,
+            "content_type": content_type,
+            "filename": filename,
+            "storage_type": "base64_fallback"
+        }
 
 # Database helper functions
 def check_db_connection():
