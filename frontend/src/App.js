@@ -132,7 +132,7 @@ function App() {
       case 'listings':
         return <EnhancedListingsView setCurrentView={setCurrentView} />;
       default:
-        return <HomePage setCurrentView={setCurrentView} user={user} logout={logout} />;
+        return <HomePage setCurrentView={setCurrentView} user={user} logout={logout} brokerRegistered={brokerRegistered} />;
     }
   };
 
