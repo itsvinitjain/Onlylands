@@ -1165,6 +1165,14 @@ function BrokerDashboard({ user }) {
     setLoading(true);
 
     try {
+      console.log('🔍 Starting broker registration...');
+      console.log('User data:', user);
+      console.log('Registration data:', registrationData);
+      
+      if (!user?.phone_number) {
+        throw new Error('Phone number not available. Please login again.');
+      }
+
       const brokerData = {
         name: registrationData.name,
         agency: registrationData.agency,
@@ -1173,12 +1181,32 @@ function BrokerDashboard({ user }) {
         location: registrationData.location
       };
 
-      await axios.post('/api/broker-signup', brokerData);
+      console.log('Sending broker data:', brokerData);
+
+      const response = await axios.post('/api/broker-signup', brokerData);
+      console.log('✅ Registration response:', response.data);
+      
       alert('Registration successful! You can now access the broker dashboard.');
       setIsRegistered(true);
       checkBrokerRegistration(); // Refresh data
     } catch (error) {
-      alert('Registration failed: ' + (error.response?.data?.detail || 'Unknown error'));
+      console.error('❌ Registration error:', error);
+      console.error('Error response:', error.response?.data);
+      
+      let errorMessage = 'Registration failed: ';
+      if (error.response?.data?.detail) {
+        if (Array.isArray(error.response.data.detail)) {
+          errorMessage += error.response.data.detail.map(err => err.msg || err.message || JSON.stringify(err)).join(', ');
+        } else {
+          errorMessage += error.response.data.detail;
+        }
+      } else if (error.message) {
+        errorMessage += error.message;
+      } else {
+        errorMessage += 'Unknown error';
+      }
+      
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
