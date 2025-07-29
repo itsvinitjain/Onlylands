@@ -3402,15 +3402,15 @@ def main():
     
     tester = OnlyLandsAPITester(backend_url)
     
-    # CRITICAL TEST: Razorpay Payment System
-    print("\n🚨 RUNNING RAZORPAY PAYMENT SYSTEM TEST")
-    print("This test verifies the complete payment flow with demo mode support")
+    # CRITICAL TEST: Local File Storage System
+    print("\n🚨 RUNNING LOCAL FILE STORAGE SYSTEM TEST")
+    print("This test verifies the complete image/video upload and retrieval system")
     print("=" * 80)
     
-    payment_system_success = tester.test_razorpay_payment_system()
+    file_storage_success = tester.test_local_file_storage_system()
     
-    if not payment_system_success:
-        print("\n❌ CRITICAL FAILURE: Razorpay payment system test failed!")
+    if not file_storage_success:
+        print("\n❌ CRITICAL FAILURE: Local file storage system test failed!")
         return 1
     
     # Test basic health check
@@ -3424,9 +3424,9 @@ def main():
     
     # Print final results
     print("\n" + "=" * 80)
-    print("📊 COMPREHENSIVE PAYMENT SYSTEM TEST RESULTS")
+    print("📊 COMPREHENSIVE FILE STORAGE SYSTEM TEST RESULTS")
     print("=" * 80)
-    print(f"💳 CRITICAL: Razorpay Payment System: {'✅ PASSED' if payment_system_success else '❌ FAILED'}")
+    print(f"📁 CRITICAL: Local File Storage System: {'✅ PASSED' if file_storage_success else '❌ FAILED'}")
     print(f"🔍 API Health Check: {'✅ PASSED' if health_check_success else '❌ FAILED'}")
     print(f"📊 Total Tests: {tester.tests_run}, Passed: {tester.tests_passed}")
     print("=" * 80)
@@ -3435,27 +3435,30 @@ def main():
     print("\n📋 SUMMARY OF FINDINGS:")
     print("=" * 50)
     
-    if payment_system_success and health_check_success:
-        print("🎉 SUCCESS: The OnlyLands payment system is fully functional!")
-        print("✅ Payment order creation working correctly")
-        print("✅ Demo mode fallback working correctly")
-        print("✅ Payment verification working correctly")
-        print("✅ Listing activation after payment working correctly")
-        print("✅ Authentication requirements working correctly")
-        print("✅ Error handling working correctly")
-        print("✅ Complete payment flow is functional")
+    if file_storage_success and health_check_success:
+        print("🎉 SUCCESS: The OnlyLands file storage system is fully functional!")
+        print("✅ File upload via POST /api/post-land working correctly")
+        print("✅ Files saved to /app/uploads directory successfully")
+        print("✅ Database stores correct /api/uploads/{filename} URLs")
+        print("✅ File serving via GET /api/uploads/{filename} working")
+        print("✅ 404 error handling for missing files working")
+        print("✅ Photos-only listings working correctly")
+        print("✅ Videos-only listings working correctly")
+        print("✅ Unique filename generation with timestamps working")
+        print("✅ Complete image/video upload and retrieval system functional")
         
         print("\n⚠️ IMPORTANT NOTES:")
-        print("• Demo payment mode is working correctly")
-        print("• Listings are properly activated after payment verification")
-        print("• Users can complete payments and see their listings activated")
-        print("• Payment system is ready for production use")
+        print("• Local file storage mimicking S3 behavior is working correctly")
+        print("• Files are properly saved with unique timestamp prefixes")
+        print("• Database correctly stores /api/uploads/{filename} URLs")
+        print("• File serving endpoint handles both success and 404 scenarios")
+        print("• System supports both photos and videos in listings")
         
         return 0
     else:
-        print("❌ FAILURE: Issues found in the payment system!")
-        if not payment_system_success:
-            print("❌ Payment system functionality issues")
+        print("❌ FAILURE: Issues found in the file storage system!")
+        if not file_storage_success:
+            print("❌ File storage system functionality issues")
         if not health_check_success:
             print("❌ API health check issues")
         return 1
