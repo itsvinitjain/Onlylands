@@ -1888,14 +1888,6 @@ function MyListings({ user, setCurrentView }) {
     }
   };
 
-  const openListingModal = (listing) => {
-    setSelectedListing(listing);
-  };
-
-  const closeModal = () => {
-    setSelectedListing(null);
-  };
-
   const getStatusBadge = (status) => {
     if (status === 'active') {
       return <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">🟢 Active</span>;
