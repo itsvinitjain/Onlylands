@@ -514,6 +514,7 @@ async def post_land(
             "area": area,
             "price": price,
             "description": description,
+            "location": location,
             "latitude": latitude,
             "longitude": longitude,
             "photos": photo_urls,
