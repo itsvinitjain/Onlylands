@@ -1908,14 +1908,20 @@ function MyListings({ user, setCurrentView }) {
 
                 {/* Payment Status */}
                 {selectedListing.status === 'pending_payment' && (
-                  <div className="bg-yellow-50 p-4 rounded-lg">
+                  <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
                     <h3 className="font-semibold text-yellow-800 mb-2">💳 Payment Required</h3>
                     <p className="text-yellow-700 text-sm mb-3">
                       Complete the payment to activate this listing and broadcast it to 1000+ brokers via WhatsApp.
                     </p>
-                    <p className="text-yellow-600 text-xs">
+                    <p className="text-yellow-600 text-xs mb-4">
                       Once payment is completed, your listing will be visible to all users and brokers in the marketplace.
                     </p>
+                    <button
+                      onClick={() => initiatePayment(selectedListing.listing_id)}
+                      className="bg-yellow-600 text-white px-6 py-2 rounded-lg hover:bg-yellow-700 transition-colors font-semibold"
+                    >
+                      💳 Complete Payment - ₹299
+                    </button>
                   </div>
                 )}
 
