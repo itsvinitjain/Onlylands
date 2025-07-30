@@ -1680,12 +1680,50 @@ function MyListings({ user, setCurrentView }) {
   const [loading, setLoading] = useState(true);
   const [selectedListing, setSelectedListing] = useState(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     fetchMyListings();
   }, [user]);
 
-  const initiatePayment = async (listingId) => {
+  const getAllMedia = (listing) => {
+    const media = [];
+    if (listing?.photos) {
+      listing.photos.forEach((photo, index) => {
+        media.push({ type: 'image', src: photo, index });
+      });
+    }
+    if (listing?.videos) {
+      listing.videos.forEach((video, index) => {
+        media.push({ type: 'video', src: video, index });
+      });
+    }
+    return media;
+  };
+
+  const nextSlide = () => {
+    const totalMedia = getAllMedia(selectedListing).length;
+    if (totalMedia > 0) {
+      setCurrentSlide((prev) => (prev + 1) % totalMedia);
+    }
+  };
+
+  const prevSlide = () => {
+    const totalMedia = getAllMedia(selectedListing).length;
+    if (totalMedia > 0) {
+      setCurrentSlide((prev) => (prev - 1 + totalMedia) % totalMedia);
+    }
+  };
+
+  const openListingModal = (listing) => {
+    setSelectedListing(listing);
+    setCurrentSlide(0);
+  };
+
+  const closeModal = () => {
+    setSelectedListing(null);
+    setCurrentSlide(0);
+  };
     setPaymentLoading(true);
     try {
       // Create payment order
