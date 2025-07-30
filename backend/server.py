@@ -546,8 +546,7 @@ async def get_my_listings(user_id: str = Depends(verify_jwt_token)):
 async def get_listings():
     """Get all active listings"""
     try:
-        # Include both active and pending_payment listings for testing media display
-        listings = list(db.listings.find({"status": {"$in": ["active", "pending_payment"]}}))
+        listings = list(db.listings.find({"status": "active"}))
         for listing in listings:
             listing['_id'] = str(listing['_id'])
         return {"listings": listings}
