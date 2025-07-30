@@ -1724,6 +1724,8 @@ function MyListings({ user, setCurrentView }) {
     setSelectedListing(null);
     setCurrentSlide(0);
   };
+
+  const initiatePayment = async (listingId) => {
     setPaymentLoading(true);
     try {
       // Create payment order
