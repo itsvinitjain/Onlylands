@@ -765,18 +765,6 @@ function PostLandForm({ user, setCurrentView }) {
                 </div>
               </div>
             )}
-                        type="button"
-                        onClick={() => removeVideo(index)}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                      >
-                        ×
-                      </button>
-                      <p className="text-xs text-gray-600 mt-1 truncate">{preview.name}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="bg-blue-50 p-4 rounded-lg">
