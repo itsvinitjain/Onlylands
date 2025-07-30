@@ -606,78 +606,164 @@ function PostLandForm({ user, setCurrentView }) {
             />
           </div>
 
-          {/* Photo Upload Section */}
+          {/* Photo Upload Section - Enhanced */}
           <div>
             <label className="block text-gray-700 text-sm font-bold mb-2">
-              📷 Upload Photos (Max 5)
+              📷 Upload Photos
             </label>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Supported formats: JPG, PNG, WebP. Max 5 photos.
-            </p>
+            
+            {/* Photo Upload Area */}
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+                id="photo-upload"
+              />
+              <label htmlFor="photo-upload" className="cursor-pointer">
+                <div className="mb-4">
+                  <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg text-gray-600 font-semibold mb-1">Click to upload photos</p>
+                  <p className="text-sm text-gray-500">or drag and drop</p>
+                  <p className="text-xs text-gray-400 mt-2">PNG, JPG, WebP up to 10MB each (Max 5 photos)</p>
+                </div>
+              </label>
+            </div>
             
             {/* Image Previews */}
             {imagePreviews.length > 0 && (
               <div className="mt-4">
-                <p className="text-sm font-semibold text-gray-700 mb-2">Photo Previews:</p>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-semibold text-gray-700">Photos ({imagePreviews.length}/5)</p>
+                  <button
+                    type="button"
+                    onClick={() => setImagePreviews([])}
+                    className="text-sm text-red-600 hover:text-red-800"
+                  >
+                    Remove All
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                   {imagePreviews.map((preview, index) => (
-                    <div key={index} className="relative">
-                      <img
-                        src={preview.url}
-                        alt={preview.name}
-                        className="w-full h-32 object-cover rounded-lg border"
-                      />
+                    <div key={index} className="relative group">
+                      <div className="aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
+                        <img
+                          src={preview.url}
+                          alt={preview.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
                       <button
                         type="button"
                         onClick={() => removeImage(index)}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         ×
                       </button>
-                      <p className="text-xs text-gray-600 mt-1 truncate">{preview.name}</p>
+                      <p className="text-xs text-gray-600 mt-1 truncate text-center">{preview.name}</p>
                     </div>
                   ))}
+                  
+                  {/* Add more photos button */}
+                  {imagePreviews.length < 5 && (
+                    <div className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
+                      <label htmlFor="photo-upload" className="cursor-pointer flex flex-col items-center text-gray-400 hover:text-gray-600">
+                        <svg className="w-8 h-8 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        <span className="text-xs">Add More</span>
+                      </label>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Video Upload Section */}
+          {/* Video Upload Section - Enhanced */}
           <div>
             <label className="block text-gray-700 text-sm font-bold mb-2">
-              🎥 Upload Videos (Max 2)
+              🎥 Upload Videos
             </label>
-            <input
-              type="file"
-              multiple
-              accept="video/*"
-              onChange={handleVideoChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Supported formats: MP4, WebM, MOV. Max 2 videos, 50MB each.
-            </p>
+            
+            {/* Video Upload Area */}
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+              <input
+                type="file"
+                multiple
+                accept="video/*"
+                onChange={handleVideoChange}
+                className="hidden"
+                id="video-upload"
+              />
+              <label htmlFor="video-upload" className="cursor-pointer">
+                <div className="mb-4">
+                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg text-gray-600 font-semibold mb-1">Click to upload videos</p>
+                  <p className="text-sm text-gray-500">or drag and drop</p>
+                  <p className="text-xs text-gray-400 mt-2">MP4, WebM, MOV up to 50MB each (Max 2 videos)</p>
+                </div>
+              </label>
+            </div>
             
             {/* Video Previews */}
             {videoPreviews.length > 0 && (
               <div className="mt-4">
-                <p className="text-sm font-semibold text-gray-700 mb-2">Video Previews:</p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-semibold text-gray-700">Videos ({videoPreviews.length}/2)</p>
+                  <button
+                    type="button"
+                    onClick={() => setVideoPreviews([])}
+                    className="text-sm text-red-600 hover:text-red-800"
+                  >
+                    Remove All
+                  </button>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {videoPreviews.map((preview, index) => (
-                    <div key={index} className="relative">
-                      <video
-                        src={preview.url}
-                        controls
-                        className="w-full h-40 object-cover rounded-lg border"
-                      />
+                    <div key={index} className="relative group">
+                      <div className="rounded-lg overflow-hidden border-2 border-gray-200">
+                        <video
+                          src={preview.url}
+                          controls
+                          className="w-full h-48 object-cover"
+                        />
+                      </div>
                       <button
+                        type="button"
+                        onClick={() => removeVideo(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        ×
+                      </button>
+                      <p className="text-xs text-gray-600 mt-1 truncate text-center">{preview.name}</p>
+                    </div>
+                  ))}
+                  
+                  {/* Add more videos button */}
+                  {videoPreviews.length < 2 && (
+                    <div className="rounded-lg border-2 border-dashed border-gray-300 h-48 flex items-center justify-center">
+                      <label htmlFor="video-upload" className="cursor-pointer flex flex-col items-center text-gray-400 hover:text-gray-600">
+                        <svg className="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        <span className="text-sm">Add More Videos</span>
+                      </label>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
                         type="button"
                         onClick={() => removeVideo(index)}
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
