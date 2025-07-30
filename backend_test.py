@@ -3657,6 +3657,490 @@ class OnlyLandsAPITester:
         
         return True
 
+    def test_review_request_changes(self):
+        """
+        COMPREHENSIVE TEST: Test the 5 specific changes mentioned in the review request
+        1. Location Data Fix - Test POST /api/post-land with location field
+        2. Complete Payment Functionality - Test payment flow from pending_payment to active
+        3. Enhanced Media Storage - Test file upload and serving with multiple media files
+        """
+        print("\n" + "="*80)
+        print("🎯 REVIEW REQUEST TESTING: 5 IMPLEMENTED CHANGES")
+        print("="*80)
+        
+        # Setup authentication first
+        if not self.token:
+            print("🔐 Setting up authentication for testing...")
+            test_phone = "+919876543210"
+            
+            # Create test JWT token for authentication
+            try:
+                import jwt
+                from datetime import datetime, timedelta
+                
+                JWT_SECRET = 'your-secure-jwt-secret-key-here-change-this-in-production'
+                test_user_id = str(uuid.uuid4())
+                
+                test_payload = {
+                    "user_id": test_user_id,
+                    "phone_number": test_phone,
+                    "user_type": "seller",
+                    "exp": datetime.utcnow() + timedelta(hours=24)
+                }
+                
+                test_token = jwt.encode(test_payload, JWT_SECRET, algorithm="HS256")
+                self.token = test_token
+                self.user_id = test_user_id
+                
+                print(f"✅ Authentication setup complete")
+                
+            except Exception as e:
+                print(f"❌ FAILURE: Could not setup authentication: {e}")
+                return False
+        
+        # TEST 1: Location Data Fix
+        print("\n🌍 TEST 1: LOCATION DATA FIX")
+        print("-" * 50)
+        print("Testing POST /api/post-land with location field and verifying location data storage/retrieval")
+        
+        location_test_success = self.test_location_data_fix()
+        
+        # TEST 2: Complete Payment Functionality
+        print("\n💳 TEST 2: COMPLETE PAYMENT FUNCTIONALITY")
+        print("-" * 50)
+        print("Testing payment flow: pending_payment → payment order → payment verification → active status")
+        
+        payment_test_success = self.test_complete_payment_functionality()
+        
+        # TEST 3: Enhanced Media Storage
+        print("\n📁 TEST 3: ENHANCED MEDIA STORAGE")
+        print("-" * 50)
+        print("Testing file upload, storage in /app/uploads, and serving via GET /api/uploads/{filename}")
+        
+        media_test_success = self.test_enhanced_media_storage()
+        
+        # Final Summary
+        print("\n" + "="*80)
+        print("📊 REVIEW REQUEST TESTING SUMMARY")
+        print("="*80)
+        
+        tests_results = [
+            ("Location Data Fix", location_test_success),
+            ("Complete Payment Functionality", payment_test_success),
+            ("Enhanced Media Storage", media_test_success)
+        ]
+        
+        passed_tests = sum(1 for _, success in tests_results if success)
+        total_tests = len(tests_results)
+        
+        for test_name, success in tests_results:
+            status = "✅ PASSED" if success else "❌ FAILED"
+            print(f"{test_name}: {status}")
+        
+        print(f"\nOverall Results: {passed_tests}/{total_tests} tests passed")
+        
+        if passed_tests == total_tests:
+            print("🎉 ALL REVIEW REQUEST CHANGES ARE WORKING CORRECTLY!")
+        else:
+            print("⚠️ Some review request changes have issues that need attention.")
+        
+        print("="*80)
+        
+        return passed_tests == total_tests
+
+    def test_location_data_fix(self):
+        """Test location data storage and retrieval in POST /api/post-land"""
+        print("📍 Testing location field in land listings...")
+        
+        # Create test files
+        test_image_path = '/tmp/test_location_image.jpg'
+        with open(test_image_path, 'wb') as f:
+            f.write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))
+        
+        # Test data from review request
+        form_data = {
+            'title': 'Test Farm Land with Location',
+            'location': 'Nashik, Maharashtra',
+            'area': '2.5 acres',
+            'price': '750000',
+            'description': 'Fertile farm land with good water supply',
+            'latitude': '20.0059',
+            'longitude': '73.7911'
+        }
+        
+        files = [('photos', ('location_test.jpg', open(test_image_path, 'rb'), 'image/jpeg'))]
+        
+        url = f"{self.base_url}/api/post-land"
+        headers = {'Authorization': f'Bearer {self.token}'}
+        
+        self.tests_run += 1
+        print(f"🔍 Creating listing with location: {form_data['location']}")
+        
+        try:
+            response = requests.post(url, data=form_data, files=files, headers=headers)
+            
+            if response.status_code == 200:
+                self.tests_passed += 1
+                result = response.json()
+                listing_id = result.get('listing_id')
+                print(f"✅ Listing created with location field: {listing_id}")
+                
+                # Verify location is stored by checking my-listings
+                time.sleep(1)
+                my_listings_success, my_listings_response = self.run_test(
+                    "Verify Location in My Listings",
+                    "GET",
+                    "api/my-listings",
+                    200
+                )
+                
+                if my_listings_success:
+                    listings = my_listings_response.get('listings', [])
+                    found_listing = None
+                    for listing in listings:
+                        if listing.get('listing_id') == listing_id:
+                            found_listing = listing
+                            break
+                    
+                    if found_listing and found_listing.get('location') == 'Nashik, Maharashtra':
+                        print(f"✅ Location data correctly stored and retrieved: {found_listing.get('location')}")
+                        return True
+                    else:
+                        print(f"❌ Location data not found or incorrect in stored listing")
+                        print(f"Expected: 'Nashik, Maharashtra', Got: {found_listing.get('location') if found_listing else 'No listing found'}")
+                        return False
+                else:
+                    print("❌ Could not verify location data in my-listings")
+                    return False
+            else:
+                print(f"❌ Failed to create listing with location: {response.status_code}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error testing location data: {e}")
+            return False
+        finally:
+            try:
+                files[0][1][1].close()
+                os.remove(test_image_path)
+            except:
+                pass
+
+    def test_complete_payment_functionality(self):
+        """Test complete payment flow from pending_payment to active"""
+        print("💰 Testing complete payment functionality...")
+        
+        # First create a listing (should have pending_payment status)
+        if not self.listing_id:
+            print("📝 Creating test listing for payment testing...")
+            
+            test_image_path = '/tmp/test_payment_image.jpg'
+            with open(test_image_path, 'wb') as f:
+                f.write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))
+            
+            form_data = {
+                'title': 'Payment Test Land',
+                'location': 'Mumbai, Maharashtra',
+                'area': '1 acre',
+                'price': '500000',
+                'description': 'Test listing for payment flow',
+                'latitude': '19.0760',
+                'longitude': '72.8777'
+            }
+            
+            files = [('photos', ('payment_test.jpg', open(test_image_path, 'rb'), 'image/jpeg'))]
+            
+            url = f"{self.base_url}/api/post-land"
+            headers = {'Authorization': f'Bearer {self.token}'}
+            
+            try:
+                response = requests.post(url, data=form_data, files=files, headers=headers)
+                if response.status_code == 200:
+                    result = response.json()
+                    self.listing_id = result.get('listing_id')
+                    print(f"✅ Test listing created: {self.listing_id}")
+                else:
+                    print(f"❌ Failed to create test listing: {response.status_code}")
+                    return False
+            except Exception as e:
+                print(f"❌ Error creating test listing: {e}")
+                return False
+            finally:
+                try:
+                    files[0][1][1].close()
+                    os.remove(test_image_path)
+                except:
+                    pass
+        
+        # Step 1: Verify listing has pending_payment status
+        print("🔍 Step 1: Verifying listing has pending_payment status...")
+        my_listings_success, my_listings_response = self.run_test(
+            "Check Initial Listing Status",
+            "GET",
+            "api/my-listings",
+            200
+        )
+        
+        if my_listings_success:
+            listings = my_listings_response.get('listings', [])
+            found_listing = None
+            for listing in listings:
+                if listing.get('listing_id') == self.listing_id:
+                    found_listing = listing
+                    break
+            
+            if found_listing and found_listing.get('status') == 'pending_payment':
+                print(f"✅ Listing has correct initial status: pending_payment")
+            else:
+                print(f"❌ Listing status incorrect. Expected: pending_payment, Got: {found_listing.get('status') if found_listing else 'No listing found'}")
+                return False
+        else:
+            print("❌ Could not verify initial listing status")
+            return False
+        
+        # Step 2: Create payment order
+        print("🔍 Step 2: Creating payment order...")
+        payment_data = {
+            "amount": 299,
+            "listing_id": self.listing_id
+        }
+        
+        payment_order_success, payment_order_response = self.run_test(
+            "Create Payment Order",
+            "POST",
+            "api/create-payment-order",
+            200,
+            data=payment_data
+        )
+        
+        if payment_order_success:
+            order = payment_order_response.get('order', {})
+            self.razorpay_order_id = order.get('id')
+            demo_mode = payment_order_response.get('demo_mode', False)
+            print(f"✅ Payment order created: {self.razorpay_order_id}")
+            print(f"✅ Demo mode: {demo_mode}")
+        else:
+            print("❌ Failed to create payment order")
+            return False
+        
+        # Step 3: Verify payment
+        print("🔍 Step 3: Verifying payment...")
+        payment_verification_data = {
+            "razorpay_order_id": self.razorpay_order_id,
+            "razorpay_payment_id": f"pay_demo_{int(time.time())}",
+            "razorpay_signature": f"demo_signature_{int(time.time())}"
+        }
+        
+        payment_verify_success, payment_verify_response = self.run_test(
+            "Verify Payment",
+            "POST",
+            "api/verify-payment",
+            200,
+            data=payment_verification_data
+        )
+        
+        if payment_verify_success:
+            print(f"✅ Payment verified: {payment_verify_response.get('message')}")
+        else:
+            print("❌ Failed to verify payment")
+            return False
+        
+        # Step 4: Verify listing status changed to active
+        print("🔍 Step 4: Verifying listing status changed to active...")
+        time.sleep(2)  # Wait for database update
+        
+        final_status_success, final_status_response = self.run_test(
+            "Check Final Listing Status",
+            "GET",
+            "api/my-listings",
+            200
+        )
+        
+        if final_status_success:
+            listings = final_status_response.get('listings', [])
+            found_listing = None
+            for listing in listings:
+                if listing.get('listing_id') == self.listing_id:
+                    found_listing = listing
+                    break
+            
+            if found_listing and found_listing.get('status') == 'active':
+                print(f"✅ Listing status successfully changed to: active")
+                
+                # Verify listing appears in public listings
+                public_listings_success, public_listings_response = self.run_test(
+                    "Verify Listing in Public Listings",
+                    "GET",
+                    "api/listings",
+                    200
+                )
+                
+                if public_listings_success:
+                    public_listings = public_listings_response.get('listings', [])
+                    found_in_public = any(listing.get('listing_id') == self.listing_id for listing in public_listings)
+                    
+                    if found_in_public:
+                        print(f"✅ Activated listing appears in public listings")
+                        return True
+                    else:
+                        print(f"❌ Activated listing not found in public listings")
+                        return False
+                else:
+                    print("❌ Could not verify listing in public listings")
+                    return False
+            else:
+                print(f"❌ Listing status not updated. Expected: active, Got: {found_listing.get('status') if found_listing else 'No listing found'}")
+                return False
+        else:
+            print("❌ Could not verify final listing status")
+            return False
+
+    def test_enhanced_media_storage(self):
+        """Test enhanced media storage with multiple photos and videos"""
+        print("📸 Testing enhanced media storage...")
+        
+        # Create multiple test files
+        test_files = []
+        file_paths = []
+        
+        try:
+            # Create 2 test images
+            for i in range(2):
+                image_path = f'/tmp/test_media_image_{i}.jpg'
+                with open(image_path, 'wb') as f:
+                    f.write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))
+                test_files.append(('photos', (f'media_test_image_{i}.jpg', open(image_path, 'rb'), 'image/jpeg')))
+                file_paths.append(image_path)
+            
+            # Create 1 test video
+            video_path = '/tmp/test_media_video.mp4'
+            with open(video_path, 'wb') as f:
+                f.write(b'TEST VIDEO CONTENT FOR MEDIA STORAGE TESTING')
+            test_files.append(('videos', ('media_test_video.mp4', open(video_path, 'rb'), 'video/mp4')))
+            file_paths.append(video_path)
+            
+            # Test data
+            form_data = {
+                'title': 'Enhanced Media Storage Test',
+                'location': 'Mumbai, Maharashtra',
+                'area': '1 acre',
+                'price': '500000',
+                'description': 'Test listing with multiple photos and videos',
+                'latitude': '19.0760',
+                'longitude': '72.8777'
+            }
+            
+            url = f"{self.base_url}/api/post-land"
+            headers = {'Authorization': f'Bearer {self.token}'}
+            
+            self.tests_run += 1
+            print(f"🔍 Creating listing with multiple media files (2 photos, 1 video)...")
+            
+            response = requests.post(url, data=form_data, files=test_files, headers=headers)
+            
+            if response.status_code == 200:
+                self.tests_passed += 1
+                result = response.json()
+                media_listing_id = result.get('listing_id')
+                print(f"✅ Listing with media created: {media_listing_id}")
+                
+                # Verify files are stored and URLs are correct
+                time.sleep(1)
+                my_listings_success, my_listings_response = self.run_test(
+                    "Verify Media Files in Listing",
+                    "GET",
+                    "api/my-listings",
+                    200
+                )
+                
+                if my_listings_success:
+                    listings = my_listings_response.get('listings', [])
+                    found_listing = None
+                    for listing in listings:
+                        if listing.get('listing_id') == media_listing_id:
+                            found_listing = listing
+                            break
+                    
+                    if found_listing:
+                        photos = found_listing.get('photos', [])
+                        videos = found_listing.get('videos', [])
+                        
+                        print(f"✅ Photos stored: {len(photos)}")
+                        print(f"✅ Videos stored: {len(videos)}")
+                        
+                        # Verify URL format
+                        all_media_urls = photos + videos
+                        valid_urls = 0
+                        
+                        for url in all_media_urls:
+                            if url.startswith('/api/uploads/'):
+                                valid_urls += 1
+                                print(f"✅ Valid media URL: {url}")
+                                
+                                # Test file serving
+                                filename = url.replace('/api/uploads/', '')
+                                file_serve_success, _ = self.run_test(
+                                    f"Serve Media File: {filename}",
+                                    "GET",
+                                    f"api/uploads/{filename}",
+                                    200
+                                )
+                                
+                                if file_serve_success:
+                                    print(f"✅ File serving works: {filename}")
+                                else:
+                                    print(f"❌ File serving failed: {filename}")
+                                    return False
+                            else:
+                                print(f"❌ Invalid media URL format: {url}")
+                                return False
+                        
+                        # Verify /app/uploads directory exists and has files
+                        uploads_dir = "/app/uploads"
+                        if os.path.exists(uploads_dir):
+                            files_in_uploads = os.listdir(uploads_dir)
+                            print(f"✅ Files in /app/uploads directory: {len(files_in_uploads)}")
+                            
+                            if len(files_in_uploads) >= 3:  # At least our 3 test files
+                                print(f"✅ Media files successfully stored in /app/uploads")
+                                return True
+                            else:
+                                print(f"❌ Expected at least 3 files in /app/uploads, found {len(files_in_uploads)}")
+                                return False
+                        else:
+                            print(f"❌ /app/uploads directory does not exist")
+                            return False
+                    else:
+                        print("❌ Media listing not found in my-listings")
+                        return False
+                else:
+                    print("❌ Could not verify media files in listing")
+                    return False
+            else:
+                print(f"❌ Failed to create listing with media: {response.status_code}")
+                try:
+                    print(f"Error: {response.json()}")
+                except:
+                    print(f"Error: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error testing enhanced media storage: {e}")
+            return False
+        finally:
+            # Close files and cleanup
+            for _, file_tuple in test_files:
+                try:
+                    file_tuple[1].close()
+                except:
+                    pass
+            
+            for file_path in file_paths:
+                try:
+                    os.remove(file_path)
+                except:
+                    pass
+
 def main():
     # Get the backend URL from environment variable
     backend_url = "https://547a6392-129c-42e0-badb-1a283db0eb37.preview.emergentagent.com"
