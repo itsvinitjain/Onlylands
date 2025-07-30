@@ -470,6 +470,7 @@ async def post_land(
     area: str = Form(...),
     price: str = Form(...),
     description: str = Form(...),
+    location: str = Form(default=""),
     latitude: str = Form(...),
     longitude: str = Form(...),
     photos: List[UploadFile] = File(default=[]),
