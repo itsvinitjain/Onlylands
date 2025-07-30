@@ -336,8 +336,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Local File Storage System (Images/Videos)"
-    - "POST Land API (/api/post-land)"
+    - "Review Request Changes Testing Completed"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
