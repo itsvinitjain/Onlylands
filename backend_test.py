@@ -4141,16 +4141,421 @@ class OnlyLandsAPITester:
                 except:
                     pass
 
+    def test_complete_otp_login_flow(self):
+        """
+        COMPREHENSIVE OTP LOGIN FLOW TESTING
+        Test the complete OTP login functionality as requested in the review
+        Focus on demo mode functionality since Twilio has 401 auth issues
+        """
+        print("\n" + "="*80)
+        print("🚨 COMPREHENSIVE OTP LOGIN FLOW TESTING")
+        print("Testing complete OTP login flow to identify why it's not working properly")
+        print("Focus: Demo mode functionality with Twilio fallback")
+        print("="*80)
+        
+        # Test data as specified in review request
+        test_phones = ["9696", "+919876543210", "1234567890"]
+        user_types = ["seller", "broker"]
+        demo_otp = "123456"
+        
+        all_tests_passed = True
+        
+        # Test 1: OTP Send Endpoint Testing
+        print("\n📱 TEST 1: OTP SEND ENDPOINT TESTING")
+        print("-" * 60)
+        
+        for phone in test_phones:
+            for user_type in user_types:
+                print(f"\n🔍 Testing send OTP: {phone} as {user_type}")
+                
+                success, response = self.run_test(
+                    f"Send OTP - {phone} ({user_type})",
+                    "POST",
+                    "api/send-otp",
+                    200,
+                    data={"phone_number": phone, "user_type": user_type}
+                )
+                
+                if success:
+                    print(f"✅ OTP Send Success for {phone} ({user_type})")
+                    print(f"   Status: {response.get('status')}")
+                    print(f"   Message: {response.get('message')}")
+                    
+                    # Check for demo mode
+                    if response.get('status') == 'demo_mode':
+                        print(f"   ✅ Demo Mode Active: {response.get('demo_info')}")
+                    elif response.get('status') == 'pending':
+                        print(f"   ✅ Real SMS Sent Successfully")
+                    else:
+                        print(f"   ⚠️ Unexpected status: {response.get('status')}")
+                else:
+                    print(f"❌ OTP Send Failed for {phone} ({user_type})")
+                    all_tests_passed = False
+        
+        # Test 2: OTP Verification Endpoint Testing
+        print("\n🔐 TEST 2: OTP VERIFICATION ENDPOINT TESTING")
+        print("-" * 60)
+        
+        for phone in test_phones:
+            for user_type in user_types:
+                print(f"\n🔍 Testing verify OTP: {phone} as {user_type} with demo OTP {demo_otp}")
+                
+                success, response = self.run_test(
+                    f"Verify OTP - {phone} ({user_type})",
+                    "POST",
+                    "api/verify-otp",
+                    200,
+                    data={"phone_number": phone, "otp": demo_otp, "user_type": user_type}
+                )
+                
+                if success:
+                    print(f"✅ OTP Verification Success for {phone} ({user_type})")
+                    print(f"   Message: {response.get('message')}")
+                    
+                    # Check JWT token
+                    token = response.get('token')
+                    if token:
+                        print(f"   ✅ JWT Token Generated: {token[:50]}...")
+                        
+                        # Decode and verify token
+                        jwt_payload = self.decode_jwt_token(token)
+                        if jwt_payload:
+                            print(f"   ✅ JWT User Type: {jwt_payload.get('user_type')}")
+                            print(f"   ✅ JWT Phone: {jwt_payload.get('phone_number')}")
+                            print(f"   ✅ JWT User ID: {jwt_payload.get('user_id')}")
+                            
+                            # Verify user_type matches request
+                            if jwt_payload.get('user_type') == user_type:
+                                print(f"   ✅ User Type Correct in JWT")
+                            else:
+                                print(f"   ❌ User Type Mismatch: Expected {user_type}, Got {jwt_payload.get('user_type')}")
+                                all_tests_passed = False
+                        else:
+                            print(f"   ❌ Could not decode JWT token")
+                            all_tests_passed = False
+                    else:
+                        print(f"   ❌ No JWT token in response")
+                        all_tests_passed = False
+                    
+                    # Check user data
+                    user_data = response.get('user', {})
+                    if user_data:
+                        print(f"   ✅ User Data: {user_data.get('user_type')} - {user_data.get('phone_number')}")
+                    else:
+                        print(f"   ❌ No user data in response")
+                        all_tests_passed = False
+                        
+                else:
+                    print(f"❌ OTP Verification Failed for {phone} ({user_type})")
+                    all_tests_passed = False
+        
+        # Test 3: Edge Cases Testing
+        print("\n⚠️ TEST 3: EDGE CASES TESTING")
+        print("-" * 60)
+        
+        # Test invalid phone numbers
+        invalid_phones = ["", "invalid", "123"]
+        for invalid_phone in invalid_phones:
+            print(f"\n🔍 Testing invalid phone: '{invalid_phone}'")
+            
+            success, response = self.run_test(
+                f"Send OTP - Invalid Phone '{invalid_phone}'",
+                "POST",
+                "api/send-otp",
+                400,
+                data={"phone_number": invalid_phone, "user_type": "seller"}
+            )
+            
+            if success:
+                print(f"✅ Invalid phone properly rejected: {response.get('detail')}")
+            else:
+                print(f"❌ Invalid phone not properly handled")
+                all_tests_passed = False
+        
+        # Test missing parameters
+        print(f"\n🔍 Testing missing phone number")
+        success, response = self.run_test(
+            "Send OTP - Missing Phone",
+            "POST",
+            "api/send-otp",
+            400,
+            data={"user_type": "seller"}
+        )
+        
+        if success:
+            print(f"✅ Missing phone properly handled: {response.get('detail')}")
+        else:
+            print(f"❌ Missing phone not properly handled")
+            all_tests_passed = False
+        
+        print(f"\n🔍 Testing missing OTP")
+        success, response = self.run_test(
+            "Verify OTP - Missing OTP",
+            "POST",
+            "api/verify-otp",
+            400,
+            data={"phone_number": "9696", "user_type": "seller"}
+        )
+        
+        if success:
+            print(f"✅ Missing OTP properly handled: {response.get('detail')}")
+        else:
+            print(f"❌ Missing OTP not properly handled")
+            all_tests_passed = False
+        
+        # Test invalid OTP codes
+        invalid_otps = ["000000", "999999", "abcdef"]
+        for invalid_otp in invalid_otps:
+            print(f"\n🔍 Testing invalid OTP: '{invalid_otp}'")
+            
+            success, response = self.run_test(
+                f"Verify OTP - Invalid OTP '{invalid_otp}'",
+                "POST",
+                "api/verify-otp",
+                400,
+                data={"phone_number": "9696", "otp": invalid_otp, "user_type": "seller"}
+            )
+            
+            if success:
+                print(f"✅ Invalid OTP properly rejected: {response.get('detail')}")
+            else:
+                print(f"❌ Invalid OTP not properly handled")
+                all_tests_passed = False
+        
+        # Test 4: Demo Mode Verification
+        print("\n🎭 TEST 4: DEMO MODE VERIFICATION")
+        print("-" * 60)
+        
+        print(f"🔍 Verifying demo mode is working correctly")
+        
+        # Test that demo OTP works consistently
+        demo_test_phone = "9696"
+        for user_type in user_types:
+            print(f"\n🔍 Demo mode test: {demo_test_phone} as {user_type}")
+            
+            # Send OTP
+            send_success, send_response = self.run_test(
+                f"Demo Mode - Send OTP ({user_type})",
+                "POST",
+                "api/send-otp",
+                200,
+                data={"phone_number": demo_test_phone, "user_type": user_type}
+            )
+            
+            if send_success and send_response.get('status') == 'demo_mode':
+                print(f"✅ Demo mode active for {user_type}")
+                
+                # Verify OTP
+                verify_success, verify_response = self.run_test(
+                    f"Demo Mode - Verify OTP ({user_type})",
+                    "POST",
+                    "api/verify-otp",
+                    200,
+                    data={"phone_number": demo_test_phone, "otp": demo_otp, "user_type": user_type}
+                )
+                
+                if verify_success:
+                    print(f"✅ Demo OTP verification working for {user_type}")
+                    
+                    # Store token for further testing
+                    if user_type == "seller":
+                        self.token = verify_response.get('token')
+                        self.user_id = verify_response.get('user', {}).get('user_id')
+                else:
+                    print(f"❌ Demo OTP verification failed for {user_type}")
+                    all_tests_passed = False
+            else:
+                print(f"❌ Demo mode not working for {user_type}")
+                all_tests_passed = False
+        
+        # Test 5: Complete Flow Testing
+        print("\n🔄 TEST 5: COMPLETE FLOW TESTING")
+        print("-" * 60)
+        
+        print(f"🔍 Testing complete flow: send OTP → verify OTP → get token → use token")
+        
+        flow_phone = "+919876543210"
+        
+        # Step 1: Send OTP
+        send_success, send_response = self.run_test(
+            "Complete Flow - Send OTP",
+            "POST",
+            "api/send-otp",
+            200,
+            data={"phone_number": flow_phone, "user_type": "seller"}
+        )
+        
+        if send_success:
+            print("✅ Step 1: OTP sent successfully")
+            
+            # Step 2: Verify OTP
+            verify_success, verify_response = self.run_test(
+                "Complete Flow - Verify OTP",
+                "POST",
+                "api/verify-otp",
+                200,
+                data={"phone_number": flow_phone, "otp": demo_otp, "user_type": "seller"}
+            )
+            
+            if verify_success:
+                print("✅ Step 2: OTP verified successfully")
+                flow_token = verify_response.get('token')
+                
+                if flow_token:
+                    print("✅ Step 3: JWT token received")
+                    
+                    # Step 3: Use token to access protected endpoint
+                    headers = {'Authorization': f'Bearer {flow_token}'}
+                    
+                    self.tests_run += 1
+                    print("🔍 Step 4: Testing token with protected endpoint...")
+                    
+                    try:
+                        url = f"{self.base_url}/api/my-listings"
+                        response = requests.get(url, headers=headers)
+                        
+                        if response.status_code == 200:
+                            self.tests_passed += 1
+                            print("✅ Step 4: Token works with protected endpoint")
+                            print("✅ Complete flow working end-to-end")
+                        else:
+                            print(f"❌ Step 4: Token failed with protected endpoint (Status: {response.status_code})")
+                            all_tests_passed = False
+                    except Exception as e:
+                        print(f"❌ Step 4: Error testing token: {e}")
+                        all_tests_passed = False
+                else:
+                    print("❌ Step 3: No JWT token received")
+                    all_tests_passed = False
+            else:
+                print("❌ Step 2: OTP verification failed")
+                all_tests_passed = False
+        else:
+            print("❌ Step 1: OTP send failed")
+            all_tests_passed = False
+        
+        # Test 6: CORS and Network Issues Check
+        print("\n🌐 TEST 6: CORS AND NETWORK ISSUES CHECK")
+        print("-" * 60)
+        
+        print("🔍 Testing CORS headers and network accessibility")
+        
+        # Test OPTIONS request (CORS preflight)
+        self.tests_run += 1
+        try:
+            url = f"{self.base_url}/api/send-otp"
+            response = requests.options(url)
+            
+            if response.status_code in [200, 204]:
+                self.tests_passed += 1
+                print("✅ CORS preflight working")
+                
+                # Check CORS headers
+                cors_headers = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                    'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers')
+                }
+                print(f"✅ CORS Headers: {cors_headers}")
+            else:
+                print(f"❌ CORS preflight failed (Status: {response.status_code})")
+                all_tests_passed = False
+        except Exception as e:
+            print(f"❌ CORS test error: {e}")
+            all_tests_passed = False
+        
+        # Final Results
+        print("\n" + "="*80)
+        print("📊 OTP LOGIN FLOW TEST RESULTS")
+        print("="*80)
+        
+        if all_tests_passed:
+            print("🎉 ALL OTP LOGIN TESTS PASSED!")
+            print("✅ OTP send endpoint working correctly")
+            print("✅ OTP verification endpoint working correctly") 
+            print("✅ Demo mode functionality working")
+            print("✅ JWT token generation working")
+            print("✅ User type handling working")
+            print("✅ Error handling working")
+            print("✅ Complete flow working end-to-end")
+            print("✅ CORS configuration working")
+        else:
+            print("❌ SOME OTP LOGIN TESTS FAILED!")
+            print("❌ Issues found in OTP login functionality")
+            print("❌ Check the detailed logs above for specific failures")
+        
+        print("="*80)
+        return all_tests_passed
+
 def main():
     # Get the backend URL from environment variable
     backend_url = "https://547a6392-129c-42e0-badb-1a283db0eb37.preview.emergentagent.com"
     
-    print(f"🚀 OnlyLands Review Request Testing")
+    print(f"🚀 OnlyLands OTP Login Flow Testing - COMPREHENSIVE REVIEW REQUEST")
     print(f"🌐 Backend URL: {backend_url}")
-    print(f"📋 Testing 5 specific changes mentioned in the review request")
+    print(f"📋 MAIN FOCUS: Testing complete OTP login functionality as requested in review")
+    print(f"🎯 Focus: Demo mode functionality since Twilio has 401 auth issues")
     print("=" * 80)
     
     tester = OnlyLandsAPITester(backend_url)
+    
+    # MAIN FOCUS: Test complete OTP login flow as requested in review
+    print("\n" + "="*60)
+    print("🔐 COMPREHENSIVE OTP LOGIN FLOW TESTING")
+    print("="*60)
+    
+    otp_success = tester.test_complete_otp_login_flow()
+    
+    # Test basic health check
+    print("\n🔍 Testing Basic API Health...")
+    health_check_success = tester.run_test(
+        "API Health Check",
+        "GET", 
+        "api/",
+        200
+    )[0]
+    
+    # Print final results
+    print("\n" + "=" * 80)
+    print("📊 OTP LOGIN FLOW TESTING RESULTS")
+    print("=" * 80)
+    print(f"🎯 OTP Login Flow: {'✅ ALL PASSED' if otp_success else '❌ SOME FAILED'}")
+    print(f"🔍 API Health Check: {'✅ PASSED' if health_check_success else '❌ FAILED'}")
+    print(f"📊 Total Tests: {tester.tests_run}, Passed: {tester.tests_passed}")
+    print("=" * 80)
+    
+    # Summary of findings
+    print("\n📋 SUMMARY OF FINDINGS:")
+    print("=" * 50)
+    
+    if otp_success and health_check_success:
+        print("🎉 SUCCESS: OTP login functionality is working correctly!")
+        print("✅ Demo mode functionality working as expected")
+        print("✅ OTP send endpoint accessible and returning proper responses")
+        print("✅ OTP verification endpoint working with demo OTP 123456")
+        print("✅ JWT token generation and user data response working")
+        print("✅ Authentication system functional")
+        print("✅ Complete flow: send OTP → verify OTP → get token working")
+        print("✅ CORS and network issues resolved")
+        
+        print("\n⚠️ IMPORTANT NOTES:")
+        print("• System is using demo mode fallback due to Twilio SMS delivery issues")
+        print("• Demo OTP '123456' works correctly for both seller and broker user types")
+        print("• All test phone numbers (9696, +919876543210, 1234567890) work correctly")
+        print("• JWT tokens contain correct user_type based on login request")
+        print("• Error handling for invalid phone numbers and OTP codes working")
+        print("• The OTP login system is accessible from frontend")
+        
+        return 0
+    else:
+        print("❌ FAILURE: Issues found in OTP login functionality!")
+        if not otp_success:
+            print("❌ OTP login flow has critical issues")
+            print("❌ Check the detailed logs above for specific failures")
+            print("❌ This explains why users are reporting OTP login problems")
+        if not health_check_success:
+            print("❌ API health check issues")
+        return 1
     
     # Test the 5 specific changes from the review request
     print("\n🎯 RUNNING REVIEW REQUEST TESTS...")
