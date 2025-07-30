@@ -4145,17 +4145,12 @@ def main():
     # Get the backend URL from environment variable
     backend_url = "https://547a6392-129c-42e0-badb-1a283db0eb37.preview.emergentagent.com"
     
-    print(f"🚀 OnlyLands Broker Registration System Testing")
+    print(f"🚀 OnlyLands Review Request Testing")
     print(f"🌐 Backend URL: {backend_url}")
-    print(f"Testing OnlyLands API at: {backend_url}")
-    print("=" * 50)
+    print(f"📋 Testing 5 specific changes mentioned in the review request")
+    print("=" * 80)
     
     tester = OnlyLandsAPITester(backend_url)
-    
-    # CRITICAL TEST: Broker Registration System Fixes
-    print("\n🚨 RUNNING BROKER REGISTRATION SYSTEM FIXES TEST")
-    print("This test verifies the fixes for 422 errors with location field")
-    print("=" * 80)
     
     # Test the 5 specific changes from the review request
     print("\n🎯 RUNNING REVIEW REQUEST TESTS...")
