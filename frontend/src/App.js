@@ -1815,9 +1815,18 @@ function MyListings({ user, setCurrentView }) {
                     
                     {/* Payment Notice */}
                     {listing.status === 'pending_payment' && (
-                      <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
+                      <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
                         <p className="text-yellow-800 text-sm font-semibold">⚠️ Payment Required</p>
-                        <p className="text-yellow-700 text-xs">Complete payment to activate this listing and reach brokers</p>
+                        <p className="text-yellow-700 text-xs mb-3">Complete payment to activate this listing and reach brokers</p>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            initiatePayment(listing.listing_id);
+                          }}
+                          className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors text-sm font-semibold"
+                        >
+                          💳 Complete Payment ₹299
+                        </button>
                       </div>
                     )}
                   </div>
