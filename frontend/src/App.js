@@ -2005,14 +2005,14 @@ function MyListings({ user, setCurrentView }) {
 
               <div className="p-6">
                 {/* Images Gallery */}
-                {selectedListing.images && selectedListing.images.length > 0 && (
+                {selectedListing.photos && selectedListing.photos.length > 0 && (
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold mb-3">📷 Photos ({selectedListing.images.length})</h3>
+                    <h3 className="text-lg font-semibold mb-3">📷 Photos ({selectedListing.photos.length})</h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {selectedListing.images.map((image, index) => (
+                      {selectedListing.photos.map((photo, index) => (
                         <img
                           key={index}
-                          src={getImageSrc(image)}
+                          src={getImageSrc(photo)}
                           alt={`${selectedListing.title} - Photo ${index + 1}`}
                           className="w-full h-32 md:h-40 object-cover rounded-lg border"
                         />
