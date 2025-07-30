@@ -441,8 +441,33 @@ function PostLandForm({ user, setCurrentView }) {
   };
 
   const handleVideoChange = (e) => {
-    const files = Array.from(e.target.files);
-    setVideos(files);
+    const newFiles = Array.from(e.target.files);
+    
+    // Check if adding new files would exceed limit
+    const totalFiles = videos.length + newFiles.length;
+    if (totalFiles > 2) {
+      alert(`Maximum 2 videos allowed. You can add ${2 - videos.length} more videos.`);
+      return;
+    }
+    
+    // Append new files to existing videos
+    const updatedVideos = [...videos, ...newFiles];
+    setVideos(updatedVideos);
+    
+    // Create previews for new files
+    const newPreviews = newFiles.map(file => ({
+      file,
+      url: URL.createObjectURL(file),
+      name: file.name
+    }));
+    
+    // Append new previews to existing previews
+    const updatedPreviews = [...videoPreviews, ...newPreviews];
+    setVideoPreviews(updatedPreviews);
+    
+    // Reset file input to allow selecting same files again if needed
+    e.target.value = '';
+  };
     
     // Create previews
     const previews = files.map(file => ({
