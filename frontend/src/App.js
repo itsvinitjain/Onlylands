@@ -1658,10 +1658,139 @@ function MyListings({ user, setCurrentView }) {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedListing, setSelectedListing] = useState(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   useEffect(() => {
     fetchMyListings();
   }, [user]);
+
+  const initiatePayment = async (listingId) => {
+    setPaymentLoading(true);
+    try {
+      // Create payment order
+      const orderResponse = await axios.post('/api/create-payment-order', {
+        amount: 299, // ₹299 
+        listing_id: listingId
+      }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      const { order, demo_mode } = orderResponse.data;
+
+      if (demo_mode) {
+        // Create a Razorpay-like demo interface
+        const demoModal = document.createElement('div');
+        demoModal.id = 'razorpay-demo-modal';
+        demoModal.innerHTML = `
+          <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+            <div style="background: white; border-radius: 8px; padding: 0; width: 400px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+              <div style="background: #528FF0; color: white; padding: 16px 20px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center;">
+                  <div style="width: 24px; height: 24px; background: white; border-radius: 4px; margin-right: 10px; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: #528FF0; font-weight: bold; font-size: 14px;">R</span>
+                  </div>
+                  <span style="font-weight: 500;">Razorpay Secure (Demo)</span>
+                </div>
+                <button onclick="document.getElementById('razorpay-demo-modal').remove()" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">×</button>
+              </div>
+              <div style="padding: 20px;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                  <h3 style="margin: 0 0 10px 0; color: #333;">Complete Payment</h3>
+                  <p style="margin: 0; color: #666; font-size: 14px;">OnlyLands Premium Listing</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                  <button onclick="document.getElementById('razorpay-demo-modal').remove()" style="flex: 1; padding: 12px; border: 1px solid #ddd; background: white; color: #666; border-radius: 4px; cursor: pointer;">Cancel</button>
+                  <button id="demo-pay-button" style="flex: 2; padding: 12px; background: #528FF0; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">Pay ₹${order.amount / 100}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(demoModal);
+        
+        document.getElementById('demo-pay-button').onclick = async () => {
+          try {
+            // Simulate payment processing delay
+            document.getElementById('demo-pay-button').innerHTML = 'Processing...';
+            
+            setTimeout(async () => {
+              try {
+                const demoResponse = {
+                  razorpay_order_id: order.id,
+                  razorpay_payment_id: `pay_demo_${Date.now()}`,
+                  razorpay_signature: `demo_signature_${Date.now()}`
+                };
+
+                await axios.post('/api/verify-payment', demoResponse, {
+                  headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                  }
+                });
+
+                document.getElementById('razorpay-demo-modal').remove();
+                alert('Payment Successful! Your listing has been activated.');
+                fetchMyListings(); // Refresh listings
+                
+              } catch (error) {
+                document.getElementById('razorpay-demo-modal').remove();
+                alert('Payment verification failed: ' + (error.response?.data?.detail || 'Unknown error'));
+              }
+            }, 2000);
+            
+          } catch (error) {
+            document.getElementById('razorpay-demo-modal').remove();
+            alert('Payment processing failed: ' + error.message);
+          }
+        };
+      } else {
+        // Handle real Razorpay payment
+        const options = {
+          key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+          amount: order.amount,
+          currency: order.currency,
+          name: 'OnlyLands',
+          description: 'Premium Listing Payment',
+          order_id: order.id,
+          handler: async function (response) {
+            try {
+              await axios.post('/api/verify-payment', {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              }, {
+                headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+              });
+              
+              alert('Payment Successful! Your listing has been activated.');
+              fetchMyListings(); // Refresh listings
+            } catch (error) {
+              alert('Payment verification failed: ' + (error.response?.data?.detail || 'Unknown error'));
+            }
+          },
+          prefill: {
+            name: user?.name || '',
+            email: user?.email || '',
+            contact: user?.phone_number || ''
+          },
+          theme: {
+            color: '#10B981'
+          }
+        };
+
+        const razorpay = new window.Razorpay(options);
+        razorpay.open();
+      }
+    } catch (error) {
+      alert('Payment processing failed: ' + (error.response?.data?.detail || 'Unknown error'));
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
 
   const getImageSrc = (imageData) => {
     // Handle local file URLs (starts with /api/uploads/)
