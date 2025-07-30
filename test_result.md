@@ -336,7 +336,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Review Request Changes Testing Completed"
+    - "Critical Fixes Testing Completed"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
