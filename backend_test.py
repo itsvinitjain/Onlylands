@@ -4157,10 +4157,12 @@ def main():
     print("This test verifies the fixes for 422 errors with location field")
     print("=" * 80)
     
-    broker_registration_success = tester.test_broker_registration_system_fixes()
+    # Test the 5 specific changes from the review request
+    print("\n🎯 RUNNING REVIEW REQUEST TESTS...")
+    review_tests_success = tester.test_review_request_changes()
     
-    if not broker_registration_success:
-        print("\n❌ CRITICAL FAILURE: Broker registration system test failed!")
+    if not review_tests_success:
+        print("\n❌ CRITICAL FAILURE: Some review request changes have issues!")
         return 1
     
     # Test basic health check
@@ -4174,9 +4176,9 @@ def main():
     
     # Print final results
     print("\n" + "=" * 80)
-    print("📊 COMPREHENSIVE BROKER REGISTRATION SYSTEM TEST RESULTS")
+    print("📊 REVIEW REQUEST TESTING RESULTS")
     print("=" * 80)
-    print(f"🏢 CRITICAL: Broker Registration System: {'✅ PASSED' if broker_registration_success else '❌ FAILED'}")
+    print(f"🎯 Review Request Changes: {'✅ ALL PASSED' if review_tests_success else '❌ SOME FAILED'}")
     print(f"🔍 API Health Check: {'✅ PASSED' if health_check_success else '❌ FAILED'}")
     print(f"📊 Total Tests: {tester.tests_run}, Passed: {tester.tests_passed}")
     print("=" * 80)
@@ -4185,29 +4187,25 @@ def main():
     print("\n📋 SUMMARY OF FINDINGS:")
     print("=" * 50)
     
-    if broker_registration_success and health_check_success:
-        print("🎉 SUCCESS: The OnlyLands broker registration system is fully functional!")
-        print("✅ Location field fix verified - no more 422 errors")
-        print("✅ POST /api/broker-signup accepts location field correctly")
-        print("✅ All required fields (name, agency, phone_number, email, location) working")
-        print("✅ Complete broker registration flow working")
-        print("✅ GET /api/broker-profile working correctly")
-        print("✅ Broker dashboard access working after registration")
-        print("✅ Field validation working properly")
-        print("✅ Duplicate registration handling working")
+    if review_tests_success and health_check_success:
+        print("🎉 SUCCESS: All 5 review request changes are working correctly!")
+        print("✅ Location Data Fix - POST /api/post-land with location field working")
+        print("✅ Complete Payment Functionality - Payment flow working correctly")
+        print("✅ Enhanced Media Storage - File upload and serving working")
+        print("✅ All backend APIs are functioning as expected")
         
         print("\n⚠️ IMPORTANT NOTES:")
-        print("• The 422 error with location field has been resolved")
-        print("• BrokerSignup model now includes location field")
-        print("• Complete broker registration flow is functional")
-        print("• Frontend should now be able to register brokers with location")
-        print("• All broker data including location is stored correctly")
+        print("• Location field is now properly stored and retrieved in listings")
+        print("• Payment flow from pending_payment to active status is working")
+        print("• Multiple photos and videos are handled correctly")
+        print("• Files are stored in /app/uploads and served via /api/uploads/{filename}")
+        print("• All key test scenarios from the review request have been validated")
         
         return 0
     else:
-        print("❌ FAILURE: Issues found in the broker registration system!")
-        if not broker_registration_success:
-            print("❌ Broker registration system functionality issues")
+        print("❌ FAILURE: Issues found in the review request changes!")
+        if not review_tests_success:
+            print("❌ Some of the 5 review request changes have issues")
         if not health_check_success:
             print("❌ API health check issues")
         return 1
