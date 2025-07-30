@@ -468,15 +468,6 @@ function PostLandForm({ user, setCurrentView }) {
     // Reset file input to allow selecting same files again if needed
     e.target.value = '';
   };
-    
-    // Create previews
-    const previews = files.map(file => ({
-      file,
-      url: URL.createObjectURL(file),
-      name: file.name
-    }));
-    setVideoPreviews(previews);
-  };
 
   const removeImage = (index) => {
     const newImages = images.filter((_, i) => i !== index);
