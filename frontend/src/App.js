@@ -461,6 +461,7 @@ function PostLandForm({ user, setCurrentView }) {
       
       // Add form fields to FormData
       formDataToSend.append('title', formData.title);
+      formDataToSend.append('location', formData.location);
       formDataToSend.append('area', formData.area);
       formDataToSend.append('price', formData.price);
       formDataToSend.append('description', formData.description);
