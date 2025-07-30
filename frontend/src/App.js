@@ -412,16 +412,32 @@ function PostLandForm({ user, setCurrentView }) {
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    setImages(files);
+    const newFiles = Array.from(e.target.files);
     
-    // Create previews
-    const previews = files.map(file => ({
+    // Check if adding new files would exceed limit
+    const totalFiles = images.length + newFiles.length;
+    if (totalFiles > 5) {
+      alert(`Maximum 5 photos allowed. You can add ${5 - images.length} more photos.`);
+      return;
+    }
+    
+    // Append new files to existing images
+    const updatedImages = [...images, ...newFiles];
+    setImages(updatedImages);
+    
+    // Create previews for new files
+    const newPreviews = newFiles.map(file => ({
       file,
       url: URL.createObjectURL(file),
       name: file.name
     }));
-    setImagePreviews(previews);
+    
+    // Append new previews to existing previews
+    const updatedPreviews = [...imagePreviews, ...newPreviews];
+    setImagePreviews(updatedPreviews);
+    
+    // Reset file input to allow selecting same files again if needed
+    e.target.value = '';
   };
 
   const handleVideoChange = (e) => {
