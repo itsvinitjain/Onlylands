@@ -589,30 +589,37 @@ function PostLandForm({ user, setCurrentView }) {
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-700 text-sm font-bold mb-2">
-                Area
+                Area <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formData.area}
                 onChange={(e) => setFormData({...formData, area: e.target.value})}
-                placeholder="e.g., 5 Acres"
+                placeholder="e.g., 5 Acres or 2000 Sq.ft"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">Specify unit (Acres, Sq.ft, Gunthas, etc.)</p>
             </div>
 
             <div>
               <label className="block text-gray-700 text-sm font-bold mb-2">
-                Price
+                Price <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                value={formData.price}
-                onChange={(e) => setFormData({...formData, price: e.target.value})}
-                placeholder="e.g., 50 Lakhs"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                required
-              />
+              <div className="flex">
+                <span className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md">
+                  ₹
+                </span>
+                <input
+                  type="text"
+                  value={formData.price}
+                  onChange={(e) => setFormData({...formData, price: e.target.value})}
+                  placeholder="e.g., 50 Lakhs or 5000000"
+                  className="flex-1 px-3 py-2 border-l-0 border border-gray-300 rounded-r-lg focus:outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Enter amount in Rupees (Lakhs, Crores acceptable)</p>
             </div>
           </div>
 
