@@ -192,9 +192,11 @@ function HomePage({ setCurrentView, user, logout, brokerRegistered }) {
           <nav className="flex flex-wrap gap-2 md:gap-4">
             {user ? (
               <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                <span className="text-xs md:text-sm text-gray-600">
-                  Welcome, {user.user_type === 'seller' ? 'Seller' : 'Broker'}
-                </span>
+                <div className="text-xs md:text-sm text-gray-600">
+                  <span className="font-semibold">Welcome, {user.user_type === 'seller' ? 'Seller' : 'Broker'}</span>
+                  <br className="md:hidden" />
+                  <span className="text-gray-500"> (+91 {user.phone_number})</span>
+                </div>
                 <button 
                   onClick={logout}
                   className="bg-red-500 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg hover:bg-red-600 transition-colors text-sm md:text-base"
