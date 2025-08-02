@@ -8,12 +8,42 @@ const OTPLogin = ({ setToken, setCurrentView, userType = 'seller' }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [demoInfo, setDemoInfo] = useState('');
+  const [phoneError, setPhoneError] = useState('');
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
+  const validatePhone = (phoneNumber) => {
+    const phoneRegex = /^\d{10}$/;
+    return phoneRegex.test(phoneNumber);
+  };
+
+  const handlePhoneChange = (e) => {
+    const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    if (value.length <= 10) {
+      setPhone(value);
+      setPhoneError('');
+      setError(''); // Clear general errors when typing
+    }
+  };
+
+  const changePhoneNumber = () => {
+    setIsOtpSent(false);
+    setOtp('');
+    setError(''); // Clear OTP error when changing phone number
+    setDemoInfo('');
+    setPhoneError('');
+  };
+
   const sendOTP = async () => {
+    // Validate phone number
+    if (!validatePhone(phone)) {
+      setPhoneError('Please enter a valid 10-digit phone number');
+      return;
+    }
+
     setLoading(true);
     setError('');
+    setPhoneError('');
     
     try {
       const response = await axios.post(`${backendUrl}/api/send-otp`, {
