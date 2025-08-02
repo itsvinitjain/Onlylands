@@ -396,21 +396,49 @@ function PaymentSuccessModal({ isOpen, onClose, onViewListings }) {
   );
 }
 function PostLandForm({ user, setCurrentView }) {
-  const [formData, setFormData] = useState({
-    title: '',
-    location: '',
-    area: '',
-    price: '',
-    description: '',
-    latitude: '',
-    longitude: ''
-  });
+  // Load saved data from localStorage or use defaults
+  const getSavedFormData = () => {
+    const saved = localStorage.getItem('postLandFormData');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return {
+      title: '',
+      location: '',
+      area: '',
+      price: '',
+      description: '',
+      latitude: '',
+      longitude: ''
+    };
+  };
+
+  const [formData, setFormData] = useState(getSavedFormData);
   const [images, setImages] = useState([]);
   const [videos, setVideos] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [videoPreviews, setVideoPreviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [listingCreated, setListingCreated] = useState(null);
+
+  // Save form data to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('postLandFormData', JSON.stringify(formData));
+  }, [formData]);
+
+  // Clear form data after successful submission
+  const clearFormData = () => {
+    localStorage.removeItem('postLandFormData');
+    setFormData({
+      title: '',
+      location: '',
+      area: '',
+      price: '',
+      description: '',
+      latitude: '',
+      longitude: ''
+    });
+  };
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
 
   const handleImageChange = (e) => {
