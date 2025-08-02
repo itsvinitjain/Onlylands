@@ -550,7 +550,7 @@ function PostLandForm({ user, setCurrentView }) {
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-700 text-sm font-bold mb-2">
-                Title
+                Title <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -560,20 +560,29 @@ function PostLandForm({ user, setCurrentView }) {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">Max 100 characters</p>
             </div>
 
             <div>
               <label className="block text-gray-700 text-sm font-bold mb-2">
-                Location
+                Location <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
+                list="location-suggestions"
                 value={formData.location}
                 onChange={(e) => setFormData({...formData, location: e.target.value})}
-                placeholder="e.g., Alibag, Raigad, Maharashtra"
+                placeholder="Select or type location"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                 required
               />
+              <datalist id="location-suggestions">
+                <option value="Alibag, Raigad, Maharashtra" />
+                <option value="Karjat, Raigad, Maharashtra" />
+                <option value="Nagpur, Maharashtra" />
+                <option value="Lonavala, Pune, Maharashtra" />
+              </datalist>
+              <p className="text-xs text-gray-500 mt-1">Popular locations: Alibag, Karjat, Nagpur, Lonavala</p>
             </div>
           </div>
 
