@@ -120,18 +120,25 @@ const OTPLogin = ({ setToken, setCurrentView, userType = 'seller' }) => {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
+                  Phone Number <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+91 7021758061"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                />
-                <p className="text-xs text-gray-500 mt-2">
-                  📱 Enter your mobile number to receive OTP
-                </p>
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md">
+                    +91
+                  </span>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={handlePhoneChange}
+                    className={`flex-1 px-3 py-2 border-l-0 border border-gray-300 rounded-r-lg focus:outline-none focus:border-blue-500 ${phoneError ? 'border-red-500' : ''}`}
+                    placeholder="Enter 10-digit mobile number"
+                    maxLength="10"
+                  />
+                </div>
+                {phoneError && (
+                  <p className="text-red-500 text-sm mt-1">{phoneError}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-1">📱 Enter your mobile number to receive OTP</p>
               </div>
               
               <button
