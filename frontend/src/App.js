@@ -655,16 +655,18 @@ function PostLandForm({ user, setCurrentView }) {
 
           <div>
             <label className="block text-gray-700 text-sm font-bold mb-2">
-              Description
+              Description <span className="text-red-500">*</span>
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({...formData, description: e.target.value})}
-              placeholder="Describe your land, nearby facilities, road access, etc."
+              placeholder="Describe your land, nearby facilities, road access, soil type, water availability, etc."
               rows="4"
+              maxLength="500"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
               required
             />
+            <p className="text-xs text-gray-500 mt-1">{formData.description.length}/500 characters</p>
           </div>
 
           {/* Photo Upload Section - Enhanced */}
