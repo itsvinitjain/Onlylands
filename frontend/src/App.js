@@ -1153,7 +1153,7 @@ function PaymentComponent({ listingId, user, setCurrentView }) {
         }}
         onViewListings={() => {
           setShowPaymentSuccess(false);
-          setCurrentView('listings');
+          setCurrentView('my-listings');
         }}
       />
     </div>
