@@ -642,10 +642,12 @@ function PostLandForm({ user, setCurrentView }) {
                   ₹
                 </span>
                 <input
-                  type="text"
+                  type="number"
                   value={formData.price}
                   onChange={(e) => setFormData({...formData, price: e.target.value})}
-                  placeholder="e.g., 50 Lakhs or 5000000"
+                  placeholder="e.g., 5000000"
+                  min="1"
+                  step="1"
                   className="flex-1 px-3 py-2 border-l-0 border border-gray-300 rounded-r-lg focus:outline-none focus:border-blue-500"
                   required
                 />
