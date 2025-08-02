@@ -182,7 +182,7 @@ const OTPLogin = ({ setToken, setCurrentView, userType = 'seller' }) => {
               </button>
               
               <button
-                onClick={() => setIsOtpSent(false)}
+                onClick={changePhoneNumber}
                 className="w-full bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
               >
                 Change Phone Number
