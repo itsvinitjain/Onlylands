@@ -447,11 +447,50 @@ backend:
         agent: "testing"
         comment: "✅ BROKER PROFILE API COMPREHENSIVE TESTING COMPLETED - Conducted thorough testing of the /api/broker-profile endpoint as part of the broker registration flow investigation. PERFECT RESULTS: ✅ AUTHENTICATION REQUIREMENT - Endpoint correctly requires JWT authentication (returns 403 without auth) ✅ USER TYPE VALIDATION - Properly validates user_type is 'broker' (returns 403 for non-broker users) ✅ NEW BROKER HANDLING - Correctly returns 404 with 'Broker profile not found' for new brokers who haven't completed registration ✅ REGISTERED BROKER HANDLING - Returns 200 with complete broker profile data after registration ✅ PROFILE DATA STRUCTURE - Returns proper JSON structure with broker object containing name, agency, phone_number, email, broker_id ✅ DATABASE INTEGRATION - Correctly queries brokers collection by phone_number to find matching profile ✅ ERROR HANDLING - Appropriate error messages for different scenarios (user not found, not a broker, profile not found). CRITICAL FINDING: This endpoint is the key to the broker registration flow. It correctly returns 404 for new brokers, which should trigger the frontend to show the registration form. The backend logic is working perfectly as designed."
 
+frontend:
+  - task: "Payment Success Modal Button Text Change"
+    implemented: true
+    working: "NA"
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "TESTING ATTEMPTED - Unable to complete full flow testing due to technical issues with Playwright selectors. However, code review shows: ✅ CODE VERIFIED: PaymentSuccessModal component (lines 360-397) has button with text '📋 View My Listings' (line 384) ✅ NAVIGATION VERIFIED: Button calls onViewListings which navigates to 'my-listings' (line 1169) ✅ IMPLEMENTATION CONFIRMED: The improvement appears to be correctly implemented in the code. Full UI testing blocked by selector issues but code analysis confirms the feature is implemented as requested."
+
+  - task: "Payment Page Back Button"
+    implemented: true
+    working: "NA"
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "TESTING ATTEMPTED - Unable to complete full flow testing due to technical issues with Playwright selectors. However, code review shows: ✅ CODE VERIFIED: PaymentComponent has back button (lines 1113-1122) with 'Back' text and arrow icon ✅ POSITIONING VERIFIED: Button is positioned in header area with flex justify-between layout ✅ NAVIGATION VERIFIED: Button navigates to 'my-listings' (line 1114) ✅ IMPLEMENTATION CONFIRMED: The improvement appears to be correctly implemented in the code. Full UI testing blocked by selector issues but code analysis confirms the feature is implemented as requested."
+
+  - task: "Price Field Numbers Only"
+    implemented: true
+    working: "NA"
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "TESTING ATTEMPTED - Unable to complete full flow testing due to technical issues with Playwright selectors. However, code review shows: ✅ CODE VERIFIED: Price input field has type='number' (line 645) ✅ PREFIX VERIFIED: ₹ prefix is present (lines 641-643) ✅ HELP TEXT VERIFIED: Updated help text 'Enter amount in Rupees (numbers only, e.g., 5000000)' (line 655) ✅ VALIDATION VERIFIED: min='1' and step='1' attributes ensure numeric input only ✅ IMPLEMENTATION CONFIRMED: All three aspects of the improvement are correctly implemented in the code. Full UI testing blocked by selector issues but code analysis confirms the feature is implemented as requested."
+
 agent_communication:
   - agent: "main"
     message: "User reported that core features are not working: 'post your land', 'my listings', and 'register as broker'. Investigated and found API endpoint mismatches and authentication issues between frontend and backend. Fixed all endpoint URLs, field name mappings, and authentication headers. The issues were: 1) Post Land: frontend called '/api/listings' but backend is '/api/post-land' 2) My Listings: frontend called '/api/listings/preview/{id}' but backend is '/api/my-listings' 3) Broker Signup: frontend called '/api/brokers/register' but backend is '/api/broker-signup'. Also fixed field name mismatches and added proper JWT Authorization headers where required."
   - agent: "main"
-    message: "CRITICAL IMAGE STORAGE ISSUE IDENTIFIED AND FIXED - After investigation found the root cause of images not displaying: The local file storage system was configured to save files to /app/uploads directory, but this directory didn't exist, causing silent failures in file uploads. Created the missing /app/uploads directory and verified the upload system is working correctly. Testing shows: 1) upload_to_s3 function successfully saves files to local storage, 2) /api/uploads/{filename} endpoint serves files correctly, 3) Database has listings but no photos/videos because uploads were failing previously. The file storage system is now ready and all endpoints are testing successfully. Need to test complete flow with new uploads to verify end-to-end functionality."
+    message: "CRITICAL IMAGE STORAGE ISSUE IDENTIFIED AND FIXED - After investigation found the root cause of images not displaying: The local file storage system was configured to save files to /app/uploads directory, but this directory didn't exist, causing silent failures in file uploads. Created the missing /app/uploads directory and verified the upload system is working correctly. Testing shows: 1) upload_to_s3 function successfully saves files to local storage, 2) /api/uploads/{filename} endpoint serves files correctly, 3) Database has listings but no p"
+  - agent: "testing"
+    message: "TESTING ATTEMPTED FOR 3 ONLYLANDS IMPROVEMENTS - Encountered technical issues with Playwright selectors preventing full UI flow testing. However, conducted comprehensive code review of all 3 improvements: 1) Payment Success Modal Button Text Change - VERIFIED in code (App.js lines 360-397) 2) Payment Page Back Button - VERIFIED in code (App.js lines 1113-1122) 3) Price Field Numbers Only - VERIFIED in code (App.js lines 637-656). All improvements appear to be correctly implemented based on code analysis. Recommend manual testing or fixing Playwright selector issues for complete verification."hotos/videos because uploads were failing previously. The file storage system is now ready and all endpoints are testing successfully. Need to test complete flow with new uploads to verify end-to-end functionality."
   - agent: "main"
     message: "BROKER REGISTRATION ISSUES FIXED & ENHANCED LISTINGS VIEW IMPLEMENTED - Fixed three key issues: 1) BROKER REGISTRATION FIX: The broker-signup API was returning 422 errors because the backend model was missing the 'location' field that the frontend was sending. Updated BrokerSignup model to include location field and updated the broker data storage. 2) REMOVED WHATSAPP NUMBER FIELD: Removed the WhatsApp number input field from broker registration form as requested - now only shows Name, Agency, Email, and Location fields. 3) ENHANCED LISTINGS WITH MEDIA SLIDES & DETAIL MODAL: Completely upgraded the listings view to show: - Image/video count badges on listing cards - Play button overlay for listings with videos - Clickable cards that open detailed modal view - Full-screen modal with image/video slider - Navigation arrows for multiple media items - Media thumbnail gallery in modal - Enhanced property details display - All media (photos + videos) combined in slider format. The system now provides a rich user experience with proper media handling and detailed property views."
   - agent: "testing"
