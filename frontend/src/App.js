@@ -548,6 +548,7 @@ function PostLandForm({ user, setCurrentView }) {
       });
 
       setListingCreated(response.data.listing_id);
+      clearFormData(); // Clear saved form data after successful submission
     } catch (error) {
       alert('Failed to create listing: ' + (error.response?.data?.detail || 'Unknown error'));
     } finally {
