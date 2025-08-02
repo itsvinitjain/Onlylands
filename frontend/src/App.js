@@ -1092,7 +1092,7 @@ function PaymentComponent({ listingId, user, setCurrentView }) {
               onClick={() => setCurrentView('listings')}
               className="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition-colors"
             >
-              📋 View All Listings
+              📋 View My Listings
             </button>
           </div>
           <p className="text-xs text-gray-500">
