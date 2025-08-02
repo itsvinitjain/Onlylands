@@ -652,7 +652,7 @@ function PostLandForm({ user, setCurrentView }) {
                   required
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Enter amount in Rupees (Lakhs, Crores acceptable)</p>
+              <p className="text-xs text-gray-500 mt-1">Enter amount in Rupees (numbers only, e.g., 5000000)</p>
             </div>
           </div>
 
