@@ -57,8 +57,8 @@
 ##   test_priority: "high_first"  # or "sequential" or "stuck_first"
 ##
 ## agent_communication:
-##     -agent: "main"  # or "testing" or "user"
-##     -message: "Communication message between agents"
+##     -agent: "main"
+##     -message: "Starting implementation of 10 UI/UX improvements requested by user: 1) Remove +91 from phone display 2) Replace marketplace text 3) Numbers-only OTP 4) Form persistence on refresh 5) Payment back button navigation 6) Google Maps location input 7) Broker WhatsApp field with checkbox 8) Multi-select location dropdown 9) Registration success modal 10) Broker dashboard view details"
 
 # Protocol Guidelines for Main agent
 #
