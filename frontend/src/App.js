@@ -1247,95 +1247,164 @@ function BrokerRegistration({ setCurrentView }) {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Broker Registration</h2>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Full Name
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              required
-            />
-          </div>
+    <>
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Complete Broker Registration</h2>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Full Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                required
+              />
+            </div>
 
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Agency Name
-            </label>
-            <input
-              type="text"
-              value={formData.agency}
-              onChange={(e) => setFormData({...formData, agency: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              required
-            />
-          </div>
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Agency Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.agency}
+                onChange={(e) => setFormData({...formData, agency: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                required
+              />
+            </div>
 
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              WhatsApp Number
-            </label>
-            <input
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => setFormData({...formData, phone: e.target.value})}
-              placeholder="+91 9876543210"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              required
-            />
-          </div>
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                WhatsApp Number
+              </label>
+              <input
+                type="tel"
+                value={formData.phone}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                disabled
+              />
+              <div className="mt-2">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={whatsappAvailable}
+                    onChange={(e) => setWhatsappAvailable(e.target.checked)}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-600">This number is available on WhatsApp</span>
+                </label>
+                {!whatsappAvailable && (
+                  <p className="text-sm text-orange-600 mt-1">
+                    📱 Please login with your WhatsApp number to receive listing notifications
+                  </p>
+                )}
+              </div>
+            </div>
 
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              required
-            />
-          </div>
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Email <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                required
+              />
+            </div>
 
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Location
-            </label>
-            <input
-              type="text"
-              value={formData.location}
-              onChange={(e) => setFormData({...formData, location: e.target.value})}
-              placeholder="e.g., Mumbai, Maharashtra"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              required
-            />
-          </div>
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Broker Dealer Location (Where you deal in land) <span className="text-red-500">*</span>
+              </label>
+              <div className="border border-gray-300 rounded-lg p-3 max-h-32 overflow-y-auto">
+                {locationOptions.map((location) => (
+                  <label key={location} className="flex items-center mb-2 last:mb-0">
+                    <input
+                      type="checkbox"
+                      checked={formData.location.includes(location)}
+                      onChange={() => handleLocationChange(location)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">{location}</span>
+                  </label>
+                ))}
+              </div>
+              <div className="mt-2">
+                <input
+                  type="text"
+                  placeholder="Add custom location..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addCustomLocation(e.target.value);
+                      e.target.value = '';
+                    }
+                  }}
+                />
+                <p className="text-xs text-gray-500 mt-1">Press Enter to add custom location</p>
+              </div>
+              {formData.location.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-sm text-gray-600">Selected: {formData.location.join(', ')}</p>
+                </div>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || formData.location.length === 0}
+              className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-400"
+            >
+              {loading ? 'Registering...' : 'Complete Registration'}
+            </button>
+          </form>
 
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-400"
+            onClick={() => setCurrentView('home')}
+            className="w-full bg-gray-300 text-gray-700 py-2 px-4 rounded-lg mt-4 hover:bg-gray-400 transition-colors"
           >
-            {loading ? 'Registering...' : 'Register as Broker'}
+            Back to Home
           </button>
-        </form>
-
-        <button
-          onClick={() => setCurrentView('home')}
-          className="w-full bg-gray-300 text-gray-700 py-2 px-4 rounded-lg mt-4 hover:bg-gray-400 transition-colors"
-        >
-          Back to Home
-        </button>
+        </div>
       </div>
-    </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="mb-4">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">🎉 Registration successful!</h3>
+                <p className="text-gray-600 mb-6">
+                  You can now access the broker dashboard and receive notifications for new listings.
+                </p>
+              </div>
+              
+              <button
+                onClick={handleSuccessModalClose}
+                className="w-full bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 transition-colors font-semibold"
+              >
+                Continue to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
