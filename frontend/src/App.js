@@ -1711,9 +1711,28 @@ function BrokerDashboard({ user }) {
             leads.map((listing) => (
               <div key={listing.listing_id} className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex justify-between items-start mb-4">
-                  <div>
+                  <div className="flex-1">
                     <h3 className="text-xl font-bold text-gray-800">{listing.title}</h3>
-                    <p className="text-gray-600">{listing.location}</p>
+                    <div className="mt-2">
+                      {listing.google_maps_link ? (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-gray-600">{listing.location}</span>
+                          <a
+                            href={listing.google_maps_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full hover:bg-blue-200 transition-colors"
+                          >
+                            <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                            </svg>
+                            View on Map
+                          </a>
+                        </div>
+                      ) : (
+                        <p className="text-gray-600">{listing.location}</p>
+                      )}
+                    </div>
                   </div>
                   <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
                     New Lead
