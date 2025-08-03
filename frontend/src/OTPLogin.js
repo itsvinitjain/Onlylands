@@ -158,7 +158,12 @@ const OTPLogin = ({ setToken, setCurrentView, userType = 'seller' }) => {
                 <input
                   type="text"
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                    if (value.length <= 6) {
+                      setOtp(value);
+                    }
+                  }}
                   placeholder="Enter OTP from SMS"
                   maxLength="6"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
