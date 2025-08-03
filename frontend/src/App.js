@@ -408,8 +408,7 @@ function PostLandForm({ user, setCurrentView }) {
       area: '',
       price: '',
       description: '',
-      latitude: '',
-      longitude: ''
+      googleMapsLink: ''
     };
   };
 
