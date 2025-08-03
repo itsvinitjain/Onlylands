@@ -654,33 +654,19 @@ function PostLandForm({ user, setCurrentView }) {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div>
             <div>
               <label className="block text-gray-700 text-sm font-bold mb-2">
-                Latitude (Optional)
+                Google Maps Location Link
               </label>
               <input
-                type="number"
-                step="any"
-                value={formData.latitude}
-                onChange={(e) => setFormData({...formData, latitude: e.target.value})}
-                placeholder="e.g., 18.6414"
+                type="url"
+                value={formData.googleMapsLink}
+                onChange={(e) => setFormData({...formData, googleMapsLink: e.target.value})}
+                placeholder="e.g., https://maps.google.com/..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
               />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Longitude (Optional)
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={formData.longitude}
-                onChange={(e) => setFormData({...formData, longitude: e.target.value})}
-                placeholder="e.g., 72.9897"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              />
+              <p className="text-xs text-gray-500 mt-1">📍 Paste Google Maps link for precise location</p>
             </div>
           </div>
 
