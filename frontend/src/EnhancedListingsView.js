@@ -439,6 +439,19 @@ const EnhancedListingsView = ({ setCurrentView }) => {
                         <span className="mr-3 text-lg">📍</span>
                         <span>{selectedListing.location || selectedListing.city || 'Location not specified'}</span>
                       </div>
+                      {selectedListing.google_maps_link && (
+                        <div className="flex items-center text-blue-600">
+                          <span className="mr-3 text-lg">🗺️</span>
+                          <a
+                            href={selectedListing.google_maps_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline"
+                          >
+                            View on Google Maps
+                          </a>
+                        </div>
+                      )}
                       <div className="flex items-center text-gray-600">
                         <span className="mr-3 text-lg">📏</span>
                         <span>{selectedListing.area}</span>
