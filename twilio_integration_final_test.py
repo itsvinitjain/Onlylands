@@ -423,7 +423,7 @@ class TwilioIntegrationAnalyzer:
         return self.analysis_results
 
 def main():
-    backend_url = "https://547a6392-129c-42e0-badb-1a283db0eb37.preview.emergentagent.com"
+    backend_url = "https://91a3d332-8408-4b2f-93db-7686f4570aca.preview.emergentagent.com"
     
     print(f"Analyzing Twilio Integration at: {backend_url}")
     

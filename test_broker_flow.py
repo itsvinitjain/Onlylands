@@ -3,7 +3,7 @@ import jwt
 from datetime import datetime, timedelta
 
 # Backend URL
-BACKEND_URL = "https://547a6392-129c-42e0-badb-1a283db0eb37.preview.emergentagent.com"
+BACKEND_URL = "https://91a3d332-8408-4b2f-93db-7686f4570aca.preview.emergentagent.com"
 
 # Get the broker ID from the previous test
 # We'll use the broker we registered during the API test

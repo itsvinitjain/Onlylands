@@ -14,7 +14,7 @@ This guide helps you set up third-party tools to manage and view your OnlyLands 
 - 💳 Payments and transaction history
 - 📞 WhatsApp notification logs
 
-**URL**: https://547a6392-129c-42e0-badb-1a283db0eb37.preview.emergentagent.com
+**URL**: https://91a3d332-8408-4b2f-93db-7686f4570aca.preview.emergentagent.com
 
 ## 🔧 MongoDB Compass (Recommended)
 
