@@ -1740,8 +1740,8 @@ function BrokerDashboard({ user }) {
   };
 
   const contactOwner = (listing) => {
-    const message = \`Hi! I'm interested in your land listing: \${listing.title} in \${listing.location}. Can we discuss the details?\`;
-    const whatsappUrl = \`https://wa.me/919876543210?text=\${encodeURIComponent(message)}\`;
+    const message = `Hi! I'm interested in your land listing: ${listing.title} in ${listing.location}. Can we discuss the details?`;
+    const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 }
