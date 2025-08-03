@@ -2350,7 +2350,20 @@ function MyListings({ user, setCurrentView }) {
                   <div className="p-6">
                     <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2">{listing.title}</h3>
                     <div className="space-y-2 text-sm text-gray-600 mb-4">
-                      <p>📍 {listing.location}</p>
+                      <div className="flex items-center justify-between">
+                        <span>📍 {listing.location}</span>
+                        {listing.google_maps_link && (
+                          <a
+                            href={listing.google_maps_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:text-blue-700 text-xs"
+                            title="View on Google Maps"
+                          >
+                            🗺️ Map
+                          </a>
+                        )}
+                      </div>
                       <p>📐 {listing.area}</p>
                       <p className="font-semibold text-green-600 text-lg">💰 ₹{listing.price}</p>
                     </div>
