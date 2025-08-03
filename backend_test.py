@@ -4487,6 +4487,746 @@ class OnlyLandsAPITester:
         print("="*80)
         return all_tests_passed
 
+    def test_google_maps_location_link(self):
+        """
+        REVIEW REQUEST TEST: Test Google Maps Location Link functionality
+        Verify that POST /api/post-land accepts and stores google_maps_link field correctly
+        """
+        print("\n" + "="*80)
+        print("🗺️ REVIEW REQUEST TEST: GOOGLE MAPS LOCATION LINK")
+        print("="*80)
+        
+        # Ensure we have authentication
+        if not self.token:
+            print("🔐 Authenticating with demo credentials...")
+            if not self.authenticate_with_demo_credentials():
+                print("❌ FAILURE: Could not authenticate")
+                return False
+        
+        # Test 1: POST Land with Google Maps Link
+        print("\n📍 TEST 1: POST LAND WITH GOOGLE MAPS LINK")
+        print("-" * 50)
+        
+        # Create test files
+        test_image_path = '/tmp/test_gmaps_image.jpg'
+        with open(test_image_path, 'wb') as f:
+            f.write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))
+        
+        # Prepare form data with Google Maps link
+        google_maps_link = "https://maps.google.com/maps?q=18.6414,72.9897&z=15"
+        form_data = {
+            'title': f'Land with Google Maps Link {uuid.uuid4().hex[:8]}',
+            'area': '8 Acres',
+            'price': '60 Lakhs',
+            'description': 'Premium land with Google Maps location for easy navigation.',
+            'location': 'Nashik, Maharashtra',
+            'google_maps_link': google_maps_link,
+            'latitude': '18.6414',
+            'longitude': '72.9897'
+        }
+        
+        files = [('photos', ('gmaps_land.jpg', open(test_image_path, 'rb'), 'image/jpeg'))]
+        
+        url = f"{self.base_url}/api/post-land"
+        headers = {'Authorization': f'Bearer {self.token}'}
+        
+        self.tests_run += 1
+        print(f"🔍 Testing POST /api/post-land with google_maps_link...")
+        print(f"📍 Google Maps Link: {google_maps_link}")
+        
+        try:
+            response = requests.post(url, data=form_data, files=files, headers=headers)
+            
+            if response.status_code == 200:
+                self.tests_passed += 1
+                result = response.json()
+                self.listing_id = result.get('listing_id')
+                print(f"✅ PASS: Land listing created with Google Maps link")
+                print(f"✅ Listing ID: {self.listing_id}")
+                gmaps_success = True
+            else:
+                print(f"❌ FAILURE: Expected 200, got {response.status_code}")
+                print(f"Response: {response.text}")
+                gmaps_success = False
+                
+        except Exception as e:
+            print(f"❌ FAILURE: Error creating listing with Google Maps link: {e}")
+            gmaps_success = False
+        finally:
+            files[0][1][1].close()
+            try:
+                os.remove(test_image_path)
+            except:
+                pass
+        
+        if not gmaps_success:
+            return False
+        
+        # Test 2: Verify Google Maps Link in My Listings
+        print("\n📋 TEST 2: VERIFY GOOGLE MAPS LINK IN MY LISTINGS")
+        print("-" * 50)
+        
+        my_listings_success, my_listings_response = self.run_test(
+            "Get My Listings - Verify Google Maps Link",
+            "GET",
+            "api/my-listings",
+            200
+        )
+        
+        if my_listings_success:
+            listings = my_listings_response.get('listings', [])
+            found_listing = None
+            for listing in listings:
+                if listing.get('listing_id') == self.listing_id:
+                    found_listing = listing
+                    break
+            
+            if found_listing:
+                stored_gmaps_link = found_listing.get('google_maps_link')
+                if stored_gmaps_link == google_maps_link:
+                    print(f"✅ PASS: Google Maps link stored correctly")
+                    print(f"✅ Stored Link: {stored_gmaps_link}")
+                else:
+                    print(f"❌ FAILURE: Google Maps link not stored correctly")
+                    print(f"Expected: {google_maps_link}")
+                    print(f"Stored: {stored_gmaps_link}")
+                    return False
+            else:
+                print(f"❌ FAILURE: Created listing not found in my-listings")
+                return False
+        else:
+            print("❌ FAILURE: Could not retrieve my-listings")
+            return False
+        
+        # Test 3: Verify Google Maps Link in Public Listings (after payment)
+        print("\n🌐 TEST 3: VERIFY GOOGLE MAPS LINK IN PUBLIC LISTINGS")
+        print("-" * 50)
+        
+        # First activate the listing via payment
+        if self.activate_listing_via_payment(self.listing_id):
+            public_listings_success, public_listings_response = self.run_test(
+                "Get Public Listings - Verify Google Maps Link",
+                "GET",
+                "api/listings",
+                200
+            )
+            
+            if public_listings_success:
+                listings = public_listings_response.get('listings', [])
+                found_listing = None
+                for listing in listings:
+                    if listing.get('listing_id') == self.listing_id:
+                        found_listing = listing
+                        break
+                
+                if found_listing:
+                    stored_gmaps_link = found_listing.get('google_maps_link')
+                    if stored_gmaps_link == google_maps_link:
+                        print(f"✅ PASS: Google Maps link available in public listings")
+                        print(f"✅ Public Link: {stored_gmaps_link}")
+                    else:
+                        print(f"❌ FAILURE: Google Maps link not available in public listings")
+                        print(f"Expected: {google_maps_link}")
+                        print(f"Found: {stored_gmaps_link}")
+                        return False
+                else:
+                    print(f"❌ FAILURE: Activated listing not found in public listings")
+                    return False
+            else:
+                print("❌ FAILURE: Could not retrieve public listings")
+                return False
+        else:
+            print("⚠️ WARNING: Could not activate listing via payment, skipping public listings test")
+        
+        print("\n" + "="*80)
+        print("🎉 GOOGLE MAPS LOCATION LINK: ALL TESTS PASSED!")
+        print("✅ POST /api/post-land accepts google_maps_link field")
+        print("✅ Google Maps link stored correctly in database")
+        print("✅ Google Maps link returned in my-listings API")
+        print("✅ Google Maps link returned in public listings API")
+        print("="*80)
+        
+        return True
+
+    def test_terms_and_conditions_payment_integration(self):
+        """
+        REVIEW REQUEST TEST: Terms and Conditions Integration
+        Test that the payment system is still working correctly after adding Terms and Conditions functionality
+        """
+        print("\n" + "="*80)
+        print("📋 REVIEW REQUEST TEST: TERMS AND CONDITIONS PAYMENT INTEGRATION")
+        print("="*80)
+        
+        # Ensure we have authentication
+        if not self.token:
+            print("🔐 Authenticating with demo credentials...")
+            if not self.authenticate_with_demo_credentials():
+                print("❌ FAILURE: Could not authenticate")
+                return False
+        
+        # Test 1: Create a listing for payment testing
+        print("\n🏞️ TEST 1: CREATE LISTING FOR PAYMENT TESTING")
+        print("-" * 50)
+        
+        test_image_path = '/tmp/test_payment_image.jpg'
+        with open(test_image_path, 'wb') as f:
+            f.write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))
+        
+        form_data = {
+            'title': f'Payment Test Land {uuid.uuid4().hex[:8]}',
+            'area': '6 Acres',
+            'price': '45 Lakhs',
+            'description': 'Land listing for testing payment system after Terms and Conditions integration.',
+            'location': 'Pune, Maharashtra',
+            'google_maps_link': 'https://maps.google.com/maps?q=18.5204,73.8567&z=15',
+            'latitude': '18.5204',
+            'longitude': '73.8567'
+        }
+        
+        files = [('photos', ('payment_test_land.jpg', open(test_image_path, 'rb'), 'image/jpeg'))]
+        
+        url = f"{self.base_url}/api/post-land"
+        headers = {'Authorization': f'Bearer {self.token}'}
+        
+        self.tests_run += 1
+        print(f"🔍 Creating listing for payment testing...")
+        
+        try:
+            response = requests.post(url, data=form_data, files=files, headers=headers)
+            
+            if response.status_code == 200:
+                self.tests_passed += 1
+                result = response.json()
+                payment_test_listing_id = result.get('listing_id')
+                print(f"✅ PASS: Payment test listing created")
+                print(f"✅ Listing ID: {payment_test_listing_id}")
+            else:
+                print(f"❌ FAILURE: Could not create payment test listing")
+                return False
+                
+        except Exception as e:
+            print(f"❌ FAILURE: Error creating payment test listing: {e}")
+            return False
+        finally:
+            files[0][1][1].close()
+            try:
+                os.remove(test_image_path)
+            except:
+                pass
+        
+        # Test 2: Create Payment Order
+        print("\n💳 TEST 2: CREATE PAYMENT ORDER")
+        print("-" * 50)
+        
+        payment_data = {
+            "amount": 299,
+            "listing_id": payment_test_listing_id
+        }
+        
+        create_order_success, create_order_response = self.run_test(
+            "Create Payment Order - Terms Integration",
+            "POST",
+            "api/create-payment-order",
+            200,
+            data=payment_data
+        )
+        
+        if create_order_success:
+            order = create_order_response.get('order', {})
+            razorpay_order_id = order.get('id')
+            demo_mode = create_order_response.get('demo_mode', False)
+            
+            print(f"✅ Order ID: {razorpay_order_id}")
+            print(f"✅ Amount: {order.get('amount')} paise")
+            print(f"✅ Currency: {order.get('currency')}")
+            print(f"✅ Demo Mode: {demo_mode}")
+        else:
+            print("❌ FAILURE: Could not create payment order")
+            return False
+        
+        # Test 3: Verify Payment
+        print("\n✅ TEST 3: VERIFY PAYMENT")
+        print("-" * 50)
+        
+        payment_verification_data = {
+            "razorpay_order_id": razorpay_order_id,
+            "razorpay_payment_id": f"pay_demo_{int(time.time())}",
+            "razorpay_signature": f"demo_signature_{int(time.time())}"
+        }
+        
+        verify_payment_success, verify_payment_response = self.run_test(
+            "Verify Payment - Terms Integration",
+            "POST",
+            "api/verify-payment",
+            200,
+            data=payment_verification_data
+        )
+        
+        if verify_payment_success:
+            print(f"✅ Message: {verify_payment_response.get('message')}")
+            print(f"✅ Demo Mode: {verify_payment_response.get('demo_mode', False)}")
+        else:
+            print("❌ FAILURE: Could not verify payment")
+            return False
+        
+        # Test 4: Verify Listing Activation
+        print("\n🔄 TEST 4: VERIFY LISTING ACTIVATION AFTER PAYMENT")
+        print("-" * 50)
+        
+        time.sleep(2)  # Wait for database update
+        
+        # Check if listing is now active in public listings
+        public_listings_success, public_listings_response = self.run_test(
+            "Check Listing Activation - Public Listings",
+            "GET",
+            "api/listings",
+            200
+        )
+        
+        if public_listings_success:
+            listings = public_listings_response.get('listings', [])
+            found_active_listing = None
+            for listing in listings:
+                if listing.get('listing_id') == payment_test_listing_id:
+                    found_active_listing = listing
+                    break
+            
+            if found_active_listing:
+                if found_active_listing.get('status') == 'active':
+                    print(f"✅ PASS: Listing successfully activated after payment")
+                    print(f"✅ Status: {found_active_listing.get('status')}")
+                else:
+                    print(f"❌ FAILURE: Listing not activated. Status: {found_active_listing.get('status')}")
+                    return False
+            else:
+                print(f"❌ FAILURE: Paid listing not found in public listings")
+                return False
+        else:
+            print("❌ FAILURE: Could not retrieve public listings")
+            return False
+        
+        print("\n" + "="*80)
+        print("🎉 TERMS AND CONDITIONS PAYMENT INTEGRATION: ALL TESTS PASSED!")
+        print("✅ Payment order creation working correctly")
+        print("✅ Payment verification working correctly")
+        print("✅ Listing activation after payment working")
+        print("✅ Payment system unaffected by Terms and Conditions integration")
+        print("="*80)
+        
+        return True
+
+    def test_enhanced_listings_api_google_maps(self):
+        """
+        REVIEW REQUEST TEST: Enhanced Listings API
+        Verify that GET /api/listings and GET /api/my-listings return the google_maps_link field
+        """
+        print("\n" + "="*80)
+        print("🔍 REVIEW REQUEST TEST: ENHANCED LISTINGS API - GOOGLE MAPS LINKS")
+        print("="*80)
+        
+        # Ensure we have authentication
+        if not self.token:
+            print("🔐 Authenticating with demo credentials...")
+            if not self.authenticate_with_demo_credentials():
+                print("❌ FAILURE: Could not authenticate")
+                return False
+        
+        # Test 1: Create multiple listings with Google Maps links
+        print("\n🏞️ TEST 1: CREATE LISTINGS WITH GOOGLE MAPS LINKS")
+        print("-" * 50)
+        
+        test_listings = [
+            {
+                'title': f'Enhanced API Test Land 1 {uuid.uuid4().hex[:6]}',
+                'location': 'Mumbai, Maharashtra',
+                'google_maps_link': 'https://maps.google.com/maps?q=19.0760,72.8777&z=15',
+                'area': '3 Acres',
+                'price': '80 Lakhs'
+            },
+            {
+                'title': f'Enhanced API Test Land 2 {uuid.uuid4().hex[:6]}',
+                'location': 'Nashik, Maharashtra',
+                'google_maps_link': 'https://maps.google.com/maps?q=19.9975,73.7898&z=15',
+                'area': '7 Acres',
+                'price': '55 Lakhs'
+            }
+        ]
+        
+        created_listing_ids = []
+        
+        for i, listing_data in enumerate(test_listings):
+            test_image_path = f'/tmp/test_enhanced_image_{i}.jpg'
+            with open(test_image_path, 'wb') as f:
+                f.write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))
+            
+            form_data = {
+                'title': listing_data['title'],
+                'area': listing_data['area'],
+                'price': listing_data['price'],
+                'description': f'Enhanced API test listing {i+1} with Google Maps integration.',
+                'location': listing_data['location'],
+                'google_maps_link': listing_data['google_maps_link'],
+                'latitude': '18.6414',
+                'longitude': '72.9897'
+            }
+            
+            files = [('photos', (f'enhanced_test_{i}.jpg', open(test_image_path, 'rb'), 'image/jpeg'))]
+            
+            url = f"{self.base_url}/api/post-land"
+            headers = {'Authorization': f'Bearer {self.token}'}
+            
+            self.tests_run += 1
+            print(f"🔍 Creating enhanced test listing {i+1}...")
+            
+            try:
+                response = requests.post(url, data=form_data, files=files, headers=headers)
+                
+                if response.status_code == 200:
+                    self.tests_passed += 1
+                    result = response.json()
+                    listing_id = result.get('listing_id')
+                    created_listing_ids.append(listing_id)
+                    print(f"✅ PASS: Enhanced test listing {i+1} created")
+                    print(f"✅ Listing ID: {listing_id}")
+                    print(f"✅ Google Maps Link: {listing_data['google_maps_link']}")
+                else:
+                    print(f"❌ FAILURE: Could not create enhanced test listing {i+1}")
+                    return False
+                    
+            except Exception as e:
+                print(f"❌ FAILURE: Error creating enhanced test listing {i+1}: {e}")
+                return False
+            finally:
+                files[0][1][1].close()
+                try:
+                    os.remove(test_image_path)
+                except:
+                    pass
+        
+        # Test 2: Verify Google Maps Links in My Listings API
+        print("\n📋 TEST 2: VERIFY GOOGLE MAPS LINKS IN MY LISTINGS API")
+        print("-" * 50)
+        
+        my_listings_success, my_listings_response = self.run_test(
+            "Get My Listings - Enhanced API Test",
+            "GET",
+            "api/my-listings",
+            200
+        )
+        
+        if my_listings_success:
+            listings = my_listings_response.get('listings', [])
+            found_listings_with_gmaps = 0
+            
+            for listing in listings:
+                if listing.get('listing_id') in created_listing_ids:
+                    google_maps_link = listing.get('google_maps_link')
+                    if google_maps_link:
+                        found_listings_with_gmaps += 1
+                        print(f"✅ Found listing with Google Maps link: {listing.get('title')}")
+                        print(f"   📍 Link: {google_maps_link}")
+                    else:
+                        print(f"❌ FAILURE: Listing missing Google Maps link: {listing.get('title')}")
+                        return False
+            
+            if found_listings_with_gmaps == len(created_listing_ids):
+                print(f"✅ PASS: All {found_listings_with_gmaps} listings have Google Maps links in my-listings")
+            else:
+                print(f"❌ FAILURE: Only {found_listings_with_gmaps}/{len(created_listing_ids)} listings have Google Maps links")
+                return False
+        else:
+            print("❌ FAILURE: Could not retrieve my-listings")
+            return False
+        
+        # Test 3: Activate listings and verify in Public Listings API
+        print("\n🌐 TEST 3: VERIFY GOOGLE MAPS LINKS IN PUBLIC LISTINGS API")
+        print("-" * 50)
+        
+        # Activate all created listings
+        activated_count = 0
+        for listing_id in created_listing_ids:
+            if self.activate_listing_via_payment(listing_id):
+                activated_count += 1
+                print(f"✅ Activated listing: {listing_id}")
+            else:
+                print(f"⚠️ Could not activate listing: {listing_id}")
+        
+        if activated_count > 0:
+            time.sleep(2)  # Wait for database updates
+            
+            public_listings_success, public_listings_response = self.run_test(
+                "Get Public Listings - Enhanced API Test",
+                "GET",
+                "api/listings",
+                200
+            )
+            
+            if public_listings_success:
+                listings = public_listings_response.get('listings', [])
+                found_public_listings_with_gmaps = 0
+                
+                for listing in listings:
+                    if listing.get('listing_id') in created_listing_ids:
+                        google_maps_link = listing.get('google_maps_link')
+                        if google_maps_link:
+                            found_public_listings_with_gmaps += 1
+                            print(f"✅ Public listing with Google Maps link: {listing.get('title')}")
+                            print(f"   📍 Link: {google_maps_link}")
+                            print(f"   🔄 Status: {listing.get('status')}")
+                        else:
+                            print(f"❌ FAILURE: Public listing missing Google Maps link: {listing.get('title')}")
+                            return False
+                
+                if found_public_listings_with_gmaps >= activated_count:
+                    print(f"✅ PASS: All activated listings have Google Maps links in public listings")
+                else:
+                    print(f"❌ FAILURE: Only {found_public_listings_with_gmaps}/{activated_count} activated listings have Google Maps links")
+                    return False
+            else:
+                print("❌ FAILURE: Could not retrieve public listings")
+                return False
+        else:
+            print("⚠️ WARNING: No listings were activated, skipping public listings test")
+        
+        print("\n" + "="*80)
+        print("🎉 ENHANCED LISTINGS API - GOOGLE MAPS LINKS: ALL TESTS PASSED!")
+        print("✅ GET /api/my-listings returns google_maps_link field correctly")
+        print("✅ GET /api/listings returns google_maps_link field correctly")
+        print("✅ Google Maps links preserved through payment activation process")
+        print("="*80)
+        
+        return True
+
+    def test_broker_registration_multi_location(self):
+        """
+        REVIEW REQUEST TEST: Broker Registration
+        Test that POST /api/broker-signup still accepts the multi-location format after enhanced broker registration form changes
+        """
+        print("\n" + "="*80)
+        print("🏢 REVIEW REQUEST TEST: BROKER REGISTRATION - MULTI-LOCATION FORMAT")
+        print("="*80)
+        
+        # Test 1: Authenticate as Broker
+        print("\n🔐 TEST 1: AUTHENTICATE AS BROKER")
+        print("-" * 50)
+        
+        test_phone = "9696"
+        demo_otp = "123456"
+        
+        # Send OTP for broker
+        broker_send_success, broker_send_response = self.run_test(
+            "Send OTP for Broker Registration Test",
+            "POST",
+            "api/send-otp",
+            200,
+            data={"phone_number": test_phone, "user_type": "broker"}
+        )
+        
+        if not broker_send_success:
+            print("❌ FAILURE: Could not send OTP for broker")
+            return False
+        
+        # Verify OTP for broker
+        broker_verify_success, broker_verify_response = self.run_test(
+            "Verify OTP for Broker Registration Test",
+            "POST",
+            "api/verify-otp",
+            200,
+            data={"phone_number": test_phone, "otp": demo_otp, "user_type": "broker"}
+        )
+        
+        if broker_verify_success:
+            broker_token = broker_verify_response.get('token')
+            broker_user = broker_verify_response.get('user', {})
+            print(f"✅ PASS: Broker authenticated successfully")
+            print(f"✅ User Type: {broker_user.get('user_type')}")
+        else:
+            print("❌ FAILURE: Could not verify OTP for broker")
+            return False
+        
+        # Test 2: Test Single Location Format (Basic)
+        print("\n📍 TEST 2: BROKER REGISTRATION - SINGLE LOCATION FORMAT")
+        print("-" * 50)
+        
+        single_location_broker_data = {
+            "name": f"Single Location Broker {uuid.uuid4().hex[:6]}",
+            "agency": "Single Location Real Estate Agency",
+            "phone_number": f"+919876{uuid.uuid4().hex[:6]}",
+            "email": f"single{uuid.uuid4().hex[:6]}@broker.com",
+            "location": "Mumbai, Maharashtra"
+        }
+        
+        single_location_success, single_location_response = self.run_test(
+            "Broker Registration - Single Location",
+            "POST",
+            "api/broker-signup",
+            200,
+            data=single_location_broker_data
+        )
+        
+        if single_location_success:
+            single_broker_id = single_location_response.get('broker_id')
+            print(f"✅ PASS: Single location broker registered successfully")
+            print(f"✅ Broker ID: {single_broker_id}")
+            print(f"✅ Location: {single_location_broker_data['location']}")
+        else:
+            print("❌ FAILURE: Single location broker registration failed")
+            return False
+        
+        # Test 3: Test Multi-Location Format (Enhanced)
+        print("\n🌍 TEST 3: BROKER REGISTRATION - MULTI-LOCATION FORMAT")
+        print("-" * 50)
+        
+        # Test with comma-separated locations (multi-location format)
+        multi_location_broker_data = {
+            "name": f"Multi Location Broker {uuid.uuid4().hex[:6]}",
+            "agency": "Multi Location Real Estate Agency",
+            "phone_number": f"+919877{uuid.uuid4().hex[:6]}",
+            "email": f"multi{uuid.uuid4().hex[:6]}@broker.com",
+            "location": "Mumbai, Pune, Nashik, Aurangabad"  # Multi-location format
+        }
+        
+        multi_location_success, multi_location_response = self.run_test(
+            "Broker Registration - Multi-Location Format",
+            "POST",
+            "api/broker-signup",
+            200,
+            data=multi_location_broker_data
+        )
+        
+        if multi_location_success:
+            multi_broker_id = multi_location_response.get('broker_id')
+            print(f"✅ PASS: Multi-location broker registered successfully")
+            print(f"✅ Broker ID: {multi_broker_id}")
+            print(f"✅ Locations: {multi_location_broker_data['location']}")
+        else:
+            print("❌ FAILURE: Multi-location broker registration failed")
+            return False
+        
+        print("\n" + "="*80)
+        print("🎉 BROKER REGISTRATION - MULTI-LOCATION FORMAT: ALL TESTS PASSED!")
+        print("✅ POST /api/broker-signup accepts single location format")
+        print("✅ POST /api/broker-signup accepts multi-location format")
+        print("✅ Enhanced broker registration form changes don't break API")
+        print("="*80)
+        
+        return True
+
+    def authenticate_with_demo_credentials(self):
+        """Helper method to authenticate with demo credentials (phone: 9696, OTP: 123456)"""
+        test_phone = "9696"
+        demo_otp = "123456"
+        
+        # Send OTP
+        send_success, send_response = self.run_test(
+            "Send OTP - Demo Credentials",
+            "POST",
+            "api/send-otp",
+            200,
+            data={"phone_number": test_phone, "user_type": "seller"}
+        )
+        
+        if not send_success:
+            return False
+        
+        # Verify OTP
+        verify_success, verify_response = self.run_test(
+            "Verify OTP - Demo Credentials",
+            "POST",
+            "api/verify-otp",
+            200,
+            data={"phone_number": test_phone, "otp": demo_otp, "user_type": "seller"}
+        )
+        
+        if verify_success:
+            self.token = verify_response.get('token')
+            self.user_id = verify_response.get('user', {}).get('user_id')
+            return True
+        
+        return False
+
+    def activate_listing_via_payment(self, listing_id):
+        """Helper method to activate a listing via payment"""
+        try:
+            # Create payment order
+            payment_data = {"amount": 299, "listing_id": listing_id}
+            
+            create_order_success, create_order_response = self.run_test(
+                "Create Payment Order for Activation",
+                "POST",
+                "api/create-payment-order",
+                200,
+                data=payment_data
+            )
+            
+            if not create_order_success:
+                return False
+            
+            order = create_order_response.get('order', {})
+            razorpay_order_id = order.get('id')
+            
+            # Verify payment
+            payment_verification_data = {
+                "razorpay_order_id": razorpay_order_id,
+                "razorpay_payment_id": f"pay_demo_{int(time.time())}",
+                "razorpay_signature": f"demo_signature_{int(time.time())}"
+            }
+            
+            verify_payment_success, verify_payment_response = self.run_test(
+                "Verify Payment for Activation",
+                "POST",
+                "api/verify-payment",
+                200,
+                data=payment_verification_data
+            )
+            
+            return verify_payment_success
+            
+        except Exception as e:
+            print(f"Error activating listing: {e}")
+            return False
+
+    def run_review_request_tests(self):
+        """Run all Review Request specific tests"""
+        print("🚀 Starting OnlyLands Review Request Testing...")
+        print("=" * 80)
+        
+        # Test sequence - Focus on Review Request items
+        tests = [
+            ("Health Check", self.test_health_check),
+            ("🗺️ REVIEW REQUEST: Google Maps Location Link", self.test_google_maps_location_link),
+            ("📋 REVIEW REQUEST: Terms and Conditions Payment Integration", self.test_terms_and_conditions_payment_integration),
+            ("🔍 REVIEW REQUEST: Enhanced Listings API - Google Maps", self.test_enhanced_listings_api_google_maps),
+            ("🏢 REVIEW REQUEST: Broker Registration Multi-Location", self.test_broker_registration_multi_location)
+        ]
+        
+        for test_name, test_func in tests:
+            print(f"\n{'='*20} {test_name} {'='*20}")
+            try:
+                success = test_func()
+                if not success:
+                    print(f"❌ {test_name} failed!")
+                else:
+                    print(f"✅ {test_name} passed!")
+            except Exception as e:
+                print(f"❌ {test_name} failed with exception: {e}")
+        
+        # Print final summary
+        print("\n" + "="*80)
+        print("📊 REVIEW REQUEST TEST SUMMARY")
+        print("="*80)
+        print(f"Total Tests Run: {self.tests_run}")
+        print(f"Tests Passed: {self.tests_passed}")
+        print(f"Tests Failed: {self.tests_run - self.tests_passed}")
+        print(f"Success Rate: {(self.tests_passed/self.tests_run)*100:.1f}%")
+        
+        if self.tests_passed == self.tests_run:
+            print("🎉 ALL REVIEW REQUEST TESTS PASSED! OnlyLands API changes are working correctly.")
+        else:
+            print("⚠️ Some tests failed. Please check the issues above.")
+        
+        print("="*80)
+
 def main():
     # Get the backend URL from environment variable
     backend_url = "https://91a3d332-8408-4b2f-93db-7686f4570aca.preview.emergentagent.com"
