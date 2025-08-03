@@ -471,6 +471,7 @@ async def post_land(
     price: str = Form(...),
     description: str = Form(...),
     location: str = Form(default=""),
+    google_maps_link: str = Form(default=""),
     latitude: str = Form(...),
     longitude: str = Form(...),
     photos: List[UploadFile] = File(default=[]),
