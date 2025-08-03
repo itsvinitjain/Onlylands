@@ -1340,130 +1340,207 @@ function BrokerRegistration({ setCurrentView }) {
   return (
     <>
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Complete Broker Registration</h2>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Full Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                required
-              />
+        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2V6" />
+              </svg>
             </div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">Complete Broker Registration</h2>
+            <p className="text-gray-600">Join our network of verified land brokers and start receiving leads instantly</p>
+          </div>
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Full Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter your full name"
+                  required
+                />
+              </div>
 
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Agency Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.agency}
-                onChange={(e) => setFormData({...formData, agency: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                required
-              />
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Agency Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.agency}
+                  onChange={(e) => setFormData({...formData, agency: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter your agency/company name"
+                  required
+                />
+              </div>
             </div>
 
             <div>
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 WhatsApp Number
               </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-                disabled
-              />
-              <div className="mt-2">
+              <div className="relative">
+                <input
+                  type="tel"
+                  value={`+91 ${formData.phone}`}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
+                  disabled
+                />
+                <div className="absolute right-3 top-3 text-gray-400">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5 9V5a5 5 0 0110 0v4a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-4a3 3 0 00-6 0v4h6V5z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+              <div className="mt-3 bg-blue-50 p-3 rounded-lg">
                 <label className="flex items-center">
                   <input
                     type="checkbox"
                     checked={whatsappAvailable}
                     onChange={(e) => setWhatsappAvailable(e.target.checked)}
-                    className="mr-2"
+                    className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <span className="text-sm text-gray-600">This number is available on WhatsApp</span>
+                  <span className="text-sm text-gray-700">This number is available on WhatsApp</span>
                 </label>
                 {!whatsappAvailable && (
-                  <p className="text-sm text-orange-600 mt-1">
-                    📱 Please login with your WhatsApp number to receive listing notifications
-                  </p>
+                  <div className="mt-2 p-2 bg-orange-100 border border-orange-200 rounded">
+                    <p className="text-sm text-orange-700">
+                      📱 Please login with your WhatsApp number to receive listing notifications
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
 
             <div>
               <label className="block text-gray-700 text-sm font-bold mb-2">
-                Email <span className="text-red-500">*</span>
+                Email Address <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter your email address"
                 required
               />
             </div>
 
             <div>
               <label className="block text-gray-700 text-sm font-bold mb-2">
-                Broker Dealer Location (Where you deal in land) <span className="text-red-500">*</span>
+                Broker Dealer Locations <span className="text-red-500">*</span>
               </label>
-              <div className="border border-gray-300 rounded-lg p-3 max-h-32 overflow-y-auto">
-                {locationOptions.map((location) => (
-                  <label key={location} className="flex items-center mb-2 last:mb-0">
-                    <input
-                      type="checkbox"
-                      checked={formData.location.includes(location)}
-                      onChange={() => handleLocationChange(location)}
-                      className="mr-2"
-                    />
-                    <span className="text-sm">{location}</span>
-                  </label>
-                ))}
+              <p className="text-sm text-gray-600 mb-3">Select the areas where you deal in land properties</p>
+              
+              <div className="border border-gray-300 rounded-lg p-4 max-h-48 overflow-y-auto bg-gray-50">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {locationOptions.map((location) => (
+                    <label key={location} className="flex items-center p-2 hover:bg-white rounded transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={formData.location.includes(location)}
+                        onChange={() => handleLocationChange(location)}
+                        className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <span className="text-sm text-gray-700">{location}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
-              <div className="mt-2">
+              
+              <div className="mt-3">
                 <input
                   type="text"
-                  placeholder="Add custom location..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                  placeholder="Add custom location and press Enter..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
-                      addCustomLocation(e.target.value);
-                      e.target.value = '';
+                      const value = e.target.value.trim();
+                      if (value) {
+                        addCustomLocation(value);
+                        e.target.value = '';
+                      }
                     }
                   }}
                 />
-                <p className="text-xs text-gray-500 mt-1">Press Enter to add custom location</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  💡 Press Enter to add custom locations like "Satara, Maharashtra"
+                </p>
               </div>
+              
               {formData.location.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-sm text-gray-600">Selected: {formData.location.join(', ')}</p>
+                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm font-medium text-green-800 mb-2">Selected Locations ({formData.location.length}):</p>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.location.map((loc, index) => (
+                      <span key={index} className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                        {loc}
+                        <button
+                          type="button"
+                          onClick={() => handleLocationChange(loc)}
+                          className="ml-2 text-green-600 hover:text-green-800"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
+            </div>
+
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h3 className="font-semibold text-blue-800 mb-2">📋 Registration Benefits</h3>
+              <div className="text-sm text-blue-700 space-y-1">
+                <p>• Instant notifications for new land listings</p>
+                <p>• Direct contact with verified land owners</p>
+                <p>• Access to premium listings in your areas</p>
+                <p>• WhatsApp integration for quick communication</p>
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={loading || formData.location.length === 0}
-              className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-400"
+              className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-colors ${
+                loading || formData.location.length === 0
+                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
+              }`}
             >
-              {loading ? 'Registering...' : 'Complete Registration'}
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Registering...
+                </div>
+              ) : (
+                '🚀 Complete Registration'
+              )}
             </button>
+            
+            {formData.location.length === 0 && (
+              <p className="text-sm text-orange-600 text-center">
+                ⚠️ Please select at least one location to continue
+              </p>
+            )}
           </form>
 
           <button
             onClick={() => setCurrentView('home')}
-            className="w-full bg-gray-300 text-gray-700 py-2 px-4 rounded-lg mt-4 hover:bg-gray-400 transition-colors"
+            className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg mt-4 hover:bg-gray-200 transition-colors"
           >
-            Back to Home
+            ← Back to Home
           </button>
         </div>
       </div>
@@ -1471,23 +1548,23 @@ function BrokerRegistration({ setCurrentView }) {
       {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-2xl">
             <div className="text-center">
-              <div className="mb-4">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="mb-6">
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">🎉 Registration successful!</h3>
+                <h3 className="text-2xl font-bold text-gray-800 mb-3">🎉 Registration Successful!</h3>
                 <p className="text-gray-600 mb-6">
-                  You can now access the broker dashboard and receive notifications for new listings.
+                  Welcome to OnlyLands! You can now access the broker dashboard and start receiving notifications for new land listings in your selected areas.
                 </p>
               </div>
               
               <button
                 onClick={handleSuccessModalClose}
-                className="w-full bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 transition-colors font-semibold"
+                className="w-full bg-green-500 text-white py-3 px-6 rounded-lg hover:bg-green-600 transition-colors font-semibold text-lg shadow-md"
               >
                 Continue to Dashboard
               </button>
