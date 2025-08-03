@@ -1642,12 +1642,20 @@ function BrokerDashboard({ user }) {
                 
                 <p className="text-gray-700 mb-4">{listing.description}</p>
                 
-                <button
-                  onClick={() => contactOwner(listing)}
-                  className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors"
-                >
-                  Contact Owner via WhatsApp
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => viewListingDetails(listing)}
+                    className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                  >
+                    View Details
+                  </button>
+                  <button
+                    onClick={() => contactOwner(listing)}
+                    className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                  >
+                    Contact Owner via WhatsApp
+                  </button>
+                </div>
               </div>
             ))
           )}
