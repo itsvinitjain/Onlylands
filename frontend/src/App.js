@@ -195,7 +195,7 @@ function HomePage({ setCurrentView, user, logout, brokerRegistered }) {
                 <div className="text-xs md:text-sm text-gray-600">
                   <span className="font-semibold">Welcome, {user.user_type === 'seller' ? 'Seller' : 'Broker'}</span>
                   <br className="md:hidden" />
-                  <span className="text-gray-500"> (+91 {user.phone_number})</span>
+                  <span className="text-gray-500"> ({user.phone_number})</span>
                 </div>
                 <button 
                   onClick={logout}
