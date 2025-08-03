@@ -1664,9 +1664,84 @@ function BrokerDashboard({ user }) {
     </div>
   );
 
+  const viewListingDetails = (listing) => {
+    // Create a detailed view modal or navigate to a detailed view
+    const detailWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
+    detailWindow.document.write(`
+      <html>
+        <head>
+          <title>${listing.title} - Details</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+            .header { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+            .detail-row { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+            .label { font-weight: bold; color: #333; }
+            .value { color: #666; }
+            .description { background: white; padding: 15px; border: 1px solid #ddd; border-radius: 4px; margin: 15px 0; }
+            .photos { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 15px 0; }
+            .photo { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; }
+            .maps-link { color: #007bff; text-decoration: none; }
+            .maps-link:hover { text-decoration: underline; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${listing.title}</h1>
+            <p><strong>Location:</strong> ${listing.location}</p>
+          </div>
+          
+          <div class="detail-row">
+            <span class="label">Area:</span> <span class="value">${listing.area}</span>
+          </div>
+          
+          <div class="detail-row">
+            <span class="label">Price:</span> <span class="value">₹${listing.price}</span>
+          </div>
+          
+          <div class="detail-row">
+            <span class="label">Status:</span> <span class="value">${listing.status}</span>
+          </div>
+          
+          ${listing.google_maps_link ? `
+            <div class="detail-row">
+              <span class="label">Location on Maps:</span> 
+              <a href="${listing.google_maps_link}" target="_blank" class="maps-link">View on Google Maps</a>
+            </div>
+          ` : ''}
+          
+          <div class="description">
+            <h3>Description</h3>
+            <p>${listing.description}</p>
+          </div>
+          
+          ${listing.photos && listing.photos.length > 0 ? `
+            <div>
+              <h3>Photos</h3>
+              <div class="photos">
+                ${listing.photos.map(photo => `<img src="${photo}" alt="Property photo" class="photo" onerror="this.style.display='none'">`).join('')}
+              </div>
+            </div>
+          ` : ''}
+          
+          ${listing.videos && listing.videos.length > 0 ? `
+            <div>
+              <h3>Videos</h3>
+              ${listing.videos.map(video => `<video src="${video}" controls style="width: 100%; max-width: 400px; height: 300px; margin: 10px 0;"></video>`).join('')}
+            </div>
+          ` : ''}
+          
+          <div style="margin-top: 30px; padding: 20px; background: #e3f2fd; border-radius: 8px;">
+            <h3>Contact Information</h3>
+            <p>To contact the owner, use the WhatsApp button in the main dashboard.</p>
+          </div>
+        </body>
+      </html>
+    `);
+  };
+
   const contactOwner = (listing) => {
-    const message = `Hi! I'm interested in your land listing: ${listing.title} in ${listing.location}. Can we discuss the details?`;
-    const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(message)}`;
+    const message = \`Hi! I'm interested in your land listing: \${listing.title} in \${listing.location}. Can we discuss the details?\`;
+    const whatsappUrl = \`https://wa.me/919876543210?text=\${encodeURIComponent(message)}\`;
     window.open(whatsappUrl, '_blank');
   };
 }
