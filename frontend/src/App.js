@@ -434,8 +434,7 @@ function PostLandForm({ user, setCurrentView }) {
       area: '',
       price: '',
       description: '',
-      latitude: '',
-      longitude: ''
+      googleMapsLink: ''
     });
   };
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
