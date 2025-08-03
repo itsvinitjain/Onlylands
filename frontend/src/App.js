@@ -187,7 +187,7 @@ function HomePage({ setCurrentView, user, logout, brokerRegistered }) {
             >
               🏞️ OnlyLands
             </h1>
-            <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Agricultural & Residential Land Marketplace</p>
+            <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">All types of land</p>
           </div>
           <nav className="flex flex-wrap gap-2 md:gap-4">
             {user ? (
