@@ -5840,8 +5840,8 @@ if __name__ == "__main__":
     tester = OnlyLandsAPITester(base_url)
     
     # Run review request tests
-    results = tester.run_review_request_tests()
+    tester.run_review_request_tests()
     
     # Exit with appropriate code
-    all_passed = all(results.values())
+    all_passed = (tester.tests_passed == tester.tests_run)
     sys.exit(0 if all_passed else 1)
