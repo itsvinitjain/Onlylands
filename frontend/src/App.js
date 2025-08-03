@@ -879,6 +879,54 @@ function PaymentComponent({ listingId, user, setCurrentView }) {
   const [loading, setLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+
+  // Generate Terms and Conditions PDF content
+  const generateTermsPDF = () => {
+    const termsContent = `
+      ONLYLANDS - TERMS AND CONDITIONS
+      
+      1. PAYMENT POLICY
+      - All payments are non-refundable once processed
+      - Premium listing fee: ₹299 (inclusive of all taxes)
+      - Payment must be completed to activate listings
+      
+      2. LISTING POLICY  
+      - Listings are valid for 30 days from activation
+      - OnlyLands reserves the right to remove inappropriate content
+      - Users must provide accurate property information
+      
+      3. BROKER NETWORK
+      - Listings are shared with 1000+ verified brokers
+      - WhatsApp notifications sent to interested brokers
+      - OnlyLands is not responsible for broker communications
+      
+      4. PRIVACY POLICY
+      - User data is protected and not shared with third parties
+      - Phone numbers are used only for authentication and notifications
+      - Property details are visible to registered brokers only
+      
+      5. LIABILITY
+      - OnlyLands acts as a platform facilitator only
+      - Users are responsible for property verification
+      - All transactions between users and brokers are independent
+      
+      6. REFUND POLICY
+      - No refunds for premium listing fees
+      - In case of technical issues, contact support within 24 hours
+      - Refunds processed only for technical failures on our end
+      
+      7. CONTACT
+      - Support: support@onlylands.in
+      - Technical Issues: tech@onlylands.in
+      
+      By proceeding with payment, you agree to these terms and conditions.
+    `;
+    
+    const blob = new Blob([termsContent], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  };
 
   const handlePayment = async () => {
     setLoading(true);
