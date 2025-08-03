@@ -1106,16 +1106,28 @@ function PaymentComponent({ listingId, user, setCurrentView }) {
           </button>
         </div>
         
-        <div className="bg-gray-50 p-4 rounded-lg mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <span>Premium Land Listing</span>
-            <span className="font-bold">₹299</span>
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-6 rounded-lg mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">Premium Land Listing</h3>
+            <span className="text-2xl font-bold text-blue-600">₹299</span>
           </div>
-          <div className="text-sm text-gray-600">
-            • Broadcast to 1000+ brokers
-            • WhatsApp notifications
-            • Priority listing
-            • Instant activation
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-700">
+            <div className="flex items-center">
+              <span className="text-green-500 mr-2">📢</span>
+              <span>Shared with 1000+ brokers</span>
+            </div>
+            <div className="flex items-center">
+              <span className="text-green-500 mr-2">📱</span>
+              <span>WhatsApp notifications</span>
+            </div>
+            <div className="flex items-center">
+              <span className="text-green-500 mr-2">⭐</span>
+              <span>Priority placement in listings</span>
+            </div>
+            <div className="flex items-center">
+              <span className="text-green-500 mr-2">⚡</span>
+              <span>Instant activation</span>
+            </div>
           </div>
         </div>
 
