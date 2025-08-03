@@ -1189,12 +1189,43 @@ function PaymentComponent({ listingId, user, setCurrentView }) {
           </p>
         </div>
 
+        {/* Terms and Conditions */}
+        <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-4">
+          <div className="flex items-start space-x-3">
+            <input
+              type="checkbox"
+              id="acceptTerms"
+              checked={acceptTerms}
+              onChange={(e) => setAcceptTerms(e.target.checked)}
+              className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <label htmlFor="acceptTerms" className="text-sm text-gray-700 flex-1">
+              I accept the{' '}
+              <button
+                type="button"
+                onClick={generateTermsPDF}
+                className="text-blue-600 hover:text-blue-800 underline font-medium"
+              >
+                Terms and Conditions
+              </button>
+              {' '}including the no-refund policy and website policies.
+            </label>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            📋 Click on "Terms and Conditions" to view the complete policy document.
+          </p>
+        </div>
+
         <button
           onClick={handlePayment}
-          disabled={loading}
-          className="w-full bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-400 mb-4"
+          disabled={loading || !acceptTerms}
+          className={`w-full py-3 px-4 rounded-lg transition-colors mb-4 ${
+            acceptTerms && !loading
+              ? 'bg-green-500 text-white hover:bg-green-600'
+              : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+          }`}
         >
-          {loading ? 'Processing Payment...' : '✅ Complete Payment (₹299)'}
+          {loading ? 'Processing Payment...' : acceptTerms ? '✅ Complete Payment (₹299)' : '⚠️ Accept Terms to Continue'}
         </button>
 
         <p className="text-xs text-gray-500 text-center">
