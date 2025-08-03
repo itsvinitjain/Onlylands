@@ -525,8 +525,9 @@ function PostLandForm({ user, setCurrentView }) {
       formDataToSend.append('area', formData.area);
       formDataToSend.append('price', formData.price);
       formDataToSend.append('description', formData.description);
-      formDataToSend.append('latitude', formData.latitude || '18.6414'); // Default latitude
-      formDataToSend.append('longitude', formData.longitude || '72.9897'); // Default longitude
+      formDataToSend.append('google_maps_link', formData.googleMapsLink || ''); // Google Maps location link
+      formDataToSend.append('latitude', '18.6414'); // Default latitude
+      formDataToSend.append('longitude', '72.9897'); // Default longitude
       
       // Add images
       images.forEach(image => {
