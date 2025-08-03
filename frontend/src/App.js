@@ -1165,9 +1165,58 @@ function BrokerRegistration({ setCurrentView }) {
     agency: '',
     phone: '',
     email: '',
-    location: ''
+    location: []
   });
   const [loading, setLoading] = useState(false);
+  const [whatsappAvailable, setWhatsappAvailable] = useState(true);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  
+  // Populate phone number from logged-in user
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+        setFormData(prev => ({
+          ...prev,
+          phone: tokenPayload.phone_number || ''
+        }));
+      } catch (e) {
+        console.error('Failed to parse token:', e);
+      }
+    }
+  }, []);
+
+  const locationOptions = [
+    'Mumbai, Maharashtra',
+    'Pune, Maharashtra', 
+    'Nagpur, Maharashtra',
+    'Nashik, Maharashtra',
+    'Alibag, Raigad',
+    'Karjat, Raigad',
+    'Lonavala, Pune',
+    'Kolhapur, Maharashtra',
+    'Aurangabad, Maharashtra',
+    'Satara, Maharashtra'
+  ];
+
+  const handleLocationChange = (location) => {
+    setFormData(prev => ({
+      ...prev,
+      location: prev.location.includes(location)
+        ? prev.location.filter(l => l !== location)
+        : [...prev.location, location]
+    }));
+  };
+
+  const addCustomLocation = (customLocation) => {
+    if (customLocation && !formData.location.includes(customLocation)) {
+      setFormData(prev => ({
+        ...prev,
+        location: [...prev.location, customLocation]
+      }));
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -1179,17 +1228,22 @@ function BrokerRegistration({ setCurrentView }) {
         name: formData.name,
         agency: formData.agency,
         phone_number: formData.phone, // Backend expects phone_number
-        email: formData.email
+        email: formData.email,
+        location: formData.location.join(', ') // Convert array to string
       };
 
       await axios.post('/api/broker-signup', brokerData);
-      alert('Registration successful! You will now receive WhatsApp notifications for new listings.');
-      setCurrentView('home');
+      setShowSuccessModal(true);
     } catch (error) {
       alert('Registration failed: ' + (error.response?.data?.detail || 'Unknown error'));
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    setCurrentView('home');
   };
 
   return (
