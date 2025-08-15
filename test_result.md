@@ -412,15 +412,18 @@ backend:
 
   - task: "Admin Listing Management"
     implemented: true
-    working: true
+    working: false
     file: "server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
       - working: true
         agent: "testing"
         comment: "✅ ADMIN LISTING MANAGEMENT COMPREHENSIVE TESTING COMPLETED - GET /api/admin/listings working correctly (retrieved 31 total listings). Admin can access all listings regardless of status or owner. Admin endpoints properly protected from unauthorized access (returns 403 without admin token). Admin listing management functionality fully operational. Admin can retrieve and manage all listings in the system."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE FOUND IN ADMIN EDIT/DELETE FUNCTIONALITY - Conducted comprehensive debug testing as requested in review. ROOT CAUSE IDENTIFIED: Collection name mismatch in server.py. DELETE endpoint (line 966) and UPDATE endpoint (line 982) use 'land_listings' collection, but all other endpoints use 'listings' collection. This causes DELETE and UPDATE operations to fail. DELETE returns 500 error 'Failed to delete listing', UPDATE returns 422 validation error. SOLUTION: Change 'land_listings' to 'listings' in both DELETE and UPDATE endpoints. Admin authentication and GET operations work correctly - only edit/delete functionality is broken due to this collection name mismatch."
 
   - task: "WhatsApp Contact Data Integration"
     implemented: true
