@@ -2099,7 +2099,20 @@ function ListingsView() {
                     </div>
                   </div>
                   
-                  <p className="text-gray-700 text-sm mb-4 line-clamp-2">{listing.description}</p>
+                  <div className="text-gray-700 text-sm mb-4">
+                    <div 
+                      className="whitespace-pre-wrap line-clamp-2"
+                      style={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        lineHeight: '1.4'
+                      }}
+                    >
+                      {listing.description}
+                    </div>
+                  </div>
                   
                   <div className="flex justify-between items-center">
                     <button 
