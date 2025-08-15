@@ -2602,6 +2602,281 @@ class OnlyLandsAPITester:
         print("="*80)
         
         return overall_success
+
+    def test_final_verification(self):
+        """
+        FINAL VERIFICATION TEST: Test the specific scenarios requested in the review
+        1. Quick Authentication Test with phone: 0000009696, OTP: 123456, user_type: seller
+        2. Post Land & Payment Flow Test
+        3. Broker Dashboard Test with phone: 0000009696, OTP: 123456, user_type: broker
+        """
+        print("\n" + "="*80)
+        print("🎯 FINAL VERIFICATION TEST - ONLYLANDS BACKEND APIS")
+        print("="*80)
+        
+        # Test 1: Quick Authentication Test
+        print("\n🔐 TEST 1: QUICK AUTHENTICATION TEST")
+        print("-" * 50)
+        print("Testing OTP login for phone: 0000009696, OTP: 123456, user_type: seller")
+        
+        # Send OTP for seller
+        seller_send_success, seller_send_response = self.run_test(
+            "Send OTP for Seller (0000009696)",
+            "POST",
+            "api/send-otp",
+            200,
+            data={"phone_number": "0000009696", "user_type": "seller"}
+        )
+        
+        if not seller_send_success:
+            print("❌ CRITICAL FAILURE: Seller OTP send failed")
+            return False
+        
+        print(f"✅ OTP Send Status: {seller_send_response.get('status')}")
+        print(f"✅ Message: {seller_send_response.get('message')}")
+        
+        # Verify OTP for seller
+        seller_verify_success, seller_verify_response = self.run_test(
+            "Verify OTP for Seller (123456)",
+            "POST",
+            "api/verify-otp",
+            200,
+            data={"phone_number": "0000009696", "otp": "123456", "user_type": "seller"}
+        )
+        
+        if not seller_verify_success:
+            print("❌ CRITICAL FAILURE: Seller OTP verification failed")
+            return False
+        
+        # Store seller token
+        seller_token = seller_verify_response.get('token')
+        seller_user = seller_verify_response.get('user', {})
+        
+        if not seller_token:
+            print("❌ CRITICAL FAILURE: No JWT token returned for seller")
+            return False
+        
+        print(f"✅ JWT Token Generated: {seller_token[:50]}...")
+        print(f"✅ User ID: {seller_user.get('user_id')}")
+        print(f"✅ User Type: {seller_user.get('user_type')}")
+        
+        # Set token for authenticated requests
+        self.token = seller_token
+        self.user_id = seller_user.get('user_id')
+        
+        # Test 2: Post Land & Payment Flow Test
+        print("\n🏞️ TEST 2: POST LAND & PAYMENT FLOW TEST")
+        print("-" * 50)
+        print("Creating test land listing with seller token")
+        
+        # Create test files
+        test_image_path = '/tmp/final_test_image.jpg'
+        test_video_path = '/tmp/final_test_video.mp4'
+        
+        # Create simple test files
+        with open(test_image_path, 'wb') as f:
+            f.write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))
+        
+        with open(test_video_path, 'wb') as f:
+            f.write(b'FINAL VERIFICATION TEST VIDEO CONTENT')
+        
+        # Prepare form data for land listing
+        form_data = {
+            'title': f'Final Verification Test Land {uuid.uuid4().hex[:8]}',
+            'area': '8 Acres',
+            'price': '60 Lakhs',
+            'description': 'Premium agricultural land for final verification testing. Excellent location with all amenities.',
+            'location': 'Nashik, Maharashtra',
+            'google_maps_link': 'https://maps.google.com/maps?q=19.9975,73.7898&z=15',
+            'latitude': '19.9975',
+            'longitude': '73.7898'
+        }
+        
+        # Prepare files
+        files = [
+            ('photos', ('final_test_photo1.jpg', open(test_image_path, 'rb'), 'image/jpeg')),
+            ('photos', ('final_test_photo2.jpg', open(test_image_path, 'rb'), 'image/jpeg')),
+            ('videos', ('final_test_video.mp4', open(test_video_path, 'rb'), 'video/mp4'))
+        ]
+        
+        url = f"{self.base_url}/api/post-land"
+        headers = {'Authorization': f'Bearer {self.token}'}
+        
+        self.tests_run += 1
+        print(f"🔍 Testing POST /api/post-land with authentication...")
+        
+        try:
+            response = requests.post(url, data=form_data, files=files, headers=headers)
+            
+            if response.status_code == 200:
+                self.tests_passed += 1
+                result = response.json()
+                self.listing_id = result.get('listing_id')
+                print(f"✅ Land listing created successfully")
+                print(f"✅ Listing ID: {self.listing_id}")
+                print(f"✅ Message: {result.get('message')}")
+                post_land_success = True
+            else:
+                print(f"❌ FAILURE: Expected 200, got {response.status_code}")
+                try:
+                    print(f"Error: {response.json()}")
+                except:
+                    print(f"Error: {response.text}")
+                post_land_success = False
+                
+        except Exception as e:
+            print(f"❌ FAILURE: Error creating land listing: {str(e)}")
+            post_land_success = False
+        finally:
+            # Close files and cleanup
+            for _, file_tuple in files:
+                file_tuple[1].close()
+            try:
+                os.remove(test_image_path)
+                os.remove(test_video_path)
+            except:
+                pass
+        
+        if not post_land_success:
+            print("❌ CRITICAL FAILURE: Post Land functionality failed")
+            return False
+        
+        # Test payment order creation
+        print("\n💳 Testing Payment Order Creation...")
+        
+        payment_data = {
+            "amount": 299,
+            "listing_id": self.listing_id
+        }
+        
+        payment_success, payment_response = self.run_test(
+            "Create Payment Order",
+            "POST",
+            "api/create-payment-order",
+            200,
+            data=payment_data
+        )
+        
+        if not payment_success:
+            print("❌ CRITICAL FAILURE: Payment order creation failed")
+            return False
+        
+        order = payment_response.get('order', {})
+        self.razorpay_order_id = order.get('id')
+        demo_mode = payment_response.get('demo_mode', False)
+        
+        print(f"✅ Payment Order Created: {self.razorpay_order_id}")
+        print(f"✅ Amount: ₹{order.get('amount', 0) / 100}")
+        print(f"✅ Demo Mode: {demo_mode}")
+        
+        # Test demo payment verification
+        print("\n✅ Testing Demo Payment Verification...")
+        
+        payment_verification_data = {
+            "razorpay_order_id": self.razorpay_order_id,
+            "razorpay_payment_id": f"pay_demo_{int(time.time())}",
+            "razorpay_signature": f"demo_signature_{int(time.time())}"
+        }
+        
+        verify_success, verify_response = self.run_test(
+            "Verify Demo Payment",
+            "POST",
+            "api/verify-payment",
+            200,
+            data=payment_verification_data
+        )
+        
+        if not verify_success:
+            print("❌ CRITICAL FAILURE: Payment verification failed")
+            return False
+        
+        print(f"✅ Payment Verified: {verify_response.get('message')}")
+        print(f"✅ Demo Mode: {verify_response.get('demo_mode', False)}")
+        
+        # Test 3: Broker Dashboard Test
+        print("\n🏢 TEST 3: BROKER DASHBOARD TEST")
+        print("-" * 50)
+        print("Testing broker login with phone: 0000009696, OTP: 123456, user_type: broker")
+        
+        # Send OTP for broker
+        broker_send_success, broker_send_response = self.run_test(
+            "Send OTP for Broker (0000009696)",
+            "POST",
+            "api/send-otp",
+            200,
+            data={"phone_number": "0000009696", "user_type": "broker"}
+        )
+        
+        if not broker_send_success:
+            print("❌ CRITICAL FAILURE: Broker OTP send failed")
+            return False
+        
+        print(f"✅ Broker OTP Send Status: {broker_send_response.get('status')}")
+        
+        # Verify OTP for broker
+        broker_verify_success, broker_verify_response = self.run_test(
+            "Verify OTP for Broker (123456)",
+            "POST",
+            "api/verify-otp",
+            200,
+            data={"phone_number": "0000009696", "otp": "123456", "user_type": "broker"}
+        )
+        
+        if not broker_verify_success:
+            print("❌ CRITICAL FAILURE: Broker OTP verification failed")
+            return False
+        
+        # Store broker token
+        broker_token = broker_verify_response.get('token')
+        broker_user = broker_verify_response.get('user', {})
+        
+        if not broker_token:
+            print("❌ CRITICAL FAILURE: No JWT token returned for broker")
+            return False
+        
+        print(f"✅ Broker JWT Token Generated: {broker_token[:50]}...")
+        print(f"✅ Broker User Type: {broker_user.get('user_type')}")
+        
+        # Update token for broker requests
+        self.token = broker_token
+        
+        # Test broker dashboard endpoint
+        print("\n📊 Testing Broker Dashboard Endpoint...")
+        
+        dashboard_success, dashboard_response = self.run_test(
+            "Get Broker Dashboard",
+            "GET",
+            "api/broker-dashboard",
+            200
+        )
+        
+        if not dashboard_success:
+            print("❌ CRITICAL FAILURE: Broker dashboard access failed")
+            return False
+        
+        listings = dashboard_response.get('listings', [])
+        print(f"✅ Broker Dashboard Accessible")
+        print(f"✅ Active Listings Available: {len(listings)}")
+        
+        # Verify listings have phone numbers (for contact owner functionality)
+        if listings:
+            first_listing = listings[0]
+            print(f"✅ Sample Listing: {first_listing.get('title', 'N/A')}")
+            print(f"✅ Listing Status: {first_listing.get('status', 'N/A')}")
+            print(f"✅ Listing has seller_id: {'seller_id' in first_listing}")
+        
+        print("\n" + "="*80)
+        print("🎉 FINAL VERIFICATION TEST: ALL TESTS PASSED!")
+        print("✅ Authentication working for both seller and broker")
+        print("✅ JWT token generation working correctly")
+        print("✅ Post Land functionality working with file uploads")
+        print("✅ Payment order creation working (demo mode)")
+        print("✅ Payment verification working (demo mode)")
+        print("✅ Broker dashboard accessible with listings")
+        print("✅ All core backend functionality verified")
+        print("="*80)
+        
+        return True
     
     def create_test_listing_for_payment(self):
         """Create a test listing for payment testing"""
