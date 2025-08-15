@@ -548,9 +548,15 @@ const EnhancedListingsView = ({ setCurrentView }) => {
 
                   <div className="pt-4 space-y-3">
                     {/* Google Maps Button */}
-                    {selectedListing.google_maps_link && (
+                    {(selectedListing.google_maps_link || (selectedListing.latitude && selectedListing.longitude)) && (
                       <button
-                        onClick={() => window.open(selectedListing.google_maps_link, '_blank')}
+                        onClick={() => {
+                          let mapsUrl = selectedListing.google_maps_link;
+                          if (!mapsUrl && selectedListing.latitude && selectedListing.longitude) {
+                            mapsUrl = `https://maps.google.com/maps?q=${selectedListing.latitude},${selectedListing.longitude}&z=15`;
+                          }
+                          window.open(mapsUrl, '_blank');
+                        }}
                         className="w-full bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center text-lg font-semibold"
                       >
                         <span className="mr-3">🗺️</span>
