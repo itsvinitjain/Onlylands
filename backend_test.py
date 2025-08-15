@@ -5389,6 +5389,44 @@ class OnlyLandsAPITester:
         """Test broker dashboard endpoint with proper authentication"""
         print("🏢 Testing broker dashboard endpoint...")
         
+        # First, register the broker if not already registered
+        print("🔧 Checking if broker needs registration...")
+        
+        # Check broker profile first
+        profile_success, profile_response = self.run_test(
+            "Check Broker Profile",
+            "GET",
+            "api/broker-profile",
+            [200, 404]
+        )
+        
+        if profile_success and profile_response.get('detail') == 'Broker profile not found':
+            print("📝 Broker not registered, registering now...")
+            
+            # Register the broker
+            broker_data = {
+                "name": "Test Review Broker",
+                "agency": "Review Test Agency",
+                "phone_number": "9696",
+                "email": f"reviewbroker{uuid.uuid4().hex[:8]}@example.com",
+                "location": "Mumbai, Maharashtra"
+            }
+            
+            register_success, register_response = self.run_test(
+                "Register Broker for Dashboard Test",
+                "POST",
+                "api/broker-signup",
+                200,
+                data=broker_data
+            )
+            
+            if not register_success:
+                print("❌ Failed to register broker for dashboard test")
+                return False
+            
+            print(f"✅ Broker registered: {register_response.get('broker_id')}")
+        
+        # Now test the dashboard
         success, response = self.run_test(
             "Broker Dashboard with Authentication",
             "GET",
