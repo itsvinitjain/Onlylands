@@ -1695,6 +1695,19 @@ function BrokerDashboard({ user }) {
 
   // Show registration form if broker is not registered
   if (!isRegistered && !loading) {
+    const locationOptions = [
+      'Mumbai, Maharashtra',
+      'Pune, Maharashtra', 
+      'Nagpur, Maharashtra',
+      'Nashik, Maharashtra',
+      'Alibag, Raigad',
+      'Karjat, Raigad',
+      'Lonavala, Pune',
+      'Kolhapur, Maharashtra',
+      'Aurangabad, Maharashtra',
+      'Satara, Maharashtra'
+    ];
+
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-8">
@@ -1704,55 +1717,66 @@ function BrokerDashboard({ user }) {
           <form onSubmit={handleBrokerRegistration} className="space-y-4">
             <div>
               <label className="block text-gray-700 text-sm font-bold mb-2">
-                Full Name
+                Full Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={registrationData.name}
                 onChange={(e) => setRegistrationData({...registrationData, name: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                placeholder="Enter your full name"
                 required
               />
             </div>
 
             <div>
               <label className="block text-gray-700 text-sm font-bold mb-2">
-                Agency Name
+                Agency Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={registrationData.agency}
                 onChange={(e) => setRegistrationData({...registrationData, agency: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                placeholder="Enter your agency/company name"
                 required
               />
             </div>
 
             <div>
               <label className="block text-gray-700 text-sm font-bold mb-2">
-                Email
+                Email <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"
                 value={registrationData.email}
                 onChange={(e) => setRegistrationData({...registrationData, email: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                placeholder="Enter your email address"
                 required
               />
             </div>
 
             <div>
               <label className="block text-gray-700 text-sm font-bold mb-2">
-                Location
+                Location <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
+              <select
                 value={registrationData.location}
                 onChange={(e) => setRegistrationData({...registrationData, location: e.target.value})}
-                placeholder="e.g., Mumbai, Maharashtra"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                 required
-              />
+              >
+                <option value="">Select your location</option>
+                {locationOptions.map((location) => (
+                  <option key={location} value={location}>
+                    {location}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Select your primary operating location
+              </p>
             </div>
 
             <button
