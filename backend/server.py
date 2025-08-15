@@ -963,7 +963,7 @@ async def admin_payments(admin: dict = Depends(verify_admin_token)):
 async def delete_listing(listing_id: str, admin: dict = Depends(verify_admin_token)):
     """Delete a listing (admin only)"""
     try:
-        result = db.land_listings.delete_one({"listing_id": listing_id})
+        result = db.listings.delete_one({"listing_id": listing_id})
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Listing not found")
         return {"message": "Listing deleted successfully"}
@@ -978,7 +978,7 @@ async def update_listing(listing_id: str, listing_data: dict, admin: dict = Depe
         # Remove fields that shouldn't be updated
         update_data = {k: v for k, v in listing_data.items() if k not in ['_id', 'listing_id', 'created_at']}
         
-        result = db.land_listings.update_one(
+        result = db.listings.update_one(
             {"listing_id": listing_id},
             {"$set": update_data}
         )
