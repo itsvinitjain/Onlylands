@@ -959,6 +959,38 @@ async def admin_payments(admin: dict = Depends(verify_admin_token)):
         print(f"Error getting admin payments: {e}")
         raise HTTPException(status_code=500, detail="Failed to get payments")
 
+@app.delete("/api/admin/delete-listing/{listing_id}")
+async def delete_listing(listing_id: str, admin: dict = Depends(verify_admin_token)):
+    """Delete a listing (admin only)"""
+    try:
+        result = db.land_listings.delete_one({"listing_id": listing_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        return {"message": "Listing deleted successfully"}
+    except Exception as e:
+        print(f"Error deleting listing: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete listing")
+
+@app.put("/api/admin/update-listing/{listing_id}")
+async def update_listing(listing_id: str, listing_data: dict, admin: dict = Depends(verify_admin_token)):
+    """Update a listing (admin only)"""
+    try:
+        # Remove fields that shouldn't be updated
+        update_data = {k: v for k, v in listing_data.items() if k not in ['_id', 'listing_id', 'created_at']}
+        
+        result = db.land_listings.update_one(
+            {"listing_id": listing_id},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Listing not found")
+            
+        return {"message": "Listing updated successfully"}
+    except Exception as e:
+        print(f"Error updating listing: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update listing")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
