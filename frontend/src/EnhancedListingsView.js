@@ -546,7 +546,19 @@ const EnhancedListingsView = ({ setCurrentView }) => {
                     </div>
                   </div>
 
-                  <div className="pt-4">
+                  <div className="pt-4 space-y-3">
+                    {/* Google Maps Button */}
+                    {selectedListing.google_maps_link && (
+                      <button
+                        onClick={() => window.open(selectedListing.google_maps_link, '_blank')}
+                        className="w-full bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center text-lg font-semibold"
+                      >
+                        <span className="mr-3">🗺️</span>
+                        View on Google Maps
+                      </button>
+                    )}
+                    
+                    {/* WhatsApp Contact Button */}
                     <button
                       onClick={() => openWhatsApp(selectedListing.phone_number)}
                       className="w-full bg-green-500 text-white py-3 px-6 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center text-lg font-semibold"
