@@ -2723,8 +2723,18 @@ function MyListings({ user, setCurrentView }) {
                     </div>
 
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2">Description</h3>
-                      <p className="text-gray-600 leading-relaxed">{selectedListing.description}</p>
+                      <h3 className="text-lg font-semibold text-gray-800 mb-3">Description</h3>
+                      <div 
+                        className="text-gray-600 leading-relaxed whitespace-pre-wrap bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500"
+                        style={{
+                          fontSize: '14px',
+                          lineHeight: '1.6',
+                          maxHeight: '300px',
+                          overflowY: 'auto'
+                        }}
+                      >
+                        {selectedListing.description}
+                      </div>
                     </div>
                   </div>
 
