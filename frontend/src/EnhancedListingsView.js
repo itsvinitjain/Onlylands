@@ -335,9 +335,21 @@ const EnhancedListingsView = ({ setCurrentView }) => {
                   </div>
                 </div>
 
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                  {listing.description}
-                </p>
+                <div className="text-gray-600 text-sm mb-4">
+                  <div 
+                    className="line-clamp-3 whitespace-pre-wrap"
+                    style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      lineHeight: '1.5',
+                      maxHeight: '4.5em'
+                    }}
+                  >
+                    {listing.description}
+                  </div>
+                </div>
 
                 {/* Status Badge */}
                 <div className="mb-4">
