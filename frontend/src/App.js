@@ -1908,8 +1908,19 @@ function BrokerDashboard({ user }) {
     }
     
     const message = `Hi! I'm interested in your land listing: ${listing.title} in ${listing.location}. Can we discuss the details?`;
-    const whatsappUrl = `https://wa.me/${phoneNumber.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    const whatsappUrl = `whatsapp://send?phone=${phoneNumber.replace(/\D/g, '')}&text=${encodeURIComponent(message)}`;
+    
+    // Try to open WhatsApp app first, fallback to web version
+    const link = document.createElement('a');
+    link.href = whatsappUrl;
+    link.click();
+    
+    // If WhatsApp app doesn't open, provide fallback
+    setTimeout(() => {
+      const webFallback = `https://wa.me/${phoneNumber.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+      if (!confirm('If WhatsApp app didn\'t open, click OK to open in browser:')) return;
+      window.open(webFallback, '_blank');
+    }, 1000);
   };
 
   return (
