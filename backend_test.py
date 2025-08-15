@@ -5228,127 +5228,39 @@ class OnlyLandsAPITester:
         print("="*80)
 
 def main():
-    # Get the backend URL from environment variable
-    backend_url = "https://agriplot-hub.preview.emergentagent.com"
-    
-    print(f"🚀 OnlyLands OTP Login Flow Testing - COMPREHENSIVE REVIEW REQUEST")
-    print(f"🌐 Backend URL: {backend_url}")
-    print(f"📋 MAIN FOCUS: Testing complete OTP login functionality as requested in review")
-    print(f"🎯 Focus: Demo mode functionality since Twilio has 401 auth issues")
+    """Main test runner focused on review request"""
+    print("🚀 Starting OnlyLands Backend API Testing for Review Request...")
     print("=" * 80)
     
-    tester = OnlyLandsAPITester(backend_url)
+    # Use the production URL from frontend/.env
+    base_url = "https://agriplot-hub.preview.emergentagent.com"
+    tester = OnlyLandsAPITester(base_url)
     
-    # MAIN FOCUS: Test complete OTP login flow as requested in review
-    print("\n" + "="*60)
-    print("🔐 COMPREHENSIVE OTP LOGIN FLOW TESTING")
-    print("="*60)
-    
-    otp_success = tester.test_complete_otp_login_flow()
-    
-    # Test basic health check
-    print("\n🔍 Testing Basic API Health...")
-    health_check_success = tester.run_test(
-        "API Health Check",
-        "GET", 
-        "api/",
-        200
-    )[0]
+    # Run the specific tests requested in the review
+    success = tester.test_review_request_specific_tests()
     
     # Print final results
-    print("\n" + "=" * 80)
-    print("📊 OTP LOGIN FLOW TESTING RESULTS")
-    print("=" * 80)
-    print(f"🎯 OTP Login Flow: {'✅ ALL PASSED' if otp_success else '❌ SOME FAILED'}")
-    print(f"🔍 API Health Check: {'✅ PASSED' if health_check_success else '❌ FAILED'}")
-    print(f"📊 Total Tests: {tester.tests_run}, Passed: {tester.tests_passed}")
-    print("=" * 80)
+    print("\n" + "="*80)
+    print("📊 REVIEW REQUEST TEST RESULTS")
+    print("="*80)
+    print(f"Total Tests Run: {tester.tests_run}")
+    print(f"Tests Passed: {tester.tests_passed}")
+    print(f"Tests Failed: {tester.tests_run - tester.tests_passed}")
+    print(f"Success Rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%")
     
-    # Summary of findings
-    print("\n📋 SUMMARY OF FINDINGS:")
-    print("=" * 50)
-    
-    if otp_success and health_check_success:
-        print("🎉 SUCCESS: OTP login functionality is working correctly!")
-        print("✅ Demo mode functionality working as expected")
-        print("✅ OTP send endpoint accessible and returning proper responses")
-        print("✅ OTP verification endpoint working with demo OTP 123456")
-        print("✅ JWT token generation and user data response working")
-        print("✅ Authentication system functional")
-        print("✅ Complete flow: send OTP → verify OTP → get token working")
-        print("✅ CORS and network issues resolved")
-        
-        print("\n⚠️ IMPORTANT NOTES:")
-        print("• System is using demo mode fallback due to Twilio SMS delivery issues")
-        print("• Demo OTP '123456' works correctly for both seller and broker user types")
-        print("• All test phone numbers (9696, +919876543210, 1234567890) work correctly")
-        print("• JWT tokens contain correct user_type based on login request")
-        print("• Error handling for invalid phone numbers and OTP codes working")
-        print("• The OTP login system is accessible from frontend")
-        
-        return 0
+    if success:
+        print("🎉 ALL REVIEW REQUEST TESTS PASSED!")
+        print("✅ OnlyLands backend APIs are working correctly")
+        print("✅ Recent bug fixes have been verified")
+        print("✅ Core functionality is operational")
     else:
-        print("❌ FAILURE: Issues found in OTP login functionality!")
-        if not otp_success:
-            print("❌ OTP login flow has critical issues")
-            print("❌ Check the detailed logs above for specific failures")
-            print("❌ This explains why users are reporting OTP login problems")
-        if not health_check_success:
-            print("❌ API health check issues")
-        return 1
+        print("⚠️ SOME CRITICAL TESTS FAILED!")
+        print("❌ Issues found in core backend functionality")
+        print("❌ Review the test output above for details")
     
-    # Test the 5 specific changes from the review request
-    print("\n🎯 RUNNING REVIEW REQUEST TESTS...")
-    review_tests_success = tester.test_review_request_changes()
+    print("="*80)
     
-    if not review_tests_success:
-        print("\n❌ CRITICAL FAILURE: Some review request changes have issues!")
-        return 1
-    
-    # Test basic health check
-    print("\n🔍 Testing Basic API Health...")
-    health_check_success = tester.run_test(
-        "API Health Check",
-        "GET", 
-        "api/",
-        200
-    )[0]
-    
-    # Print final results
-    print("\n" + "=" * 80)
-    print("📊 REVIEW REQUEST TESTING RESULTS")
-    print("=" * 80)
-    print(f"🎯 Review Request Changes: {'✅ ALL PASSED' if review_tests_success else '❌ SOME FAILED'}")
-    print(f"🔍 API Health Check: {'✅ PASSED' if health_check_success else '❌ FAILED'}")
-    print(f"📊 Total Tests: {tester.tests_run}, Passed: {tester.tests_passed}")
-    print("=" * 80)
-    
-    # Summary of findings
-    print("\n📋 SUMMARY OF FINDINGS:")
-    print("=" * 50)
-    
-    if review_tests_success and health_check_success:
-        print("🎉 SUCCESS: All 5 review request changes are working correctly!")
-        print("✅ Location Data Fix - POST /api/post-land with location field working")
-        print("✅ Complete Payment Functionality - Payment flow working correctly")
-        print("✅ Enhanced Media Storage - File upload and serving working")
-        print("✅ All backend APIs are functioning as expected")
-        
-        print("\n⚠️ IMPORTANT NOTES:")
-        print("• Location field is now properly stored and retrieved in listings")
-        print("• Payment flow from pending_payment to active status is working")
-        print("• Multiple photos and videos are handled correctly")
-        print("• Files are stored in /app/uploads and served via /api/uploads/{filename}")
-        print("• All key test scenarios from the review request have been validated")
-        
-        return 0
-    else:
-        print("❌ FAILURE: Issues found in the review request changes!")
-        if not review_tests_success:
-            print("❌ Some of the 5 review request changes have issues")
-        if not health_check_success:
-            print("❌ API health check issues")
-        return 1
+    return success
 
     def test_google_maps_location_link_support(self):
         """
