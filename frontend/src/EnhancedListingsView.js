@@ -124,19 +124,8 @@ const EnhancedListingsView = ({ setCurrentView }) => {
     }
     
     const message = encodeURIComponent("Hi, I'm interested in your land listing on OnlyLands. Could you please provide more details?");
-    const whatsappUrl = `whatsapp://send?phone=${formattedNumber}&text=${message}`;
-    
-    // Try to open WhatsApp app first, fallback to web version
-    const link = document.createElement('a');
-    link.href = whatsappUrl;
-    link.click();
-    
-    // If WhatsApp app doesn't open, provide fallback
-    setTimeout(() => {
-      const webFallback = `https://wa.me/${formattedNumber}?text=${message}`;
-      if (!confirm('If WhatsApp app didn\'t open, click OK to open in browser:')) return;
-      window.open(webFallback, '_blank');
-    }, 1000);
+    const whatsappUrl = `https://wa.me/${formattedNumber}?text=${message}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   const openDetailModal = (listing) => {
