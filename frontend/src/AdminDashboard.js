@@ -501,9 +501,16 @@ const AdminDashboard = ({ onLogout }) => {
                   <textarea
                     value={editingListing.description || ''}
                     onChange={(e) => setEditingListing({...editingListing, description: e.target.value})}
-                    rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="6"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-pre-wrap font-mono text-sm resize-vertical"
+                    style={{
+                      minHeight: '120px',
+                      whiteSpace: 'pre-wrap',
+                      fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
+                    }}
+                    placeholder="Enter description with proper formatting..."
                   />
+                  <p className="text-xs text-gray-500 mt-1">Line breaks and formatting will be preserved</p>
                 </div>
                 <div className="flex justify-end gap-2">
                   <button
