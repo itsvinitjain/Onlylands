@@ -875,7 +875,7 @@ function PostLandForm({ user, setCurrentView }) {
 }
 
 // Payment Component
-function PaymentComponent({ listingId, user, setCurrentView }) {
+function PaymentComponent({ listingId, user, setCurrentView, formData }) {
   const [loading, setLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
