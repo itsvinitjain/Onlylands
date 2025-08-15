@@ -6970,19 +6970,19 @@ if __name__ == "__main__":
         # Use environment variable or default
         base_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://f902f182-25ca-41c1-80e4-920d8cbeff88.preview.emergentagent.com')
     
-    print(f"🚀 Starting OnlyLands Final Verification Testing")
+    print(f"🚀 Starting OnlyLands Admin Functionality Testing")
     print(f"🌐 Base URL: {base_url}")
     print("="*80)
     
     tester = OnlyLandsAPITester(base_url)
     
-    # Run final verification test
+    # Run admin functionality tests as requested in review
     try:
-        success = tester.test_final_verification()
+        success = tester.run_admin_functionality_tests()
         
         # Print summary
         print("\n" + "="*80)
-        print("📊 FINAL VERIFICATION SUMMARY")
+        print("📊 ADMIN FUNCTIONALITY TEST SUMMARY")
         print("="*80)
         print(f"Total Tests Run: {tester.tests_run}")
         print(f"Tests Passed: {tester.tests_passed}")
@@ -6990,11 +6990,13 @@ if __name__ == "__main__":
         print(f"Success Rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%")
         
         if success:
-            print("🎉 FINAL VERIFICATION: ALL CRITICAL TESTS PASSED!")
-            print("✅ OnlyLands backend APIs are fully functional")
+            print("🎉 ADMIN FUNCTIONALITY: ALL TESTS PASSED!")
+            print("✅ Admin authentication working correctly")
+            print("✅ Admin listing management working correctly")
+            print("✅ Post-land area format improvements working correctly")
         else:
-            print("❌ FINAL VERIFICATION: CRITICAL ISSUES FOUND!")
-            print("❌ Some core functionality is not working properly")
+            print("❌ ADMIN FUNCTIONALITY: SOME TESTS FAILED!")
+            print("❌ Review the test output above for details")
         
         print("="*80)
         
@@ -7002,6 +7004,6 @@ if __name__ == "__main__":
         sys.exit(0 if success else 1)
         
     except Exception as e:
-        print(f"❌ Final verification failed with exception: {str(e)}")
+        print(f"❌ Admin functionality testing failed with exception: {str(e)}")
         print("="*80)
         sys.exit(1)
