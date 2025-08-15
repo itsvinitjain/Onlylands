@@ -1126,7 +1126,10 @@ class OnlyLandsAPITester:
             except Exception as e:
                 print(f"❌ FAIL: Error testing area format '{area_format}': {str(e)}")
             finally:
-                files[0][1].close()
+                try:
+                    files[0][1].close()
+                except:
+                    pass
                 try:
                     os.remove(test_image_path)
                 except:
