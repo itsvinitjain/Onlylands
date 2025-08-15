@@ -351,8 +351,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "WhatsApp Contact Integration Testing Completed"
-    - "Admin Edit/Delete Functionality Testing Completed"
+    - "Description Formatting Improvements Testing"
+    - "View Listings Page Description Cards"
+    - "Listing Detail Modal Description"
+    - "Broker Dashboard Description Cards"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
