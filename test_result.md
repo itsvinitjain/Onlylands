@@ -105,6 +105,18 @@
 user_problem_statement: "OnlyLands MVP - Fix file storage issue. Images and videos are currently stored as base64 in MongoDB but not displaying correctly in the frontend. Need to implement proper file storage solution for photos and videos."
 
 backend:
+  - task: "Google Maps Field Structure Analysis"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🗺️ GOOGLE MAPS FIELD STRUCTURE ANALYSIS COMPLETED - Conducted comprehensive analysis of listings database structure to identify Google Maps location field as requested in the review. PERFECT RESULTS (All 4 review objectives achieved): ✅ GET SAMPLE LISTINGS: Successfully retrieved 55 unique listings from database (24 public active listings + 31 additional from debug endpoint), comprehensive dataset for field structure analysis ✅ CHECK GOOGLE MAPS FIELD: Identified 'google_maps_link' as the primary Google Maps field used in listings, found in 4 out of 55 listings with 2 containing actual Google Maps URLs, sample URLs: 'https://maps.google.com/maps?q=18.6414,72.9897&z=15' ✅ IDENTIFY FIELD NAME: Confirmed 'google_maps_link' is the correct field name for storing Google Maps links, backend accepts this field in POST /api/post-land (line 474), stored in database and returned in all listing endpoints, field is optional with default empty string ✅ TEST WITH LISTING THAT HAS MAPS: Found 2 listings with actual Google Maps data, verified field structure and URL format, confirmed coordinates are stored separately as 'latitude' and 'longitude' fields. 🔍 BACKEND CODE ANALYSIS: POST /api/post-land endpoint accepts 'google_maps_link' field (Form parameter), field stored in database as 'google_maps_link' (line 519), all listing endpoints (GET /api/listings, GET /api/my-listings) return this field, coordinates stored separately as 'latitude' and 'longitude' fields. 🛠️ RECOMMENDATIONS FOR GOOGLE MAPS BUTTON FIX: Use 'google_maps_link' field for Google Maps button display, check if field has non-empty value before showing button, fallback to coordinates if google_maps_link is empty, generate Google Maps URL from lat/lng: https://maps.google.com/maps?q={lat},{lng}. CRITICAL SUCCESS: The Google Maps field structure analysis is complete. The correct field name is 'google_maps_link' and it's properly implemented in the backend. Frontend should check this field to determine when to display the Google Maps button."
+
   - task: "Post Land API"
     implemented: true
     working: true
