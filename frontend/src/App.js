@@ -434,6 +434,8 @@ function PostLandForm({ user, setCurrentView }) {
       title: '',
       location: '',
       area: '',
+      areaValue: '',
+      areaUnit: 'Acres',
       price: '',
       description: '',
       googleMapsLink: ''
