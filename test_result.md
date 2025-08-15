@@ -414,9 +414,9 @@ backend:
 
   - task: "Admin Listing Management"
     implemented: true
-    working: false
+    working: true
     file: "server.py"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
@@ -426,6 +426,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL ISSUE FOUND IN ADMIN EDIT/DELETE FUNCTIONALITY - Conducted comprehensive debug testing as requested in review. ROOT CAUSE IDENTIFIED: Collection name mismatch in server.py. DELETE endpoint (line 966) and UPDATE endpoint (line 982) use 'land_listings' collection, but all other endpoints use 'listings' collection. This causes DELETE and UPDATE operations to fail. DELETE returns 500 error 'Failed to delete listing', UPDATE returns 422 validation error. SOLUTION: Change 'land_listings' to 'listings' in both DELETE and UPDATE endpoints. Admin authentication and GET operations work correctly - only edit/delete functionality is broken due to this collection name mismatch."
+      - working: true
+        agent: "testing"
+        comment: "🎉 ADMIN EDIT/DELETE FIX COMPREHENSIVE TESTING COMPLETED - Conducted thorough testing of the fixed admin edit/delete functionality as requested in the review. PERFECT RESULTS (6/6 tests passed, 100% success rate): ✅ ADMIN AUTHENTICATION - Successfully authenticated with admin/admin123 credentials, JWT token generated correctly with user_type: 'admin' ✅ GET ALL LISTINGS - Retrieved 59 listings from admin endpoint, all listings accessible regardless of status or owner ✅ UPDATE FIX VERIFIED - Admin update endpoint now working correctly with 'listings' collection, successfully updated listing title and price, changes verified in database ✅ DELETE FIX VERIFIED - Admin delete endpoint now working correctly with 'listings' collection, successfully deleted test listing, removal confirmed in database ✅ COLLECTION NAME FIX CONFIRMED - Both DELETE and UPDATE endpoints now use correct 'listings' collection instead of 'land_listings', all admin edit/delete operations working properly. CRITICAL SUCCESS: The collection name fix has completely resolved the admin edit/delete functionality issues. Admin can now successfully edit and delete listings using the fixed endpoints. Both operations work correctly with proper authentication and database updates."
 
   - task: "WhatsApp Contact Data Integration"
     implemented: true
