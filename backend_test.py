@@ -7108,19 +7108,19 @@ if __name__ == "__main__":
         # Use environment variable or default
         base_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://f902f182-25ca-41c1-80e4-920d8cbeff88.preview.emergentagent.com')
     
-    print(f"🚀 Starting OnlyLands Admin Functionality Testing")
+    print(f"🚀 Starting OnlyLands Review Request Backend Testing")
     print(f"🌐 Base URL: {base_url}")
     print("="*80)
     
     tester = OnlyLandsAPITester(base_url)
     
-    # Run admin functionality tests as requested in review
+    # Run review request tests
     try:
-        success = tester.run_admin_functionality_tests()
+        success = tester.run_review_request_tests()
         
         # Print summary
         print("\n" + "="*80)
-        print("📊 ADMIN FUNCTIONALITY TEST SUMMARY")
+        print("📊 REVIEW REQUEST TEST SUMMARY")
         print("="*80)
         print(f"Total Tests Run: {tester.tests_run}")
         print(f"Tests Passed: {tester.tests_passed}")
@@ -7128,12 +7128,13 @@ if __name__ == "__main__":
         print(f"Success Rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%")
         
         if success:
-            print("🎉 ADMIN FUNCTIONALITY: ALL TESTS PASSED!")
+            print("🎉 REVIEW REQUEST TESTS: ALL TESTS PASSED!")
             print("✅ Admin authentication working correctly")
             print("✅ Admin listing management working correctly")
-            print("✅ Post-land area format improvements working correctly")
+            print("✅ WhatsApp contact data verification working correctly")
+            print("✅ Area field format improvements working correctly")
         else:
-            print("❌ ADMIN FUNCTIONALITY: SOME TESTS FAILED!")
+            print("❌ REVIEW REQUEST TESTS: SOME TESTS FAILED!")
             print("❌ Review the test output above for details")
         
         print("="*80)
@@ -7142,6 +7143,6 @@ if __name__ == "__main__":
         sys.exit(0 if success else 1)
         
     except Exception as e:
-        print(f"❌ Admin functionality testing failed with exception: {str(e)}")
+        print(f"❌ Review request testing failed with exception: {str(e)}")
         print("="*80)
         sys.exit(1)
