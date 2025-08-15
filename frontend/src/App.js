@@ -621,15 +621,39 @@ function PostLandForm({ user, setCurrentView }) {
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 Area <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                value={formData.area}
-                onChange={(e) => setFormData({...formData, area: e.target.value})}
-                placeholder="e.g., 5 Acres or 2000 Sq.ft"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                required
-              />
-              <p className="text-xs text-gray-500 mt-1">Specify unit (Acres, Sq.ft, Gunthas, etc.)</p>
+              <div className="flex gap-3">
+                <input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={formData.area.replace(/[^\d.]/g, '')}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const unit = formData.areaUnit || 'Acres';
+                    setFormData({...formData, area: value ? `${value} ${unit}` : '', areaValue: value, areaUnit: unit});
+                  }}
+                  placeholder="5"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  required
+                />
+                <select
+                  value={formData.areaUnit || 'Acres'}
+                  onChange={(e) => {
+                    const unit = e.target.value;
+                    const value = formData.areaValue || formData.area.replace(/[^\d.]/g, '');
+                    setFormData({...formData, area: value ? `${value} ${unit}` : '', areaUnit: unit, areaValue: value});
+                  }}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                >
+                  <option value="Acres">Acres</option>
+                  <option value="Sq.ft">Sq.ft</option>
+                  <option value="Sq.m">Sq.m</option>
+                  <option value="Gunthas">Gunthas</option>
+                  <option value="Bigha">Bigha</option>
+                  <option value="Hectares">Hectares</option>
+                </select>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Enter area as number and select appropriate unit</p>
             </div>
 
             <div>
