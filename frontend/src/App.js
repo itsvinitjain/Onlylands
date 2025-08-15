@@ -1907,20 +1907,18 @@ function BrokerDashboard({ user }) {
       return;
     }
     
+    // Clean phone number - remove all non-digits and ensure it starts with country code
+    const cleanedNumber = phoneNumber.replace(/\D/g, '');
+    let formattedNumber = cleanedNumber;
+    
+    // If number doesn't start with country code, add +91 for India
+    if (!cleanedNumber.startsWith('91') && cleanedNumber.length === 10) {
+      formattedNumber = '91' + cleanedNumber;
+    }
+    
     const message = `Hi! I'm interested in your land listing: ${listing.title} in ${listing.location}. Can we discuss the details?`;
-    const whatsappUrl = `whatsapp://send?phone=${phoneNumber.replace(/\D/g, '')}&text=${encodeURIComponent(message)}`;
-    
-    // Try to open WhatsApp app first, fallback to web version
-    const link = document.createElement('a');
-    link.href = whatsappUrl;
-    link.click();
-    
-    // If WhatsApp app doesn't open, provide fallback
-    setTimeout(() => {
-      const webFallback = `https://wa.me/${phoneNumber.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-      if (!confirm('If WhatsApp app didn\'t open, click OK to open in browser:')) return;
-      window.open(webFallback, '_blank');
-    }, 1000);
+    const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   return (
