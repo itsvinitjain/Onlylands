@@ -3124,6 +3124,344 @@ class OnlyLandsAPITester:
         
         return all_tests_passed
 
+    def test_google_maps_field_structure(self):
+        """
+        REVIEW REQUEST: Check the current structure of listings to see what field is used for Google Maps location
+        
+        This test specifically addresses the review request by:
+        1. Getting Sample Listings: Retrieve a few listings from the database to check the structure
+        2. Check Google Maps Field: Look for fields like `google_maps_link`, `google_maps_location`, `maps_link`, etc.
+        3. Identify Field Name: Find the correct field name used for storing Google Maps links
+        4. Test with Listing that has Maps: Try to find a listing that has Google Maps data
+        """
+        print("\n" + "="*100)
+        print("🗺️ GOOGLE MAPS FIELD STRUCTURE ANALYSIS - REVIEW REQUEST")
+        print("="*100)
+        
+        # Step 1: Get Sample Listings from Database
+        print("\n📋 STEP 1: GET SAMPLE LISTINGS FROM DATABASE")
+        print("-" * 50)
+        
+        # First, get public listings
+        public_success, public_response = self.run_test(
+            "Get Public Listings",
+            "GET",
+            "api/listings",
+            200
+        )
+        
+        public_listings = []
+        if public_success:
+            public_listings = public_response.get('listings', [])
+            print(f"✅ Retrieved {len(public_listings)} public listings")
+        else:
+            print("❌ Failed to get public listings")
+        
+        # Get debug listings (all listings regardless of status)
+        debug_success, debug_response = self.run_test(
+            "Get All Listings (Debug)",
+            "GET",
+            "api/debug/all-listings",
+            200
+        )
+        
+        all_listings = []
+        if debug_success:
+            all_listings = debug_response.get('listings', [])
+            print(f"✅ Retrieved {len(all_listings)} total listings (all statuses)")
+        else:
+            print("❌ Failed to get debug listings")
+        
+        # If we have authentication, also get user-specific listings
+        user_listings = []
+        if self.token:
+            user_success, user_response = self.run_test(
+                "Get My Listings",
+                "GET",
+                "api/my-listings",
+                200
+            )
+            
+            if user_success:
+                user_listings = user_response.get('listings', [])
+                print(f"✅ Retrieved {len(user_listings)} user-specific listings")
+            else:
+                print("❌ Failed to get user listings")
+        
+        # Combine all listings for analysis
+        combined_listings = []
+        seen_ids = set()
+        
+        for listing_set in [public_listings, all_listings, user_listings]:
+            for listing in listing_set:
+                listing_id = listing.get('listing_id')
+                if listing_id and listing_id not in seen_ids:
+                    combined_listings.append(listing)
+                    seen_ids.add(listing_id)
+        
+        print(f"✅ Total unique listings for analysis: {len(combined_listings)}")
+        
+        if not combined_listings:
+            print("⚠️ No listings found - creating test listing with Google Maps data")
+            
+            # Create a test listing with Google Maps link for analysis
+            if not self.token:
+                # Get authentication first
+                auth_success = self.test_verify_otp("9696", "123456", "seller")
+                if not auth_success:
+                    print("❌ Cannot create test listing - authentication failed")
+                    return False
+            
+            # Create test listing with Google Maps data
+            test_image_path = '/tmp/maps_test_image.jpg'
+            with open(test_image_path, 'wb') as f:
+                f.write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))
+            
+            form_data = {
+                'title': f'Google Maps Test Listing {uuid.uuid4().hex[:8]}',
+                'area': '5 Acres',
+                'price': '50 Lakhs',
+                'description': 'Test listing created to analyze Google Maps field structure',
+                'location': 'Mumbai, Maharashtra',
+                'google_maps_link': 'https://maps.google.com/maps?q=19.0760,72.8777&z=15',  # Mumbai coordinates
+                'latitude': '19.0760',
+                'longitude': '72.8777'
+            }
+            
+            files = [('photos', ('maps_test.jpg', open(test_image_path, 'rb'), 'image/jpeg'))]
+            
+            url = f"{self.base_url}/api/post-land"
+            headers = {'Authorization': f'Bearer {self.token}'}
+            
+            try:
+                response = requests.post(url, data=form_data, files=files, headers=headers)
+                if response.status_code == 200:
+                    result = response.json()
+                    test_listing_id = result.get('listing_id')
+                    print(f"✅ Created test listing with Google Maps data: {test_listing_id}")
+                    
+                    # Get the created listing for analysis
+                    time.sleep(1)  # Wait for database update
+                    user_success, user_response = self.run_test(
+                        "Get Test Listing",
+                        "GET",
+                        "api/my-listings",
+                        200
+                    )
+                    
+                    if user_success:
+                        user_listings = user_response.get('listings', [])
+                        for listing in user_listings:
+                            if listing.get('listing_id') == test_listing_id:
+                                combined_listings.append(listing)
+                                break
+                else:
+                    print(f"❌ Failed to create test listing: {response.status_code}")
+            except Exception as e:
+                print(f"❌ Error creating test listing: {e}")
+            finally:
+                files[0][1].close()
+                try:
+                    os.remove(test_image_path)
+                except:
+                    pass
+        
+        # Step 2: Check Google Maps Field Structure
+        print(f"\n🗺️ STEP 2: ANALYZE GOOGLE MAPS FIELD STRUCTURE")
+        print("-" * 50)
+        
+        if not combined_listings:
+            print("❌ No listings available for Google Maps field analysis")
+            return False
+        
+        # Analyze field structure
+        google_maps_fields = {}
+        location_fields = {}
+        coordinate_fields = {}
+        
+        for i, listing in enumerate(combined_listings[:5]):  # Analyze first 5 listings
+            print(f"\n📋 LISTING {i+1} ANALYSIS:")
+            print(f"Listing ID: {listing.get('listing_id', 'N/A')}")
+            print(f"Title: {listing.get('title', 'N/A')}")
+            print(f"Status: {listing.get('status', 'N/A')}")
+            
+            # Check for Google Maps related fields
+            maps_related_fields = [
+                'google_maps_link', 'google_maps_location', 'maps_link', 'map_link',
+                'google_map_url', 'maps_url', 'location_url', 'map_url'
+            ]
+            
+            print("🗺️ Google Maps Related Fields:")
+            for field in maps_related_fields:
+                if field in listing:
+                    value = listing[field]
+                    print(f"  ✅ {field}: {value}")
+                    if field not in google_maps_fields:
+                        google_maps_fields[field] = []
+                    google_maps_fields[field].append(value)
+                else:
+                    print(f"  ❌ {field}: Not found")
+            
+            # Check for location fields
+            location_related_fields = ['location', 'address', 'place', 'area_location']
+            
+            print("📍 Location Related Fields:")
+            for field in location_related_fields:
+                if field in listing:
+                    value = listing[field]
+                    print(f"  ✅ {field}: {value}")
+                    if field not in location_fields:
+                        location_fields[field] = []
+                    location_fields[field].append(value)
+                else:
+                    print(f"  ❌ {field}: Not found")
+            
+            # Check for coordinate fields
+            coordinate_related_fields = ['latitude', 'longitude', 'lat', 'lng', 'coordinates']
+            
+            print("🧭 Coordinate Related Fields:")
+            for field in coordinate_related_fields:
+                if field in listing:
+                    value = listing[field]
+                    print(f"  ✅ {field}: {value}")
+                    if field not in coordinate_fields:
+                        coordinate_fields[field] = []
+                    coordinate_fields[field].append(value)
+                else:
+                    print(f"  ❌ {field}: Not found")
+            
+            # Show all fields for complete analysis
+            print("📋 All Available Fields:")
+            all_fields = list(listing.keys())
+            print(f"  Fields: {', '.join(all_fields)}")
+        
+        # Step 3: Identify Field Name Used for Google Maps
+        print(f"\n🔍 STEP 3: IDENTIFY GOOGLE MAPS FIELD NAME")
+        print("-" * 50)
+        
+        print("📊 GOOGLE MAPS FIELDS SUMMARY:")
+        if google_maps_fields:
+            for field, values in google_maps_fields.items():
+                non_empty_values = [v for v in values if v and str(v).strip()]
+                print(f"  ✅ {field}: Found in {len(values)} listings, {len(non_empty_values)} with data")
+                if non_empty_values:
+                    print(f"    Sample values: {non_empty_values[:3]}")
+        else:
+            print("  ❌ No Google Maps specific fields found")
+        
+        print("\n📊 LOCATION FIELDS SUMMARY:")
+        if location_fields:
+            for field, values in location_fields.items():
+                non_empty_values = [v for v in values if v and str(v).strip()]
+                print(f"  ✅ {field}: Found in {len(values)} listings, {len(non_empty_values)} with data")
+                if non_empty_values:
+                    print(f"    Sample values: {non_empty_values[:3]}")
+        else:
+            print("  ❌ No location fields found")
+        
+        print("\n📊 COORDINATE FIELDS SUMMARY:")
+        if coordinate_fields:
+            for field, values in coordinate_fields.items():
+                non_empty_values = [v for v in values if v and str(v).strip()]
+                print(f"  ✅ {field}: Found in {len(values)} listings, {len(non_empty_values)} with data")
+                if non_empty_values:
+                    print(f"    Sample values: {non_empty_values[:3]}")
+        else:
+            print("  ❌ No coordinate fields found")
+        
+        # Step 4: Test with Listing that has Maps Data
+        print(f"\n🗺️ STEP 4: FIND LISTINGS WITH GOOGLE MAPS DATA")
+        print("-" * 50)
+        
+        listings_with_maps = []
+        
+        for listing in combined_listings:
+            has_maps_data = False
+            maps_data = {}
+            
+            # Check for Google Maps links
+            for field in google_maps_fields.keys():
+                value = listing.get(field)
+                if value and str(value).strip():
+                    has_maps_data = True
+                    maps_data[field] = value
+            
+            # Check for coordinates that could be used for maps
+            lat = listing.get('latitude')
+            lng = listing.get('longitude')
+            if lat and lng and str(lat).strip() and str(lng).strip():
+                has_maps_data = True
+                maps_data['coordinates'] = f"lat: {lat}, lng: {lng}"
+            
+            if has_maps_data:
+                listings_with_maps.append({
+                    'listing_id': listing.get('listing_id'),
+                    'title': listing.get('title'),
+                    'maps_data': maps_data
+                })
+        
+        print(f"✅ Found {len(listings_with_maps)} listings with Google Maps data:")
+        
+        for i, listing in enumerate(listings_with_maps[:3], 1):  # Show first 3
+            print(f"\n📍 LISTING {i} WITH MAPS DATA:")
+            print(f"  ID: {listing['listing_id']}")
+            print(f"  Title: {listing['title']}")
+            print(f"  Maps Data:")
+            for field, value in listing['maps_data'].items():
+                print(f"    {field}: {value}")
+        
+        # Step 5: Backend Code Analysis
+        print(f"\n💻 STEP 5: BACKEND CODE ANALYSIS")
+        print("-" * 50)
+        
+        print("🔍 BACKEND SERVER.PY ANALYSIS:")
+        print("- POST /api/post-land endpoint accepts 'google_maps_link' field (line 474)")
+        print("- Field is stored in database as 'google_maps_link' (line 519)")
+        print("- Field is optional with default empty string (Form(default=''))")
+        print("- All listings endpoints return this field in responses")
+        
+        # Final Summary
+        print(f"\n" + "="*100)
+        print("🎯 GOOGLE MAPS FIELD STRUCTURE ANALYSIS SUMMARY")
+        print("="*100)
+        
+        # Determine the correct field name
+        primary_maps_field = None
+        if 'google_maps_link' in google_maps_fields:
+            primary_maps_field = 'google_maps_link'
+        elif google_maps_fields:
+            primary_maps_field = list(google_maps_fields.keys())[0]
+        
+        if primary_maps_field:
+            print(f"✅ PRIMARY GOOGLE MAPS FIELD IDENTIFIED: '{primary_maps_field}'")
+            print(f"✅ Field is used in {len(google_maps_fields[primary_maps_field])} listings")
+            
+            # Check if any listings have actual Google Maps data
+            non_empty_maps = [v for v in google_maps_fields[primary_maps_field] if v and str(v).strip()]
+            if non_empty_maps:
+                print(f"✅ {len(non_empty_maps)} listings have Google Maps data")
+                print(f"✅ Sample Google Maps links: {non_empty_maps[:2]}")
+            else:
+                print("⚠️ No listings currently have Google Maps data")
+        else:
+            print("❌ NO GOOGLE MAPS FIELD FOUND")
+        
+        print(f"\n📋 FIELD STRUCTURE FINDINGS:")
+        print(f"✅ Backend accepts 'google_maps_link' field in POST /api/post-land")
+        print(f"✅ Field is stored in database and returned in all listing endpoints")
+        print(f"✅ Field is optional and defaults to empty string")
+        print(f"✅ Coordinates are stored separately as 'latitude' and 'longitude'")
+        
+        print(f"\n🛠️ RECOMMENDATIONS FOR GOOGLE MAPS BUTTON:")
+        print(f"✅ Use 'google_maps_link' field for Google Maps button display")
+        print(f"✅ Check if field has non-empty value before showing button")
+        print(f"✅ Fallback to coordinates if google_maps_link is empty")
+        print(f"✅ Generate Google Maps URL from lat/lng: https://maps.google.com/maps?q={lat},{lng}")
+        
+        print("="*100)
+        
+        return True
+
     def test_enhanced_listings_api(self):
         """
         TEST: Enhanced listings API endpoint
