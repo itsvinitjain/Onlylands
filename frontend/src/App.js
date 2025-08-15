@@ -1768,89 +1768,7 @@ function BrokerDashboard({ user }) {
     );
   }
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Broker Dashboard</h2>
-        <p className="text-gray-600">Welcome to your lead management system</p>
-      </div>
-
-      {loading ? (
-        <div className="text-center py-8">Loading leads...</div>
-      ) : (
-        <div className="grid gap-6">
-          {leads.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-md p-8 text-center">
-              <h3 className="text-xl font-bold text-gray-800 mb-2">No leads yet</h3>
-              <p className="text-gray-600">New land listings will appear here</p>
-            </div>
-          ) : (
-            leads.map((listing) => (
-              <div key={listing.listing_id} className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-800">{listing.title}</h3>
-                    <div className="mt-2">
-                      {listing.google_maps_link ? (
-                        <div className="flex items-center space-x-2">
-                          <span className="text-gray-600">{listing.location}</span>
-                          <a
-                            href={listing.google_maps_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full hover:bg-blue-200 transition-colors"
-                          >
-                            <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                            </svg>
-                            View on Map
-                          </a>
-                        </div>
-                      ) : (
-                        <p className="text-gray-600">{listing.location}</p>
-                      )}
-                    </div>
-                  </div>
-                  <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-                    New Lead
-                  </span>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <span className="text-gray-500">Area:</span>
-                    <span className="ml-2 font-semibold">{listing.area}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Price:</span>
-                    <span className="ml-2 font-semibold">₹{listing.price}</span>
-                  </div>
-                </div>
-                
-                <p className="text-gray-700 mb-4">{listing.description}</p>
-                
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => viewListingDetails(listing)}
-                    className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                  >
-                    View Details
-                  </button>
-                  <button
-                    onClick={() => contactOwner(listing)}
-                    className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors"
-                  >
-                    Contact Owner via WhatsApp
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-    </div>
-  );
-
+  // Define functions before return statement
   const viewListingDetails = (listing) => {
     // Create a detailed view modal or navigate to a detailed view
     const detailWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
@@ -1927,10 +1845,98 @@ function BrokerDashboard({ user }) {
   };
 
   const contactOwner = (listing) => {
+    // Use the phone number from the listing instead of hardcoded number
+    const phoneNumber = listing.phone_number || listing.seller_phone || listing.contact_number;
+    if (!phoneNumber) {
+      alert('Contact information not available for this listing.');
+      return;
+    }
+    
     const message = `Hi! I'm interested in your land listing: ${listing.title} in ${listing.location}. Can we discuss the details?`;
-    const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/${phoneNumber.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">Broker Dashboard</h2>
+        <p className="text-gray-600">Welcome to your lead management system</p>
+      </div>
+
+      {loading ? (
+        <div className="text-center py-8">Loading leads...</div>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {leads.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-md p-8 text-center">
+              <h3 className="text-xl font-bold text-gray-800 mb-2">No leads yet</h3>
+              <p className="text-gray-600">New land listings will appear here</p>
+            </div>
+          ) : (
+            leads.map((listing) => (
+              <div key={listing.listing_id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div className="mb-4">
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">{listing.title}</h3>
+                  <div className="mb-2">
+                    {listing.google_maps_link ? (
+                      <div className="flex items-center space-x-2">
+                        <span className="text-gray-600 text-sm">{listing.location}</span>
+                        <a
+                          href={listing.google_maps_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full hover:bg-blue-200 transition-colors"
+                        >
+                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                          </svg>
+                          View on Map
+                        </a>
+                      </div>
+                    ) : (
+                      <p className="text-gray-600 text-sm">{listing.location}</p>
+                    )}
+                  </div>
+                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                    New Lead
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
+                  <div>
+                    <span className="text-gray-500">Area:</span>
+                    <span className="ml-1 font-semibold">{listing.area}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Price:</span>
+                    <span className="ml-1 font-semibold">₹{listing.price}</span>
+                  </div>
+                </div>
+                
+                <p className="text-gray-700 text-sm mb-4 line-clamp-2">{listing.description}</p>
+                
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => viewListingDetails(listing)}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+                  >
+                    View Details
+                  </button>
+                  <button
+                    onClick={() => contactOwner(listing)}
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors text-sm font-medium"
+                  >
+                    📱 Contact Owner via WhatsApp
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // Listings View Component
