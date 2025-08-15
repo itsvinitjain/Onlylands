@@ -2198,7 +2198,17 @@ function ListingsView() {
                 
                 <div>
                   <h3 className="text-lg font-semibold mb-3">Description</h3>
-                  <p className="text-gray-700">{selectedListing.description}</p>
+                  <div 
+                    className="text-gray-700 whitespace-pre-wrap bg-gray-50 p-4 rounded-lg border-l-4 border-green-500"
+                    style={{
+                      lineHeight: '1.6',
+                      maxHeight: '300px',
+                      overflowY: 'auto',
+                      fontSize: '14px'
+                    }}
+                  >
+                    {selectedListing.description}
+                  </div>
                 </div>
               </div>
 
