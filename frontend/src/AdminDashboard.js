@@ -8,6 +8,11 @@ const AdminDashboard = ({ onLogout }) => {
   const [payments, setPayments] = useState([]);
   const [activeTab, setActiveTab] = useState('stats');
   const [loading, setLoading] = useState(true);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordAction, setPasswordAction] = useState(null);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [editingListing, setEditingListing] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem('adminToken');
