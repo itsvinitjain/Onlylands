@@ -345,9 +345,24 @@ const AdminDashboard = ({ onLogout }) => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {listings.map((listing, index) => (
                     <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{listing.title || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div className="max-w-xs truncate" title={listing.title}>
+                          {listing.title || 'N/A'}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹{listing.price || 'N/A'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{listing.area || 'N/A'}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 max-w-md">
+                        <div className="whitespace-pre-wrap overflow-hidden" style={{
+                          maxHeight: '100px',
+                          overflowY: 'auto',
+                          fontSize: '12px',
+                          lineHeight: '1.4',
+                          fontFamily: 'ui-monospace, SFMono-Regular, Monaco, Consolas, monospace'
+                        }}>
+                          {listing.description || 'N/A'}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <span className={`px-2 py-1 text-xs rounded-full ${
                           listing.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
@@ -355,7 +370,11 @@ const AdminDashboard = ({ onLogout }) => {
                           {listing.status || 'N/A'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{listing.created_at || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div className="max-w-xs truncate" title={listing.created_at}>
+                          {listing.created_at || 'N/A'}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
                           onClick={() => handleEditListing(listing)}
