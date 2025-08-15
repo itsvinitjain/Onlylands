@@ -375,10 +375,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Description Formatting Improvements Testing"
-    - "View Listings Page Description Cards"
-    - "Listing Detail Modal Description"
-    - "Broker Dashboard Description Cards"
+    - "Google Maps Button Functionality Testing"
+    - "WhatsApp Contact Functionality Testing"
+    - "Broker Dashboard Integration Testing"
+    - "Comprehensive Integration Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
