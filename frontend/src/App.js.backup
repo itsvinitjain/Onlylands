@@ -780,7 +780,7 @@ function PaymentComponent({ listingId, user }) {
               Back to Home
             </button>
             <button
-              onClick={() => window.open('https://91a3d332-8408-4b2f-93db-7686f4570aca.preview.emergentagent.com', '_blank')}
+              onClick={() => window.open('https://agriplot-hub.preview.emergentagent.com', '_blank')}
               className="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition-colors"
             >
               View Listings

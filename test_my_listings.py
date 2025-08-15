@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime, timedelta
 
 def test_my_listings_auth():
-    base_url = "https://91a3d332-8408-4b2f-93db-7686f4570aca.preview.emergentagent.com"
+    base_url = "https://agriplot-hub.preview.emergentagent.com"
     
     print("Testing /api/my-listings authentication...")
     

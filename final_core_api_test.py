@@ -240,7 +240,7 @@ class FinalCoreAPITester:
             return False
 
 def main():
-    backend_url = "https://91a3d332-8408-4b2f-93db-7686f4570aca.preview.emergentagent.com"
+    backend_url = "https://agriplot-hub.preview.emergentagent.com"
     
     tester = FinalCoreAPITester(backend_url)
     success = tester.run_all_tests()

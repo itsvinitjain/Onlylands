@@ -5229,7 +5229,7 @@ class OnlyLandsAPITester:
 
 def main():
     # Get the backend URL from environment variable
-    backend_url = "https://91a3d332-8408-4b2f-93db-7686f4570aca.preview.emergentagent.com"
+    backend_url = "https://agriplot-hub.preview.emergentagent.com"
     
     print(f"🚀 OnlyLands OTP Login Flow Testing - COMPREHENSIVE REVIEW REQUEST")
     print(f"🌐 Backend URL: {backend_url}")
@@ -5831,7 +5831,7 @@ if __name__ == "__main__":
         base_url = sys.argv[1]
     else:
         # Use environment variable or default
-        base_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://91a3d332-8408-4b2f-93db-7686f4570aca.preview.emergentagent.com')
+        base_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://agriplot-hub.preview.emergentagent.com')
     
     print(f"🚀 Starting OnlyLands API Testing - Review Request")
     print(f"🌐 Base URL: {base_url}")

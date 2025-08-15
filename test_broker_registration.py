@@ -8,7 +8,7 @@ from backend_test import OnlyLandsAPITester
 
 def main():
     # Get the backend URL from environment variable
-    backend_url = "https://91a3d332-8408-4b2f-93db-7686f4570aca.preview.emergentagent.com"
+    backend_url = "https://agriplot-hub.preview.emergentagent.com"
     
     print(f"Testing OnlyLands Broker Registration Flow at: {backend_url}")
     print("=" * 80)

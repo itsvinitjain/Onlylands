@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime, timedelta
 
 # Backend URL
-BACKEND_URL = "https://91a3d332-8408-4b2f-93db-7686f4570aca.preview.emergentagent.com"
+BACKEND_URL = "https://agriplot-hub.preview.emergentagent.com"
 
 # Use the order ID from the previous test
 razorpay_order_id = "order_Qjo1uD8sq4Cir7"

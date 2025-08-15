@@ -3,7 +3,7 @@ import jwt
 from datetime import datetime, timedelta
 
 # Backend URL
-BACKEND_URL = "https://91a3d332-8408-4b2f-93db-7686f4570aca.preview.emergentagent.com"
+BACKEND_URL = "https://agriplot-hub.preview.emergentagent.com"
 
 # Get the broker ID from the previous test
 # We'll use the broker we registered during the API test
