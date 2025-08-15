@@ -6417,17 +6417,40 @@ if __name__ == "__main__":
         base_url = sys.argv[1]
     else:
         # Use environment variable or default
-        base_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://agriplot-hub.preview.emergentagent.com')
+        base_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://f902f182-25ca-41c1-80e4-920d8cbeff88.preview.emergentagent.com')
     
-    print(f"🚀 Starting OnlyLands API Testing - Review Request")
+    print(f"🚀 Starting OnlyLands Final Verification Testing")
     print(f"🌐 Base URL: {base_url}")
     print("="*80)
     
     tester = OnlyLandsAPITester(base_url)
     
-    # Run review request tests
-    tester.run_review_request_tests()
-    
-    # Exit with appropriate code
-    all_passed = (tester.tests_passed == tester.tests_run)
-    sys.exit(0 if all_passed else 1)
+    # Run final verification test
+    try:
+        success = tester.test_final_verification()
+        
+        # Print summary
+        print("\n" + "="*80)
+        print("📊 FINAL VERIFICATION SUMMARY")
+        print("="*80)
+        print(f"Total Tests Run: {tester.tests_run}")
+        print(f"Tests Passed: {tester.tests_passed}")
+        print(f"Tests Failed: {tester.tests_run - tester.tests_passed}")
+        print(f"Success Rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%")
+        
+        if success:
+            print("🎉 FINAL VERIFICATION: ALL CRITICAL TESTS PASSED!")
+            print("✅ OnlyLands backend APIs are fully functional")
+        else:
+            print("❌ FINAL VERIFICATION: CRITICAL ISSUES FOUND!")
+            print("❌ Some core functionality is not working properly")
+        
+        print("="*80)
+        
+        # Exit with appropriate code
+        sys.exit(0 if success else 1)
+        
+    except Exception as e:
+        print(f"❌ Final verification failed with exception: {str(e)}")
+        print("="*80)
+        sys.exit(1)
