@@ -109,8 +109,22 @@ const EnhancedListingsView = ({ setCurrentView }) => {
   };
 
   const openWhatsApp = (phoneNumber) => {
+    if (!phoneNumber) {
+      alert('Contact information not available for this listing.');
+      return;
+    }
+    
+    // Clean phone number - remove all non-digits and ensure it starts with country code
+    const cleanedNumber = phoneNumber.replace(/\D/g, '');
+    let formattedNumber = cleanedNumber;
+    
+    // If number doesn't start with country code, add +91 for India
+    if (!cleanedNumber.startsWith('91') && cleanedNumber.length === 10) {
+      formattedNumber = '91' + cleanedNumber;
+    }
+    
     const message = encodeURIComponent("Hi, I'm interested in your land listing on OnlyLands. Could you please provide more details?");
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    const whatsappUrl = `https://wa.me/${formattedNumber}?text=${message}`;
     window.open(whatsappUrl, '_blank');
   };
 
