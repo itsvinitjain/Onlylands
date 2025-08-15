@@ -7936,47 +7936,38 @@ def main():
         return review_tests_passed == total_review_tests
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        base_url = sys.argv[1]
-    else:
-        # Use environment variable or default
-        base_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://f902f182-25ca-41c1-80e4-920d8cbeff88.preview.emergentagent.com')
+    # Get backend URL from environment
+    backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://f902f182-25ca-41c1-80e4-920d8cbeff88.preview.emergentagent.com')
     
-    print(f"🚀 Starting OnlyLands Review Request Backend Testing")
-    print(f"🌐 Base URL: {base_url}")
+    print("🚀 OnlyLands Backend API Testing - Admin Edit/Delete Fix")
+    print(f"Backend URL: {backend_url}")
+    print("=" * 80)
+    
+    tester = OnlyLandsAPITester(backend_url)
+    
+    # Run the specific admin edit/delete fix test as requested in review
+    print("\n🎯 REVIEW REQUEST: Testing Fixed Admin Edit/Delete Functionality")
     print("="*80)
     
-    tester = OnlyLandsAPITester(base_url)
+    admin_fix_success = tester.test_admin_edit_delete_fix()
     
-    # Run review request tests
-    try:
-        success = tester.run_review_request_tests()
-        
-        # Print summary
-        print("\n" + "="*80)
-        print("📊 REVIEW REQUEST TEST SUMMARY")
-        print("="*80)
-        print(f"Total Tests Run: {tester.tests_run}")
-        print(f"Tests Passed: {tester.tests_passed}")
-        print(f"Tests Failed: {tester.tests_run - tester.tests_passed}")
-        print(f"Success Rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%")
-        
-        if success:
-            print("🎉 REVIEW REQUEST TESTS: ALL TESTS PASSED!")
-            print("✅ Admin authentication working correctly")
-            print("✅ Admin listing management working correctly")
-            print("✅ WhatsApp contact data verification working correctly")
-            print("✅ Area field format improvements working correctly")
-        else:
-            print("❌ REVIEW REQUEST TESTS: SOME TESTS FAILED!")
-            print("❌ Review the test output above for details")
-        
-        print("="*80)
-        
-        # Exit with appropriate code
-        sys.exit(0 if success else 1)
-        
-    except Exception as e:
-        print(f"❌ Review request testing failed with exception: {str(e)}")
-        print("="*80)
-        sys.exit(1)
+    # Final summary
+    print("\n" + "="*80)
+    print("📊 ADMIN EDIT/DELETE FIX TEST RESULTS")
+    print("="*80)
+    print(f"Total Tests Run: {tester.tests_run}")
+    print(f"Tests Passed: {tester.tests_passed}")
+    print(f"Success Rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%")
+    
+    if admin_fix_success:
+        print("🎉 ADMIN EDIT/DELETE FIX: WORKING CORRECTLY!")
+        print("✅ Collection name fix resolved the admin functionality issues")
+        print("✅ Both DELETE and UPDATE operations now work properly")
+        print("✅ Admin can successfully edit and delete listings")
+    else:
+        print("⚠️ ADMIN EDIT/DELETE FIX: Issues still exist")
+        print("❌ Some admin operations may still be failing")
+    
+    print("="*80)
+    
+    sys.exit(0 if admin_fix_success else 1)
