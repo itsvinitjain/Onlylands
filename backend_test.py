@@ -5227,6 +5227,367 @@ class OnlyLandsAPITester:
         
         print("="*80)
 
+    def test_review_request_specific_tests(self):
+        """
+        REVIEW REQUEST SPECIFIC TESTS: Test the OnlyLands backend APIs to verify recent bug fixes
+        
+        Focus areas from review request:
+        1. Test broker dashboard endpoint (/api/broker-dashboard) with proper authentication
+        2. Test complete payment flow to ensure payment orders are created properly  
+        3. Test post-land functionality with file uploads
+        4. Verify all endpoints working correctly after recent changes
+        
+        Demo credentials: Phone: 9696, OTP: 123456, User type: both seller and broker
+        """
+        print("\n" + "="*100)
+        print("🎯 REVIEW REQUEST SPECIFIC TESTING - ONLYLANDS BACKEND API VERIFICATION")
+        print("="*100)
+        print("📋 Testing Areas:")
+        print("   1. Broker Dashboard Endpoint with Authentication")
+        print("   2. Complete Payment Flow")
+        print("   3. Post-Land Functionality with File Uploads")
+        print("   4. All Endpoints After Recent Changes")
+        print("   Demo Credentials: Phone 9696, OTP 123456")
+        print("="*100)
+        
+        all_tests_passed = True
+        
+        # Test 1: Authentication with Demo Credentials
+        print("\n🔐 TEST 1: AUTHENTICATION WITH DEMO CREDENTIALS")
+        print("-" * 60)
+        
+        demo_phone = "9696"
+        demo_otp = "123456"
+        
+        # Test seller authentication
+        seller_auth_success = self.test_demo_authentication(demo_phone, demo_otp, "seller")
+        if not seller_auth_success:
+            print("❌ CRITICAL: Seller authentication with demo credentials failed")
+            all_tests_passed = False
+            return False
+        
+        seller_token = self.token
+        seller_user_id = self.user_id
+        
+        # Test broker authentication  
+        broker_auth_success = self.test_demo_authentication(demo_phone, demo_otp, "broker")
+        if not broker_auth_success:
+            print("❌ CRITICAL: Broker authentication with demo credentials failed")
+            all_tests_passed = False
+            return False
+            
+        broker_token = self.token
+        broker_user_id = self.user_id
+        
+        print("✅ PASS: Demo authentication working for both seller and broker")
+        
+        # Test 2: Broker Dashboard Endpoint with Authentication
+        print("\n🏢 TEST 2: BROKER DASHBOARD ENDPOINT WITH AUTHENTICATION")
+        print("-" * 60)
+        
+        # Set broker token for testing
+        self.token = broker_token
+        self.user_id = broker_user_id
+        
+        broker_dashboard_success = self.test_broker_dashboard_with_auth()
+        if not broker_dashboard_success:
+            print("❌ CRITICAL: Broker dashboard endpoint failed")
+            all_tests_passed = False
+        else:
+            print("✅ PASS: Broker dashboard endpoint working correctly")
+        
+        # Test 3: Post-Land Functionality with File Uploads
+        print("\n🏞️ TEST 3: POST-LAND FUNCTIONALITY WITH FILE UPLOADS")
+        print("-" * 60)
+        
+        # Set seller token for posting land
+        self.token = seller_token
+        self.user_id = seller_user_id
+        
+        post_land_success = self.test_post_land_with_files()
+        if not post_land_success:
+            print("❌ CRITICAL: Post-land functionality with file uploads failed")
+            all_tests_passed = False
+        else:
+            print("✅ PASS: Post-land functionality with file uploads working correctly")
+        
+        # Test 4: Complete Payment Flow
+        print("\n💳 TEST 4: COMPLETE PAYMENT FLOW")
+        print("-" * 60)
+        
+        payment_flow_success = self.test_complete_payment_flow_review()
+        if not payment_flow_success:
+            print("❌ CRITICAL: Complete payment flow failed")
+            all_tests_passed = False
+        else:
+            print("✅ PASS: Complete payment flow working correctly")
+        
+        # Test 5: All Key Endpoints After Recent Changes
+        print("\n🔍 TEST 5: ALL KEY ENDPOINTS VERIFICATION")
+        print("-" * 60)
+        
+        endpoints_success = self.test_all_key_endpoints()
+        if not endpoints_success:
+            print("❌ CRITICAL: Some key endpoints failed")
+            all_tests_passed = False
+        else:
+            print("✅ PASS: All key endpoints working correctly")
+        
+        # Final Results
+        print("\n" + "="*100)
+        if all_tests_passed:
+            print("🎉 REVIEW REQUEST TESTING: ALL CRITICAL TESTS PASSED!")
+            print("✅ Broker dashboard endpoint working with proper authentication")
+            print("✅ Complete payment flow working correctly")
+            print("✅ Post-land functionality with file uploads working")
+            print("✅ All endpoints working correctly after recent changes")
+            print("✅ Demo credentials (Phone: 9696, OTP: 123456) working for both user types")
+        else:
+            print("❌ REVIEW REQUEST TESTING: CRITICAL ISSUES FOUND!")
+            print("❌ Some core functionality is not working as expected")
+        print("="*100)
+        
+        return all_tests_passed
+
+    def test_demo_authentication(self, phone, otp, user_type):
+        """Test authentication with demo credentials"""
+        print(f"🔑 Testing {user_type} authentication with phone: {phone}, OTP: {otp}")
+        
+        # Send OTP
+        send_success, send_response = self.run_test(
+            f"Send OTP for {user_type}",
+            "POST",
+            "api/send-otp",
+            200,
+            data={"phone_number": phone, "user_type": user_type}
+        )
+        
+        if not send_success:
+            return False
+        
+        # Verify OTP
+        verify_success, verify_response = self.run_test(
+            f"Verify OTP for {user_type}",
+            "POST", 
+            "api/verify-otp",
+            200,
+            data={"phone_number": phone, "otp": otp, "user_type": user_type}
+        )
+        
+        if verify_success and verify_response.get('token'):
+            self.token = verify_response.get('token')
+            user_data = verify_response.get('user', {})
+            self.user_id = user_data.get('user_id')
+            print(f"✅ {user_type} authentication successful")
+            print(f"   User ID: {self.user_id}")
+            print(f"   User Type: {user_data.get('user_type')}")
+            return True
+        
+        return False
+
+    def test_broker_dashboard_with_auth(self):
+        """Test broker dashboard endpoint with proper authentication"""
+        print("🏢 Testing broker dashboard endpoint...")
+        
+        success, response = self.run_test(
+            "Broker Dashboard with Authentication",
+            "GET",
+            "api/broker-dashboard",
+            200
+        )
+        
+        if success:
+            listings = response.get('listings', [])
+            print(f"✅ Broker dashboard returned {len(listings)} listings")
+            
+            # Check if listings have phone numbers for WhatsApp contact
+            phone_numbers_found = 0
+            for listing in listings:
+                if 'phone_number' in listing or 'seller_phone' in listing:
+                    phone_numbers_found += 1
+            
+            print(f"✅ Listings with phone numbers: {phone_numbers_found}/{len(listings)}")
+            
+            if len(listings) > 0:
+                print("✅ Sample listing fields:", list(listings[0].keys()) if listings else "No listings")
+            
+            return True
+        
+        return False
+
+    def test_post_land_with_files(self):
+        """Test post-land functionality with file uploads"""
+        print("🏞️ Testing post-land with file uploads...")
+        
+        # Create test files
+        test_image_path = '/tmp/test_land_photo.jpg'
+        test_video_path = '/tmp/test_land_video.mp4'
+        
+        # Create simple test files
+        with open(test_image_path, 'wb') as f:
+            f.write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))
+        
+        with open(test_video_path, 'wb') as f:
+            f.write(b'TEST VIDEO CONTENT')
+        
+        # Prepare form data
+        form_data = {
+            'title': f'Review Test Land {uuid.uuid4().hex[:8]}',
+            'area': '5 Acres',
+            'price': '50 Lakhs', 
+            'description': 'Test land listing for review request verification',
+            'location': 'Mumbai, Maharashtra',
+            'google_maps_link': 'https://maps.google.com/maps?q=18.6414,72.9897&z=15',
+            'latitude': '18.6414',
+            'longitude': '72.9897'
+        }
+        
+        # Prepare files
+        files = [
+            ('photos', ('land_photo.jpg', open(test_image_path, 'rb'), 'image/jpeg')),
+            ('videos', ('land_video.mp4', open(test_video_path, 'rb'), 'video/mp4'))
+        ]
+        
+        url = f"{self.base_url}/api/post-land"
+        headers = {'Authorization': f'Bearer {self.token}'}
+        
+        self.tests_run += 1
+        print("🔍 Testing POST /api/post-land with files...")
+        
+        try:
+            response = requests.post(url, data=form_data, files=files, headers=headers)
+            
+            if response.status_code == 200:
+                self.tests_passed += 1
+                result = response.json()
+                self.listing_id = result.get('listing_id')
+                print(f"✅ Land listing created successfully")
+                print(f"   Listing ID: {self.listing_id}")
+                print(f"   Message: {result.get('message')}")
+                return True
+            else:
+                print(f"❌ Failed with status {response.status_code}")
+                try:
+                    print(f"   Error: {response.json()}")
+                except:
+                    print(f"   Error: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Exception: {str(e)}")
+            return False
+        finally:
+            # Clean up
+            for _, file_tuple in files:
+                file_tuple[1].close()
+            try:
+                os.remove(test_image_path)
+                os.remove(test_video_path)
+            except:
+                pass
+
+    def test_complete_payment_flow_review(self):
+        """Test complete payment flow for review request"""
+        print("💳 Testing complete payment flow...")
+        
+        if not self.listing_id:
+            print("❌ No listing ID available for payment testing")
+            return False
+        
+        # Test 1: Create payment order
+        payment_data = {
+            "amount": 299,
+            "listing_id": self.listing_id
+        }
+        
+        order_success, order_response = self.run_test(
+            "Create Payment Order",
+            "POST",
+            "api/create-payment-order",
+            200,
+            data=payment_data
+        )
+        
+        if not order_success:
+            print("❌ Payment order creation failed")
+            return False
+        
+        order = order_response.get('order', {})
+        order_id = order.get('id')
+        demo_mode = order_response.get('demo_mode', False)
+        
+        print(f"✅ Payment order created: {order_id}")
+        print(f"   Amount: {order.get('amount')} paise")
+        print(f"   Demo Mode: {demo_mode}")
+        
+        # Test 2: Verify payment
+        payment_verification = {
+            "razorpay_order_id": order_id,
+            "razorpay_payment_id": f"pay_demo_{int(time.time())}",
+            "razorpay_signature": f"demo_signature_{int(time.time())}"
+        }
+        
+        verify_success, verify_response = self.run_test(
+            "Verify Payment",
+            "POST",
+            "api/verify-payment",
+            200,
+            data=payment_verification
+        )
+        
+        if not verify_success:
+            print("❌ Payment verification failed")
+            return False
+        
+        print(f"✅ Payment verified successfully")
+        print(f"   Message: {verify_response.get('message')}")
+        
+        # Test 3: Check listing activation
+        time.sleep(1)  # Wait for database update
+        
+        listings_success, listings_response = self.run_test(
+            "Check Listing Activation",
+            "GET",
+            "api/listings",
+            200
+        )
+        
+        if listings_success:
+            listings = listings_response.get('listings', [])
+            activated = any(l.get('listing_id') == self.listing_id for l in listings)
+            
+            if activated:
+                print("✅ Listing successfully activated after payment")
+                return True
+            else:
+                print("❌ Listing not found in active listings after payment")
+                return False
+        
+        return False
+
+    def test_all_key_endpoints(self):
+        """Test all key endpoints to verify they're working after recent changes"""
+        print("🔍 Testing all key endpoints...")
+        
+        endpoints_to_test = [
+            ("Health Check", "GET", "api/health", 200),
+            ("Get Listings", "GET", "api/listings", 200),
+            ("My Listings", "GET", "api/my-listings", 200),
+            ("Broker Profile", "GET", "api/broker-profile", [200, 404]),  # 404 is OK if not registered
+        ]
+        
+        all_passed = True
+        
+        for name, method, endpoint, expected_status in endpoints_to_test:
+            success, response = self.run_test(name, method, endpoint, expected_status)
+            if not success:
+                all_passed = False
+                print(f"❌ {name} endpoint failed")
+            else:
+                print(f"✅ {name} endpoint working")
+        
+        return all_passed
+
 def main():
     """Main test runner focused on review request"""
     print("🚀 Starting OnlyLands Backend API Testing for Review Request...")
