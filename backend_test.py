@@ -1186,6 +1186,58 @@ class OnlyLandsAPITester:
         print("="*80)
         
         return successful_formats > 0
+
+    def run_admin_functionality_tests(self):
+        """Run comprehensive admin functionality tests as requested in review"""
+        print("\n" + "="*100)
+        print("🔐 COMPREHENSIVE ADMIN FUNCTIONALITY TESTING - REVIEW REQUEST")
+        print("="*100)
+        
+        admin_tests_passed = 0
+        total_admin_tests = 3
+        
+        # Test 1: Admin Authentication
+        print("\n1️⃣ ADMIN AUTHENTICATION TEST")
+        if self.test_admin_authentication():
+            admin_tests_passed += 1
+            print("✅ Admin Authentication: PASSED")
+        else:
+            print("❌ Admin Authentication: FAILED")
+        
+        # Test 2: Admin Listing Management
+        print("\n2️⃣ ADMIN LISTING MANAGEMENT TEST")
+        if self.test_admin_listing_management():
+            admin_tests_passed += 1
+            print("✅ Admin Listing Management: PASSED")
+        else:
+            print("❌ Admin Listing Management: FAILED")
+        
+        # Test 3: Post Land Area Format Test
+        print("\n3️⃣ POST LAND AREA FORMAT TEST")
+        if self.test_post_land_area_format():
+            admin_tests_passed += 1
+            print("✅ Post Land Area Format: PASSED")
+        else:
+            print("❌ Post Land Area Format: FAILED")
+        
+        # Summary
+        print("\n" + "="*100)
+        print("📊 ADMIN FUNCTIONALITY TEST SUMMARY")
+        print("="*100)
+        print(f"Admin Tests Passed: {admin_tests_passed}/{total_admin_tests}")
+        print(f"Admin Success Rate: {(admin_tests_passed / total_admin_tests * 100):.1f}%")
+        
+        if admin_tests_passed == total_admin_tests:
+            print("🎉 ALL ADMIN FUNCTIONALITY TESTS PASSED!")
+            print("✅ Admin authentication working correctly")
+            print("✅ Admin listing management (GET, DELETE, PUT) working")
+            print("✅ Post-land area format improvements working")
+        else:
+            print("⚠️ Some admin functionality tests failed")
+            
+        print("="*100)
+        
+        return admin_tests_passed == total_admin_tests
     
     def test_upload_media(self, file_path, content_type):
         """Test uploading media files"""
