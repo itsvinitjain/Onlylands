@@ -112,6 +112,72 @@ const AdminDashboard = ({ onLogout }) => {
     onLogout();
   };
 
+  const handleDeleteListing = (listingId) => {
+    setPasswordAction({ type: 'delete', listingId });
+    setShowPasswordModal(true);
+  };
+
+  const handleEditListing = (listing) => {
+    setPasswordAction({ type: 'edit', listing });
+    setShowPasswordModal(true);
+  };
+
+  const executePasswordAction = async () => {
+    // Verify admin password (using demo password for now)
+    if (adminPassword !== 'admin123') {
+      alert('Incorrect admin password!');
+      return;
+    }
+
+    try {
+      if (passwordAction.type === 'delete') {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/delete-listing/${passwordAction.listingId}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        });
+
+        if (response.ok) {
+          alert('Listing deleted successfully!');
+          fetchListings(); // Refresh listings
+        } else {
+          alert('Failed to delete listing');
+        }
+      } else if (passwordAction.type === 'edit') {
+        setEditingListing(passwordAction.listing);
+        setShowEditModal(true);
+      }
+    } catch (error) {
+      console.error('Error executing action:', error);
+      alert('An error occurred');
+    }
+
+    setShowPasswordModal(false);
+    setAdminPassword('');
+    setPasswordAction(null);
+  };
+
+  const handleUpdateListing = async (updatedListing) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/update-listing/${updatedListing.listing_id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(updatedListing)
+      });
+
+      if (response.ok) {
+        alert('Listing updated successfully!');
+        fetchListings(); // Refresh listings
+        setShowEditModal(false);
+        setEditingListing(null);
+      } else {
+        alert('Failed to update listing');
+      }
+    } catch (error) {
+      console.error('Error updating listing:', error);
+      alert('An error occurred while updating');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
