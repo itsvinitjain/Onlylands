@@ -108,24 +108,58 @@ const EnhancedListingsView = ({ setCurrentView }) => {
     return '/placeholder-land.jpg';
   };
 
-  const openWhatsApp = (phoneNumber) => {
-    if (!phoneNumber) {
-      alert('Contact information not available for this listing.');
-      return;
+  const openWhatsApp = async (listing) => {
+    try {
+      // Get auth token from localStorage
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        alert('Please login to contact the owner.');
+        return;
+      }
+      
+      // Get seller phone number from backend
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/seller-phone/${listing.seller_id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          alert('Contact information not available for this listing.');
+        } else {
+          alert('Unable to get contact information. Please try again.');
+        }
+        return;
+      }
+      
+      const data = await response.json();
+      const phoneNumber = data.phone_number;
+      
+      if (!phoneNumber) {
+        alert('Contact information not available for this listing.');
+        return;
+      }
+      
+      // Clean phone number - remove all non-digits and ensure it starts with country code
+      const cleanedNumber = phoneNumber.replace(/\D/g, '');
+      let formattedNumber = cleanedNumber;
+      
+      // If number doesn't start with country code, add +91 for India
+      if (!cleanedNumber.startsWith('91') && cleanedNumber.length === 10) {
+        formattedNumber = '91' + cleanedNumber;
+      }
+      
+      const message = encodeURIComponent(`Hi, I'm interested in your land listing: ${listing.title}. Could you please provide more details?`);
+      const whatsappUrl = `https://wa.me/${formattedNumber}?text=${message}`;
+      
+      // Open WhatsApp
+      window.open(whatsappUrl, '_blank');
+      
+    } catch (error) {
+      console.error('Error opening WhatsApp:', error);
+      alert('Unable to open WhatsApp. Please try again.');
     }
-    
-    // Clean phone number - remove all non-digits and ensure it starts with country code
-    const cleanedNumber = phoneNumber.replace(/\D/g, '');
-    let formattedNumber = cleanedNumber;
-    
-    // If number doesn't start with country code, add +91 for India
-    if (!cleanedNumber.startsWith('91') && cleanedNumber.length === 10) {
-      formattedNumber = '91' + cleanedNumber;
-    }
-    
-    const message = encodeURIComponent("Hi, I'm interested in your land listing on OnlyLands. Could you please provide more details?");
-    const whatsappUrl = `https://wa.me/${formattedNumber}?text=${message}`;
-    window.open(whatsappUrl, '_blank');
   };
 
   const openDetailModal = (listing) => {
