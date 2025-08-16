@@ -991,6 +991,25 @@ async def update_listing(listing_id: str, listing_data: dict, admin: dict = Depe
         print(f"Error updating listing: {e}")
         raise HTTPException(status_code=500, detail="Failed to update listing")
 
+@app.get("/api/seller-phone/{seller_id}")
+async def get_seller_phone(seller_id: str, token: str = Depends(verify_jwt_token)):
+    """Get seller phone number for WhatsApp contact"""
+    try:
+        # Find user by seller_id
+        user = db.users.find_one({"user_id": seller_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="Seller not found")
+        
+        # Return phone number
+        phone_number = user.get('phone_number')
+        if not phone_number:
+            raise HTTPException(status_code=404, detail="Phone number not available")
+            
+        return {"phone_number": phone_number}
+    except Exception as e:
+        print(f"Error getting seller phone: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get seller phone")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
