@@ -3296,7 +3296,7 @@ class OnlyLandsAPITester:
             print(f"❌ Error creating test listing: {e}")
             test_listing_id = None
         finally:
-            files[0][1].close()
+            files[0][1][1].close()
             try:
                 os.remove(test_image_path)
             except:
