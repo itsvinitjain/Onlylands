@@ -1006,6 +1006,9 @@ async def get_seller_phone(seller_id: str, token: str = Depends(verify_jwt_token
             raise HTTPException(status_code=404, detail="Phone number not available")
             
         return {"phone_number": phone_number}
+    except HTTPException:
+        # Re-raise HTTP exceptions (like 404)
+        raise
     except Exception as e:
         print(f"Error getting seller phone: {e}")
         raise HTTPException(status_code=500, detail="Failed to get seller phone")
