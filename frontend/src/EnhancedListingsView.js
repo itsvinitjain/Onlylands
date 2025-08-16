@@ -110,7 +110,7 @@ const EnhancedListingsView = ({ setCurrentView }) => {
 
   const openWhatsApp = async (listing) => {
     try {
-      // Get auth token from localStorage
+      // Get auth token from localStorage - FIXED: changed from 'authToken' to 'token'
       const token = localStorage.getItem('token');
       if (!token) {
         alert('Please login to contact the owner.');
