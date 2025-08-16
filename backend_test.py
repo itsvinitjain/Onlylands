@@ -6688,6 +6688,422 @@ class OnlyLandsAPITester:
 
     def run_review_request_tests(self):
         """Run all Review Request specific tests"""
+    def debug_whatsapp_contact_owner_functionality(self):
+        """
+        DEBUG WHATSAPP CONTACT OWNER FUNCTIONALITY - REVIEW REQUEST
+        
+        This test specifically debugs the WhatsApp Contact Owner functionality by:
+        1. Get Sample Listings - Retrieve several listings and check what phone number fields they contain
+        2. Check Phone Number Fields - Look for fields like phone_number, seller_phone, contact_number, phone, etc.
+        3. Verify Phone Number Format - Check if phone numbers exist and are in the correct format
+        4. Test WhatsApp URL Generation - Generate and test WhatsApp URLs with the actual phone numbers
+        """
+        print("\n" + "="*100)
+        print("📱 DEBUG WHATSAPP CONTACT OWNER FUNCTIONALITY - REVIEW REQUEST")
+        print("="*100)
+        
+        # Step 1: Get Sample Listings
+        print("\n📋 STEP 1: GET SAMPLE LISTINGS")
+        print("-" * 50)
+        
+        # Get public listings first
+        public_success, public_response = self.run_test(
+            "Get Public Listings",
+            "GET",
+            "api/listings",
+            200
+        )
+        
+        public_listings = []
+        if public_success:
+            public_listings = public_response.get('listings', [])
+            print(f"✅ Retrieved {len(public_listings)} public listings")
+        else:
+            print("❌ Failed to get public listings")
+        
+        # Get debug listings (all listings regardless of status)
+        debug_success, debug_response = self.run_test(
+            "Get Debug Listings (All)",
+            "GET",
+            "api/debug/all-listings",
+            200
+        )
+        
+        debug_listings = []
+        if debug_success:
+            debug_listings = debug_response.get('listings', [])
+            print(f"✅ Retrieved {len(debug_listings)} total listings from debug endpoint")
+        else:
+            print("❌ Failed to get debug listings")
+        
+        # Combine all listings for analysis
+        all_listings = []
+        seen_ids = set()
+        
+        for listing in public_listings + debug_listings:
+            listing_id = listing.get('listing_id')
+            if listing_id and listing_id not in seen_ids:
+                all_listings.append(listing)
+                seen_ids.add(listing_id)
+        
+        print(f"✅ Total unique listings for analysis: {len(all_listings)}")
+        
+        if not all_listings:
+            print("⚠️ No listings found - creating test listings with phone numbers for analysis")
+            
+            # Create test listings with different phone number scenarios
+            test_scenarios = [
+                {
+                    "title": "WhatsApp Test Land 1 - With Phone",
+                    "description": "Test listing with phone number for WhatsApp contact testing",
+                    "phone_number": "+919876543210"
+                },
+                {
+                    "title": "WhatsApp Test Land 2 - Different Format",
+                    "description": "Test listing with different phone format",
+                    "seller_phone": "9876543211"
+                },
+                {
+                    "title": "WhatsApp Test Land 3 - No Phone",
+                    "description": "Test listing without phone number",
+                }
+            ]
+            
+            # Need authentication to create listings
+            if not self.token:
+                print("🔐 Getting authentication token for test listing creation...")
+                auth_success = self.test_verify_otp("9696", "123456", "seller")
+                if not auth_success:
+                    print("❌ Could not authenticate - cannot create test listings")
+                    return False
+            
+            created_listings = []
+            for i, scenario in enumerate(test_scenarios, 1):
+                print(f"\n📝 Creating test listing {i}: {scenario['title']}")
+                
+                # Create test image
+                test_image_path = f'/tmp/whatsapp_test_image_{i}.jpg'
+                with open(test_image_path, 'wb') as f:
+                    f.write(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))
+                
+                form_data = {
+                    'title': scenario['title'],
+                    'area': '2 Acres',
+                    'price': '25 Lakhs',
+                    'description': scenario['description'],
+                    'latitude': '18.6414',
+                    'longitude': '72.9897'
+                }
+                
+                # Add phone number if specified in scenario
+                if 'phone_number' in scenario:
+                    form_data['phone_number'] = scenario['phone_number']
+                elif 'seller_phone' in scenario:
+                    form_data['seller_phone'] = scenario['seller_phone']
+                
+                files = [('photos', (f'whatsapp_test_{i}.jpg', open(test_image_path, 'rb'), 'image/jpeg'))]
+                
+                url = f"{self.base_url}/api/post-land"
+                headers = {'Authorization': f'Bearer {self.token}'}
+                
+                try:
+                    response = requests.post(url, data=form_data, files=files, headers=headers)
+                    if response.status_code == 200:
+                        result = response.json()
+                        listing_id = result.get('listing_id')
+                        print(f"✅ Created test listing: {listing_id}")
+                        created_listings.append(listing_id)
+                    else:
+                        print(f"❌ Failed to create test listing: {response.status_code}")
+                except Exception as e:
+                    print(f"❌ Error creating test listing: {e}")
+                finally:
+                    files[0][1].close()
+                    try:
+                        os.remove(test_image_path)
+                    except:
+                        pass
+            
+            # Get updated listings after creation
+            if created_listings:
+                debug_success, debug_response = self.run_test(
+                    "Get Updated Debug Listings",
+                    "GET",
+                    "api/debug/all-listings",
+                    200
+                )
+                
+                if debug_success:
+                    all_listings = debug_response.get('listings', [])
+                    print(f"✅ Updated listings count: {len(all_listings)}")
+        
+        # Step 2: Check Phone Number Fields
+        print(f"\n📞 STEP 2: CHECK PHONE NUMBER FIELDS IN LISTINGS")
+        print("-" * 50)
+        
+        phone_field_analysis = {
+            'phone_number': 0,
+            'seller_phone': 0,
+            'contact_number': 0,
+            'phone': 0,
+            'seller_id': 0,  # Check if seller_id can be used to get phone
+            'no_phone_fields': 0,
+            'total_listings': len(all_listings)
+        }
+        
+        listings_with_phone = []
+        listings_without_phone = []
+        
+        print(f"🔍 Analyzing {len(all_listings)} listings for phone number fields...")
+        
+        for i, listing in enumerate(all_listings, 1):
+            print(f"\n📋 LISTING {i}: {listing.get('title', 'No Title')[:50]}...")
+            print(f"   Listing ID: {listing.get('listing_id')}")
+            print(f"   Seller ID: {listing.get('seller_id')}")
+            print(f"   Status: {listing.get('status')}")
+            
+            # Check all possible phone number fields
+            phone_fields_found = []
+            
+            if 'phone_number' in listing and listing['phone_number']:
+                phone_fields_found.append(('phone_number', listing['phone_number']))
+                phone_field_analysis['phone_number'] += 1
+            
+            if 'seller_phone' in listing and listing['seller_phone']:
+                phone_fields_found.append(('seller_phone', listing['seller_phone']))
+                phone_field_analysis['seller_phone'] += 1
+            
+            if 'contact_number' in listing and listing['contact_number']:
+                phone_fields_found.append(('contact_number', listing['contact_number']))
+                phone_field_analysis['contact_number'] += 1
+            
+            if 'phone' in listing and listing['phone']:
+                phone_fields_found.append(('phone', listing['phone']))
+                phone_field_analysis['phone'] += 1
+            
+            if 'seller_id' in listing and listing['seller_id']:
+                phone_field_analysis['seller_id'] += 1
+            
+            if phone_fields_found:
+                print(f"   ✅ Phone fields found: {phone_fields_found}")
+                listings_with_phone.append({
+                    'listing': listing,
+                    'phone_fields': phone_fields_found
+                })
+            else:
+                print(f"   ❌ No direct phone fields found")
+                phone_field_analysis['no_phone_fields'] += 1
+                listings_without_phone.append(listing)
+            
+            # Show all fields for first few listings
+            if i <= 3:
+                print(f"   📋 All fields: {list(listing.keys())}")
+        
+        # Step 3: Verify Phone Number Format
+        print(f"\n📱 STEP 3: VERIFY PHONE NUMBER FORMAT")
+        print("-" * 50)
+        
+        print(f"📊 PHONE FIELD ANALYSIS SUMMARY:")
+        for field, count in phone_field_analysis.items():
+            if field != 'total_listings':
+                percentage = (count / phone_field_analysis['total_listings'] * 100) if phone_field_analysis['total_listings'] > 0 else 0
+                print(f"   {field}: {count} listings ({percentage:.1f}%)")
+        
+        print(f"\n📞 PHONE NUMBER FORMAT VERIFICATION:")
+        valid_phone_numbers = []
+        invalid_phone_numbers = []
+        
+        for listing_data in listings_with_phone:
+            listing = listing_data['listing']
+            phone_fields = listing_data['phone_fields']
+            
+            print(f"\n📋 Listing: {listing.get('title', 'No Title')[:30]}...")
+            
+            for field_name, phone_value in phone_fields:
+                print(f"   📞 {field_name}: '{phone_value}'")
+                
+                # Validate phone number format
+                phone_str = str(phone_value).strip()
+                
+                # Check various formats
+                is_valid = False
+                format_type = "unknown"
+                
+                if phone_str.startswith('+91') and len(phone_str) == 13:
+                    is_valid = True
+                    format_type = "international (+91)"
+                elif phone_str.startswith('91') and len(phone_str) == 12:
+                    is_valid = True
+                    format_type = "country code (91)"
+                elif phone_str.startswith('0') and len(phone_str) == 11:
+                    is_valid = True
+                    format_type = "national (0)"
+                elif len(phone_str) == 10 and phone_str.isdigit():
+                    is_valid = True
+                    format_type = "mobile (10 digits)"
+                elif len(phone_str) > 0:
+                    format_type = f"custom ({len(phone_str)} chars)"
+                
+                if is_valid:
+                    print(f"      ✅ Valid format: {format_type}")
+                    valid_phone_numbers.append({
+                        'listing_id': listing.get('listing_id'),
+                        'field': field_name,
+                        'phone': phone_value,
+                        'format': format_type
+                    })
+                else:
+                    print(f"      ❌ Invalid/Unknown format: {format_type}")
+                    invalid_phone_numbers.append({
+                        'listing_id': listing.get('listing_id'),
+                        'field': field_name,
+                        'phone': phone_value,
+                        'format': format_type
+                    })
+        
+        # Step 4: Test WhatsApp URL Generation
+        print(f"\n🔗 STEP 4: TEST WHATSAPP URL GENERATION")
+        print("-" * 50)
+        
+        print(f"📱 GENERATING WHATSAPP URLS FOR VALID PHONE NUMBERS:")
+        
+        whatsapp_urls_generated = []
+        
+        for phone_data in valid_phone_numbers:
+            listing_id = phone_data['listing_id']
+            phone = phone_data['phone']
+            field = phone_data['field']
+            format_type = phone_data['format']
+            
+            print(f"\n📞 Phone: {phone} ({format_type}) from {field}")
+            
+            # Clean and format phone number for WhatsApp
+            clean_phone = str(phone).strip().replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
+            
+            # Convert to international format
+            whatsapp_phone = clean_phone
+            if clean_phone.startswith('+91'):
+                whatsapp_phone = clean_phone[1:]  # Remove +
+            elif clean_phone.startswith('91') and len(clean_phone) == 12:
+                whatsapp_phone = clean_phone  # Already has country code
+            elif clean_phone.startswith('0') and len(clean_phone) == 11:
+                whatsapp_phone = '91' + clean_phone[1:]  # Replace 0 with 91
+            elif len(clean_phone) == 10 and clean_phone.isdigit():
+                whatsapp_phone = '91' + clean_phone  # Add country code
+            
+            # Generate WhatsApp URL
+            message = "Hi, I'm interested in your land listing on OnlyLands. Could you please provide more details?"
+            encoded_message = requests.utils.quote(message)
+            whatsapp_url = f"https://wa.me/{whatsapp_phone}?text={encoded_message}"
+            
+            print(f"   🔗 WhatsApp URL: {whatsapp_url}")
+            
+            # Test URL format (basic validation)
+            if whatsapp_phone.isdigit() and len(whatsapp_phone) >= 10:
+                print(f"   ✅ URL format valid")
+                whatsapp_urls_generated.append({
+                    'listing_id': listing_id,
+                    'original_phone': phone,
+                    'whatsapp_phone': whatsapp_phone,
+                    'url': whatsapp_url,
+                    'valid': True
+                })
+            else:
+                print(f"   ❌ URL format invalid")
+                whatsapp_urls_generated.append({
+                    'listing_id': listing_id,
+                    'original_phone': phone,
+                    'whatsapp_phone': whatsapp_phone,
+                    'url': whatsapp_url,
+                    'valid': False
+                })
+        
+        # Step 5: Check Seller Information for Phone Numbers
+        print(f"\n👤 STEP 5: CHECK SELLER INFORMATION FOR PHONE NUMBERS")
+        print("-" * 50)
+        
+        print("🔍 Checking if seller information contains phone numbers...")
+        
+        # For listings without direct phone fields, check if we can get phone from seller_id
+        seller_phone_mapping = {}
+        
+        for listing in listings_without_phone:
+            seller_id = listing.get('seller_id')
+            if seller_id:
+                print(f"\n📋 Listing without phone: {listing.get('title', 'No Title')[:30]}...")
+                print(f"   Seller ID: {seller_id}")
+                
+                # In a real scenario, we would query the users collection to get phone number
+                # For now, we'll note that this is a potential source of phone numbers
+                print(f"   💡 Potential: Could query users collection with seller_id to get phone_number")
+                
+                if seller_id not in seller_phone_mapping:
+                    seller_phone_mapping[seller_id] = []
+                seller_phone_mapping[seller_id].append(listing.get('listing_id'))
+        
+        # Summary and Findings
+        print(f"\n" + "="*100)
+        print("🎯 WHATSAPP CONTACT OWNER DEBUG SUMMARY")
+        print("="*100)
+        
+        print(f"📊 LISTINGS ANALYSIS:")
+        print(f"   Total listings analyzed: {len(all_listings)}")
+        print(f"   Listings with direct phone fields: {len(listings_with_phone)}")
+        print(f"   Listings without phone fields: {len(listings_without_phone)}")
+        print(f"   Valid phone numbers found: {len(valid_phone_numbers)}")
+        print(f"   Invalid phone numbers found: {len(invalid_phone_numbers)}")
+        
+        print(f"\n📞 PHONE FIELD DISTRIBUTION:")
+        for field, count in phone_field_analysis.items():
+            if field not in ['total_listings', 'no_phone_fields'] and count > 0:
+                print(f"   {field}: {count} listings")
+        
+        print(f"\n🔗 WHATSAPP URL GENERATION:")
+        valid_urls = len([url for url in whatsapp_urls_generated if url['valid']])
+        invalid_urls = len([url for url in whatsapp_urls_generated if not url['valid']])
+        print(f"   Valid WhatsApp URLs generated: {valid_urls}")
+        print(f"   Invalid WhatsApp URLs: {invalid_urls}")
+        
+        print(f"\n🔍 KEY FINDINGS:")
+        
+        if len(all_listings) == 0:
+            print("   ❌ CRITICAL: No listings found in database")
+            print("   💡 RECOMMENDATION: Check if listings are being created and stored correctly")
+        
+        if len(listings_with_phone) == 0:
+            print("   ❌ CRITICAL: No listings have phone number fields")
+            print("   💡 RECOMMENDATION: Check if phone numbers are being stored in listings")
+            print("   💡 ALTERNATIVE: Use seller_id to lookup phone numbers from users collection")
+        
+        if len(valid_phone_numbers) == 0:
+            print("   ❌ CRITICAL: No valid phone numbers found in listings")
+            print("   💡 RECOMMENDATION: Ensure phone numbers are stored in correct format")
+        
+        if len(whatsapp_urls_generated) == 0:
+            print("   ❌ CRITICAL: No WhatsApp URLs could be generated")
+            print("   💡 RECOMMENDATION: Fix phone number storage or implement seller lookup")
+        
+        # Specific recommendations
+        print(f"\n🛠️ SPECIFIC RECOMMENDATIONS:")
+        
+        if phone_field_analysis['seller_id'] > 0 and len(listings_with_phone) == 0:
+            print("   1. Implement seller phone lookup: Use seller_id to get phone from users collection")
+            print("   2. Add phone field to listings: Store seller phone in listing document")
+            print("   3. Update frontend: Modify WhatsApp button to handle seller lookup")
+        
+        if len(invalid_phone_numbers) > 0:
+            print("   4. Phone format validation: Implement phone number format validation")
+            print("   5. Phone normalization: Convert all phones to consistent format")
+        
+        if len(all_listings) > 0 and len(listings_with_phone) == 0:
+            print("   6. Database schema update: Add phone_number field to listings collection")
+            print("   7. Migration script: Copy phone numbers from users to listings")
+        
+        print("="*100)
+        
+        # Return success if we found any phone numbers or identified the issue
+        success = len(valid_phone_numbers) > 0 or len(all_listings) > 0
+        return success
         print("🚀 Starting OnlyLands Review Request Testing...")
         print("=" * 80)
         
