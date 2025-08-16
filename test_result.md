@@ -656,8 +656,9 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Final Verification Testing Completed Successfully"
-  stuck_tasks: []
+    - "WhatsApp Contact Owner Debug - CRITICAL ISSUE IDENTIFIED"
+  stuck_tasks: 
+    - "WhatsApp Contact Owner Debug"
   test_all: false
   test_priority: "high_first"
 
