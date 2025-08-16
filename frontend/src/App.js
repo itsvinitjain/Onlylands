@@ -1899,26 +1899,56 @@ function BrokerDashboard({ user }) {
     `);
   };
 
-  const contactOwner = (listing) => {
-    // Use the phone number from the listing instead of hardcoded number
-    const phoneNumber = listing.phone_number || listing.seller_phone || listing.contact_number;
-    if (!phoneNumber) {
-      alert('Contact information not available for this listing.');
-      return;
+  const contactOwner = async (listing) => {
+    try {
+      // Get auth token from localStorage
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        alert('Please login to contact the owner.');
+        return;
+      }
+      
+      // Get seller phone number from backend
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/seller-phone/${listing.seller_id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          alert('Contact information not available for this listing.');
+        } else {
+          alert('Unable to get contact information. Please try again.');
+        }
+        return;
+      }
+      
+      const data = await response.json();
+      const phoneNumber = data.phone_number;
+      
+      if (!phoneNumber) {
+        alert('Contact information not available for this listing.');
+        return;
+      }
+      
+      // Clean phone number - remove all non-digits and ensure it starts with country code
+      const cleanedNumber = phoneNumber.replace(/\D/g, '');
+      let formattedNumber = cleanedNumber;
+      
+      // If number doesn't start with country code, add +91 for India
+      if (!cleanedNumber.startsWith('91') && cleanedNumber.length === 10) {
+        formattedNumber = '91' + cleanedNumber;
+      }
+      
+      const message = `Hi! I'm interested in your land listing: ${listing.title} in ${listing.location}. Can we discuss the details?`;
+      const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+      
+    } catch (error) {
+      console.error('Error contacting owner:', error);
+      alert('Unable to contact owner. Please try again.');
     }
-    
-    // Clean phone number - remove all non-digits and ensure it starts with country code
-    const cleanedNumber = phoneNumber.replace(/\D/g, '');
-    let formattedNumber = cleanedNumber;
-    
-    // If number doesn't start with country code, add +91 for India
-    if (!cleanedNumber.startsWith('91') && cleanedNumber.length === 10) {
-      formattedNumber = '91' + cleanedNumber;
-    }
-    
-    const message = `Hi! I'm interested in your land listing: ${listing.title} in ${listing.location}. Can we discuss the details?`;
-    const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
   };
 
   return (
